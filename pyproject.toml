@@ -1,0 +1,12 @@
+[project]
+name = "tinker-plus"
+version = "0.1.0"
+description = "A helper for running games in non-windows environments."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pylint>=4.0.2",
+]

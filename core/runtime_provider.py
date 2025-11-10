@@ -1,0 +1,55 @@
+from typing import List, Optional
+from runtime_configuration import RuntimeConfiguration
+from feature_provider import FeatureProvider
+
+
+class RuntimeProvider:
+    def __init__(self, features: List[FeatureProvider]):
+        self.configuration: dict = {}
+        self.runtime_configuration: Optional[RuntimeConfiguration] = None
+        self.features = features
+
+    def build_configuration(self):
+        """
+        Builds the runtime configuration by merging global and game-specific configurations,
+        and applies feature-specific customizations.
+
+        The method performs the following steps:
+        - Reads global and game-specific configurations.
+        - Merges the configurations.
+        - Builds the feature configurations by calling `build_configuration` on each feature.
+        - Applies the configuration to the runtime environment using `apply_configuration`.
+
+        Raises:
+            RuntimeError: If any critical configuration step fails (e.g., misconfiguration in features).
+        """
+        # TODO: Read global configuration from file or environment
+        global_configuration = {}
+        # TODO: Read game-specific configuration from file or environment
+        game_configuration = {}
+        # Merge configurations
+        self.configuration.update(global_configuration)
+        self.configuration.update(game_configuration)
+        # Fills any missing configuration with defaults from features
+        for feature in self.features:
+            self.configuration = feature.build_configuration(self.configuration)
+        # Apply configurations to runtime
+        self.runtime_configuration = RuntimeConfiguration()
+        for feature in self.features:
+            feature.apply_configuration(self.configuration, self.runtime_configuration)
+
+    def run(self):
+        """
+        Runs the runtime environment using the built configuration.
+
+        This method ensures that the runtime configuration is initialized
+        and then proceeds with the execution. If the runtime configuration is
+        not built, an exception is raised.
+
+        Raises:
+            RuntimeError: If the runtime configuration has not been built.
+        """
+        if self.runtime_configuration is None:
+            raise RuntimeError("Runtime configuration has not been built.")
+        if self.runtime_configuration is None:
+            raise RuntimeError("Runtime configuration has not been built.")
