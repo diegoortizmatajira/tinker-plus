@@ -45,4 +45,5 @@ class ProtonSelection(FeatureProvider):
         runtime_configuration.use_proton = PROTON_VERSION_PROPERTY.get_or_fail(
             configuration
         )
+        self.logger.info("Using proton version: %s", runtime_configuration.use_proton)
         return runtime_configuration

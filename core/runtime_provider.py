@@ -58,7 +58,7 @@ class RuntimeProvider:
         # Apply configurations to runtime
         self.runtime_configuration = RuntimeConfiguration()
         for feature in self.features:
-            feature.apply_configuration(self.configuration, self.runtime_configuration)
+            feature.try_apply_configuration(self.configuration, self.runtime_configuration)
 
     def run(self):
         """

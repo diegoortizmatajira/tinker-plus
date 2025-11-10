@@ -2,6 +2,8 @@
 Feature Provider Base Class
 """
 
+import logging
+
 from abc import ABC, abstractmethod
 from typing import List
 from .runtime_configuration import RuntimeConfiguration
@@ -18,6 +20,7 @@ class FeatureProvider(ABC):
 
     def __init__(self, properties: List[ConfigurationProperty]):
         self.properties = properties
+        self.logger = logging.getLogger(self.__class__.__name__)
 
     def build_configuration(self, sourced_configuration: dict) -> dict:
         """
@@ -44,8 +47,45 @@ class FeatureProvider(ABC):
 
         Args:
             configuration (dict): The configuration settings to be applied.
-            runtime_configuration (RuntimeConfiguration): The runtime configuration to which the settings are applied.
+            runtime_configuration (RuntimeConfiguration): The runtime configuration
+            to which the settings are applied.
 
         Returns:
             RuntimeConfiguration: The updated runtime configuration with the applied settings.
         """
+
+    def try_apply_configuration(
+        self, configuration: dict, runtime_configuration: RuntimeConfiguration
+    ) -> RuntimeConfiguration:
+        """
+        Attempts to apply the configuration settings to the runtime configuration,
+        handling any exceptions that may arise during the process.
+
+        Args:
+            configuration (dict): The configuration settings to be applied.
+            runtime_configuration (RuntimeConfiguration): The runtime configuration
+            to which the settings are applied.
+
+        Returns:
+            RuntimeConfiguration: The updated runtime configuration with the applied settings.
+
+        Raises:
+            RuntimeError: If an error occurs while applying the configuration.
+        """
+        try:
+            return self.apply_configuration(configuration, runtime_configuration)
+        except KeyError as e:
+            self.logger.error(
+                "Missing configuration key: %s", e
+            )
+            raise RuntimeError(
+                f"Configuration key missing in {self.__class__.__name__}"
+            ) from e
+        except Exception as e:
+            self.logger.error(
+                "Error applying configuration: %s",
+                e,
+            )
+            raise RuntimeError(
+                f"Failed to apply configuration in {self.__class__.__name__}"
+            ) from e

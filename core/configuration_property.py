@@ -49,7 +49,8 @@ class ConfigurationProperty:
         if self.default is not None:
             return self.default
         raise KeyError(
-            f"Configuration property '{self.name}'({self.description}) is required and has no default."
+            f"Configuration property '{self.name}' ({self.description})"
+            " is required and has no default."
         )
 
     def get_possible_values(self) -> Optional[List[str]]:
