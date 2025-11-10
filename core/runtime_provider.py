@@ -1,9 +1,31 @@
+"""
+The RuntimeProvider module is responsible executing the game using the appropriate
+runtime configuration. It manages the merging of global and game-specific settings,
+as well as feature-specific customizations to build a comprehensive runtime environment.
+"""
+
 from typing import List, Optional
 from .runtime_configuration import RuntimeConfiguration
 from .feature_provider import FeatureProvider
 
 
 class RuntimeProvider:
+    """
+    The RuntimeProvider is responsible for managing the runtime configuration and operations.
+
+    This class initializes and builds the runtime configuration by merging global
+    and game-specific settings, as well as feature-specific customizations. It also
+    manages the execution of the runtime environment using the built configuration.
+
+    Attributes:
+        configuration (dict): The merged runtime configuration containing global,
+            game-specific, and feature-specific settings.
+        runtime_configuration (Optional[RuntimeConfiguration]): The active runtime
+            configuration used for executing the environment. Defaults to None.
+        features (List[FeatureProvider]): A list of feature providers that contribute
+            to building the runtime configuration.
+    """
+
     def __init__(self, features: List[FeatureProvider]):
         self.configuration: dict = {}
         self.runtime_configuration: Optional[RuntimeConfiguration] = None
@@ -21,7 +43,7 @@ class RuntimeProvider:
         - Applies the configuration to the runtime environment using `apply_configuration`.
 
         Raises:
-            RuntimeError: If any critical configuration step fails (e.g., misconfiguration in features).
+            RuntimeError: If any critical configuration step fails.
         """
         # TODO: Read global configuration from file or environment
         global_configuration = {}
