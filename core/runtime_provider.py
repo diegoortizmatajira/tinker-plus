@@ -1,6 +1,6 @@
 from typing import List, Optional
-from runtime_configuration import RuntimeConfiguration
-from feature_provider import FeatureProvider
+from .runtime_configuration import RuntimeConfiguration
+from .feature_provider import FeatureProvider
 
 
 class RuntimeProvider:

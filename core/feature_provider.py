@@ -4,9 +4,7 @@ Feature Provider Base Class
 
 from abc import ABC, abstractmethod
 from typing import List
-
 from .runtime_configuration import RuntimeConfiguration
-
 from .configuration_property import ConfigurationProperty
 
 

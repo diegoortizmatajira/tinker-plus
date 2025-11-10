@@ -6,7 +6,12 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = []
 
+[tool.pylint]
+init-hook = "import sys; sys.path.insert(0, \".\")"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
 [dependency-groups]
-dev = [
-    "pylint>=4.0.2",
-]
+dev = ["pylint>=4.0.2", "pytest>=9.0.0"]
