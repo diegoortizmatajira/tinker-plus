@@ -38,7 +38,6 @@ class FeatureProvider(ABC):
         )
         return sourced_configuration
 
-    @abstractmethod
     def apply_configuration(
         self, configuration: dict, runtime_configuration: RuntimeConfiguration
     ) -> RuntimeConfiguration:
@@ -52,6 +51,19 @@ class FeatureProvider(ABC):
 
         Returns:
             RuntimeConfiguration: The updated runtime configuration with the applied settings.
+        """
+        return runtime_configuration
+
+    def execute_in_pipeline(
+        self, configuration: dict, runtime_configuration: RuntimeConfiguration
+    ):
+        """
+        Abstract method to execute the feature provider in the runtime pipeline.
+
+        Args:
+            configuration (dict): The configuration settings to be used during execution.
+            runtime_configuration (RuntimeConfiguration): The runtime environment
+            used during the pipeline execution.
         """
 
     def try_apply_configuration(
@@ -75,9 +87,7 @@ class FeatureProvider(ABC):
         try:
             return self.apply_configuration(configuration, runtime_configuration)
         except KeyError as e:
-            self.logger.error(
-                "Missing configuration key: %s", e
-            )
+            self.logger.error("Missing configuration key: %s", e)
             raise RuntimeError(
                 f"Configuration key missing in {self.__class__.__name__}"
             ) from e
@@ -88,4 +98,30 @@ class FeatureProvider(ABC):
             )
             raise RuntimeError(
                 f"Failed to apply configuration in {self.__class__.__name__}"
+            ) from e
+
+    def try_execute_in_pipeline(
+        self, configuration: dict, runtime_configuration: RuntimeConfiguration
+    ):
+        """
+        Attempts to execute the feature provider in the runtime pipeline,
+        handling any exceptions that may arise during the process.
+
+        Args:
+            configuration (dict): The configuration settings to be used during execution.
+            runtime_configuration (RuntimeConfiguration): The runtime environment
+            used during the pipeline execution.
+
+        Raises:
+            RuntimeError: If an error occurs during pipeline execution.
+        """
+        try:
+            self.execute_in_pipeline(configuration, runtime_configuration)
+        except Exception as e:
+            self.logger.error(
+                "Error executing in pipeline: %s",
+                e,
+            )
+            raise RuntimeError(
+                f"Failed to execute in pipeline in {self.__class__.__name__}"
             ) from e

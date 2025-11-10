@@ -4,7 +4,12 @@ Main entry point for the Tinker-Plus application.
 
 import logging
 from core.runtime_provider import RuntimeProvider
+from features.game_runner import GameRunner
+from features.link_user_folders import LinkUserFolders
+from features.prefix_selection import PrefixSelection
 from features.proton_selection import ProtonSelection
+from features.read_config import ReadConfig
+from features.trainer_launch_settings import TrainerLaunchSettings
 
 
 def main():
@@ -19,7 +24,16 @@ def main():
     logger = logging.getLogger("tinker-plus")
     logger.info("Starting Tinker-Plus application...")
     try:
-        runtime = RuntimeProvider([ProtonSelection()])
+        runtime = RuntimeProvider(
+            [
+                ReadConfig(),
+                ProtonSelection(),
+                PrefixSelection(),
+                LinkUserFolders(),
+                TrainerLaunchSettings(),
+                GameRunner(),
+            ]
+        )
         runtime.build_configuration()
         runtime.run()
     except RuntimeError as e:

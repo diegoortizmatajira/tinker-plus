@@ -58,7 +58,9 @@ class RuntimeProvider:
         # Apply configurations to runtime
         self.runtime_configuration = RuntimeConfiguration()
         for feature in self.features:
-            feature.try_apply_configuration(self.configuration, self.runtime_configuration)
+            feature.try_apply_configuration(
+                self.configuration, self.runtime_configuration
+            )
 
     def run(self):
         """
@@ -73,5 +75,7 @@ class RuntimeProvider:
         """
         if self.runtime_configuration is None:
             raise RuntimeError("Runtime configuration has not been built.")
-        if self.runtime_configuration is None:
-            raise RuntimeError("Runtime configuration has not been built.")
+
+        for features in self.features:
+            features.execute_in_pipeline(self.configuration, self.runtime_configuration)
+
