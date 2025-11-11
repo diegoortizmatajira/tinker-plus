@@ -40,12 +40,31 @@ class RuntimeConfiguration:
         prefix_path (str): The path to the runtime prefix. Defaults to an empty string.
     """
 
+    steam_app_id: str = ""
+    steam_game_id: str = ""
+    steam_compat_install_path: str = ""
+    steam_compat_data_path: str = ""
     use_proton: str = ""
     fork_commands: Optional[List[ExecutableCommand]] = None
     command: str = ""
     winetricks: Optional[List[str]] = None
     prefix_path: str = ""
-    execute_trainers: bool = False
+    execute_trainers: bool = True
+
+    @property
+    def has_trainers(self) -> bool:
+        """
+        Checks if there are any forked commands categorized as trainers.
+
+        Returns:
+            bool: True if there is at least one trainer command, False otherwise.
+        """
+        if self.fork_commands is None:
+            return False
+        for cmd in self.fork_commands:
+            if cmd.category == COMMAND_TRAINER:
+                return True
+        return False
 
     def add_winetricks(self, tricks: List[str]) -> None:
         """

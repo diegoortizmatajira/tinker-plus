@@ -4,7 +4,7 @@ runtime configuration. It manages the merging of global and game-specific settin
 as well as feature-specific customizations to build a comprehensive runtime environment.
 """
 
-from typing import List, Optional
+from typing import Callable, List, Optional
 from .runtime_configuration import RuntimeConfiguration
 from .feature_provider import FeatureProvider
 
@@ -62,13 +62,17 @@ class RuntimeProvider:
                 self.configuration, self.runtime_configuration
             )
 
-    def run(self):
+    def run(self, run_with_trainers: bool = True):
         """
         Runs the runtime environment using the built configuration.
 
         This method ensures that the runtime configuration is initialized
         and then proceeds with the execution. If the runtime configuration is
         not built, an exception is raised.
+        Args:
+            update_configuration (Callable): A function that takes the current
+                runtime configuration and returns an updated configuration.
+                Defaults to an identity function.
 
         Raises:
             RuntimeError: If the runtime configuration has not been built.
@@ -76,6 +80,7 @@ class RuntimeProvider:
         if self.runtime_configuration is None:
             raise RuntimeError("Runtime configuration has not been built.")
 
+        self.runtime_configuration.execute_trainers = run_with_trainers
+
         for features in self.features:
             features.execute_in_pipeline(self.configuration, self.runtime_configuration)
-
