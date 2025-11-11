@@ -104,13 +104,6 @@ class RuntimeProvider:
         Raises:
             RuntimeError: If any critical configuration step fails.
         """
-        # TODO: Read global configuration from file or environment
-        global_configuration = {}
-        # TODO: Read game-specific configuration from file or environment
-        game_configuration = {}
-        # Merge configurations
-        self.configuration.update(global_configuration)
-        self.configuration.update(game_configuration)
         # Fills any missing configuration with defaults from features
         for feature in self.features:
             self.configuration = feature.build_configuration(
