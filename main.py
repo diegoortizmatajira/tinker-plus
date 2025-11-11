@@ -3,9 +3,12 @@ Main entry point for the Tinker-Plus application.
 """
 
 import logging
+import os
 import sys
 import argparse
+from core import logger_factory
 from core.config_storage import ConfigStorage
+from core.defaults import APP_LOG_FILE, APP_LOGS_DIR, PROTON_LOGS_DIR
 from core.runtime_provider import RuntimeProvider
 from features.game_runner import GameRunner
 from features.link_user_folders import LinkUserFolders
@@ -25,7 +28,7 @@ class MainApp:
     """
 
     def __init__(self):
-        self.logger = logging.getLogger("tinker-plus")
+        self.logger = logger_factory.get_logger(self.__class__.__name__)
 
     def run(self):
         """

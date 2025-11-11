@@ -8,6 +8,7 @@ from abc import ABC, abstractmethod
 from typing import List
 from .runtime_configuration import RuntimeConfiguration
 from .configuration_property import ConfigurationProperty
+from .log_storage import logger_factory
 
 
 class FeatureProvider(ABC):
@@ -20,7 +21,7 @@ class FeatureProvider(ABC):
 
     def __init__(self, properties: List[ConfigurationProperty]):
         self.properties = properties
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = logger_factory.get_logger(self.__class__.__name__)
 
     def build_configuration(
         self, sourced_configuration: dict, game_id: str, app_id: str

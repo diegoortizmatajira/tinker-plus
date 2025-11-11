@@ -4,12 +4,12 @@ runtime configuration. It manages the merging of global and game-specific settin
 as well as feature-specific customizations to build a comprehensive runtime environment.
 """
 
-import logging
 import os
 
 from typing import List
 from .runtime_configuration import RuntimeConfiguration
 from .feature_provider import FeatureProvider
+from .log_storage import logger_factory
 
 EMPTY = "(not provided)"
 
@@ -32,7 +32,7 @@ class RuntimeProvider:
     """
 
     def __init__(self, features: List[FeatureProvider]):
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = logger_factory.get_logger(self.__class__.__name__)
         self.configuration: dict = {}
         self.features = features
         self.runtime_configuration = RuntimeConfiguration()

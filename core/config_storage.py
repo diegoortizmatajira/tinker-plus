@@ -1,8 +1,8 @@
 import json
-import logging
 import os
 from typing import Optional
 
+from .log_storage import logger_factory
 from core.defaults import (
     CONFIG_LOCATION,
     GAME_CONFIG_DIR,
@@ -13,7 +13,7 @@ from core.defaults import (
 
 class ConfigStorage:
     def __init__(self):
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = logger_factory.get_logger(self.__class__.__name__)
 
     def get_global_config(self) -> Optional[dict]:
         if not os.path.exists(GLOBAL_CONFIG_FILE):
