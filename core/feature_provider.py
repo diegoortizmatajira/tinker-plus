@@ -2,7 +2,6 @@
 Feature Provider Base Class
 """
 
-
 from abc import ABC
 from typing import List
 from .runtime_configuration import RuntimeConfiguration
