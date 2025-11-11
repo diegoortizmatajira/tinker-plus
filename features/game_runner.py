@@ -4,6 +4,7 @@ A feature provider for executing the main game command and any forked commands
 
 from typing import override
 from core import FeatureProvider, RuntimeConfiguration
+from core.runtime_configuration import COMMAND_TRAINER
 
 
 class GameRunner(FeatureProvider):
@@ -19,5 +20,23 @@ class GameRunner(FeatureProvider):
     def execute_in_pipeline(
         self, configuration: dict, runtime_configuration: RuntimeConfiguration
     ):
-        # TODO: Execute commands and forked commands
-        pass
+        for command in runtime_configuration.fork_commands or []:
+            if (
+                command.category == COMMAND_TRAINER
+                and not runtime_configuration.execute_trainers
+            ):
+                # Skip trainer commands if trainers are disabled
+                continue
+
+            # TODO: Execute forked command here
+            self.logger.info(
+                "Executing forked command (%s): %s %s",
+                command.category or "Uncategorized",
+                command.command,
+                command.args or "",
+            )
+
+        # TODO: Execute main game command here
+        self.logger.info(
+            "Executing main game command: %s", runtime_configuration.command
+        )

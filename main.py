@@ -3,7 +3,6 @@ Main entry point for the Tinker-Plus application.
 """
 
 import logging
-import os
 import sys
 import argparse
 from core.runtime_provider import RuntimeProvider
@@ -12,7 +11,6 @@ from features.link_user_folders import LinkUserFolders
 from features.prefix_selection import PrefixSelection
 from features.proton_selection import ProtonSelection
 from features.read_config import ReadConfig
-from features.steam_context_reader import SteamContextReader
 from features.trainer_launch_settings import TrainerLaunchSettings
 from gui.main_form import MainForm
 
@@ -36,29 +34,72 @@ class MainApp:
         executing the main game functionality, and logging the completion of the application.
         """
         parser = argparse.ArgumentParser(description="Tinker-Plus Application")
-        subparsers = parser.add_subparsers(dest="command")
 
-        # Install command
+        subparsers = parser.add_subparsers(title="Commands", dest="command")
+        subparsers.required = True
+
+        # Map subcommand functions to handlers
+        command_handlers = {
+            "install": self.install_as_steam_compatibility_tool,
+            "run": self.handle_run_command,
+        }
+
         subparsers.add_parser("install", help="Install as Steam compatibility tool")
 
-        # Run command
         run_parser = subparsers.add_parser("run", help="Run a game using Tinker-Plus")
-        run_parser.add_argument("cli", action="store_true", help="Run in CLI-only mode")
+        run_parser.add_argument(
+            "--cli", action="store_true", help="Run in CLI-only mode"
+        )
+        run_parser.add_argument(
+            "--trainer", action="store_true", help="Run with trainer"
+        )
 
-        # Parse args
+        if len(sys.argv) == 1:
+            parser.print_help()
+            sys.exit(1)
+
         args = parser.parse_args()
 
-        # Default to "run" if no command is provided
         self.logger.info("Starting Tinker-Plus application...")
-        if args.command == "install":
-            self.install_as_steam_compatibility_tool()
-        else:
-            # args.command is "run" or None
-            use_cli = getattr(args, "cli", False)
-            self.execute_game(not use_cli)
+        handler = command_handlers.get(args.command)
+        if handler:
+            handler(args)
         self.logger.info("Tinker-Plus application finished.")
 
-    def install_as_steam_compatibility_tool(self):
+    def handle_run_command(self, args):
+        """
+        Handles the logic for the 'run' command.
+        Args:
+            args (argparse.Namespace): Parsed command-line arguments.
+        """
+        use_cli = getattr(args, "cli", False)
+        execute_trainer = getattr(args, "trainer", True)
+
+        try:
+            runtime = RuntimeProvider(
+                [
+                    ReadConfig(),
+                    ProtonSelection(),
+                    PrefixSelection(),
+                    LinkUserFolders(),
+                    TrainerLaunchSettings(),
+                    GameRunner(),
+                ]
+            )
+            runtime.build_configuration()
+            if runtime.runtime_configuration is None:
+                raise RuntimeError("Failed to build runtime configuration.")
+            runtime.runtime_configuration.execute_trainers = execute_trainer
+            if use_cli:
+                runtime.run()
+            else:
+                main_form = MainForm(runtime)
+                main_form.show()
+
+        except RuntimeError as e:
+            self.logger.error("An error occurred during runtime execution. %s", e)
+
+    def install_as_steam_compatibility_tool(self, _):
         """
         Prepares the application to be installed as a Steam compatibility tool.
 
@@ -66,7 +107,7 @@ class MainApp:
             This is a placeholder for future implementation and currently does not
             contain any logic.
         """
-        # Placeholder for future implementation
+        self.logger.info("Installing as Steam compatibility tool... (not implemented)")
 
     # def save_environment_variables(self):
     #     """
@@ -98,27 +139,6 @@ class MainApp:
                            is executed directly in the runtime without a UI.
         """
         # self.save_environment_variables()
-        try:
-            runtime = RuntimeProvider(
-                [
-                    SteamContextReader(),
-                    ReadConfig(),
-                    ProtonSelection(),
-                    PrefixSelection(),
-                    LinkUserFolders(),
-                    TrainerLaunchSettings(),
-                    GameRunner(),
-                ]
-            )
-            runtime.build_configuration()
-            if use_ui:
-                main_form = MainForm(runtime)
-                main_form.show()
-            else:
-                runtime.run()
-
-        except RuntimeError as e:
-            self.logger.error("An error occurred during runtime execution. %s", e)
 
 
 if __name__ == "__main__":

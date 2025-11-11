@@ -4,9 +4,14 @@ runtime configuration. It manages the merging of global and game-specific settin
 as well as feature-specific customizations to build a comprehensive runtime environment.
 """
 
-from typing import Callable, List, Optional
+import logging
+import os
+
+from typing import List
 from .runtime_configuration import RuntimeConfiguration
 from .feature_provider import FeatureProvider
+
+EMPTY = "(not provided)"
 
 
 class RuntimeProvider:
@@ -27,9 +32,63 @@ class RuntimeProvider:
     """
 
     def __init__(self, features: List[FeatureProvider]):
+        self.logger = logging.getLogger(self.__class__.__name__)
         self.configuration: dict = {}
-        self.runtime_configuration: Optional[RuntimeConfiguration] = None
         self.features = features
+        self.runtime_configuration = RuntimeConfiguration()
+        self.read_steam_context()
+
+    def read_steam_context(self):
+        """
+        Reads the Steam context for the runtime configuration.
+
+        This method retrieves the Steam-specific environment variables such as
+        `STEAM_APP_ID`, `STEAM_GAME_ID`, `STEAM_COMPAT_INSTALL_PATH`, and
+        `STEAM_COMPAT_DATA_PATH`, and updates the runtime configuration with their
+        values. If the environment variables are not present, it retains the default
+        values in the runtime configuration.
+
+        The method also logs the retrieved values or indicates if they are not provided.
+
+        Updates:
+            - steam_app_id: Steam application ID.
+            - steam_game_id: Steam game ID.
+            - steam_compat_install_path: Path to the Steam compatibility installation directory.
+            - steam_compat_data_path: Path to the Steam compatibility data directory.
+            - prefix_path: Path to the default prefix directory derived from
+              `steam_compat_data_path`.
+        """
+        self.runtime_configuration.steam_app_id = (
+            os.getenv("STEAM_APP_ID") or self.runtime_configuration.steam_app_id
+        )
+        self.logger.info(
+            "Steam App ID: %s", self.runtime_configuration.steam_app_id or EMPTY
+        )
+        self.runtime_configuration.steam_game_id = (
+            os.getenv("STEAM_GAME_ID") or self.runtime_configuration.steam_game_id
+        )
+        self.logger.info(
+            "Steam Game ID: %s", self.runtime_configuration.steam_game_id or EMPTY
+        )
+        self.runtime_configuration.steam_compat_install_path = (
+            os.getenv("STEAM_COMPAT_INSTALL_PATH")
+            or self.runtime_configuration.steam_compat_install_path
+        )
+        self.logger.info(
+            "Steam Compat Install Path: %s",
+            self.runtime_configuration.steam_compat_install_path or EMPTY,
+        )
+        self.runtime_configuration.steam_compat_data_path = (
+            os.getenv("STEAM_COMPAT_DATA_PATH")
+            or self.runtime_configuration.steam_compat_data_path
+        )
+        self.logger.info(
+            "Steam Compat Data Path: %s",
+            self.runtime_configuration.steam_compat_data_path or EMPTY,
+        )
+        self.runtime_configuration.prefix_path = (
+            f"{self.runtime_configuration.steam_compat_data_path}/pfx"
+        )
 
     def build_configuration(self):
         """
@@ -54,9 +113,12 @@ class RuntimeProvider:
         self.configuration.update(game_configuration)
         # Fills any missing configuration with defaults from features
         for feature in self.features:
-            self.configuration = feature.build_configuration(self.configuration)
+            self.configuration = feature.build_configuration(
+                self.configuration,
+                self.runtime_configuration.steam_game_id or "unknown",
+                self.runtime_configuration.steam_app_id or "unknown",
+            )
         # Apply configurations to runtime
-        self.runtime_configuration = RuntimeConfiguration()
         for feature in self.features:
             feature.try_apply_configuration(
                 self.configuration, self.runtime_configuration

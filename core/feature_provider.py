@@ -22,7 +22,9 @@ class FeatureProvider(ABC):
         self.properties = properties
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    def build_configuration(self, sourced_configuration: dict) -> dict:
+    def build_configuration(
+        self, sourced_configuration: dict, game_id: str, app_id: str
+    ) -> dict:
         """
         Builds and returns the updated configuration dictionary with default
         values initialized based on the property definitions.

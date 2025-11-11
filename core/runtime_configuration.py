@@ -40,15 +40,15 @@ class RuntimeConfiguration:
         prefix_path (str): The path to the runtime prefix. Defaults to an empty string.
     """
 
-    steam_app_id: str = ""
-    steam_game_id: str = ""
-    steam_compat_install_path: str = ""
-    steam_compat_data_path: str = ""
-    use_proton: str = ""
+    steam_app_id: Optional[str] = None
+    steam_game_id: Optional[str] = None
+    steam_compat_install_path: Optional[str] = None
+    steam_compat_data_path: Optional[str] = None
+    use_proton: Optional[str] = None
     fork_commands: Optional[List[ExecutableCommand]] = None
-    command: str = ""
+    command: Optional[str] = None
     winetricks: Optional[List[str]] = None
-    prefix_path: str = ""
+    prefix_path: Optional[str] = None
     execute_trainers: bool = True
 
     @property
