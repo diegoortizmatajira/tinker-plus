@@ -2,12 +2,12 @@ from typing import override
 from core import FeatureProvider, ConfigurationProperty, RuntimeConfiguration
 from core.runtime_configuration import COMMAND_TRAINER, ExecutableCommand
 
-CUSTOM_TRAINER_PROPERTY = ConfigurationProperty(
-    "CUSTOM_TRAINER", "Allows selection of a specific trainer excecutable program."
+TRAINER_PATH_PROPERTY = ConfigurationProperty(
+    "TRAINER_PATH", "Allows selection of a specific trainer excecutable program."
 )
 
-CUSTOM_TRAINER_ARGS_PROPERTY = ConfigurationProperty(
-    "CUSTOM_TRAINER_ARGS", "Allows providing custom args to the trainer program."
+TRAINER_ARGS_PROPERTY = ConfigurationProperty(
+    "TRAINER_ARGS", "Allows providing custom args to the trainer program."
 )
 
 WEMOD_ENABLED_PROPERTY = ConfigurationProperty(
@@ -33,8 +33,8 @@ class TrainerLaunchSettings(FeatureProvider):
     def __init__(self):
         super().__init__(
             [
-                CUSTOM_TRAINER_PROPERTY,
-                CUSTOM_TRAINER_ARGS_PROPERTY,
+                TRAINER_PATH_PROPERTY,
+                TRAINER_ARGS_PROPERTY,
                 WEMOD_ENABLED_PROPERTY,
                 WEMOD_PATH_PROPERTY,
                 WEMOD_WINETRICKS_REQUIREMENTS,
@@ -47,9 +47,9 @@ class TrainerLaunchSettings(FeatureProvider):
     ) -> RuntimeConfiguration:
         execute_trainer = False
         # Check for custom trainer configuration
-        custom_trainer = CUSTOM_TRAINER_PROPERTY.get(configuration)
+        custom_trainer = TRAINER_PATH_PROPERTY.get(configuration)
         if custom_trainer:
-            custom_trainer_args = CUSTOM_TRAINER_ARGS_PROPERTY.get(configuration)
+            custom_trainer_args = TRAINER_ARGS_PROPERTY.get(configuration)
             runtime_configuration.add_fork_command(
                 ExecutableCommand(
                     custom_trainer,

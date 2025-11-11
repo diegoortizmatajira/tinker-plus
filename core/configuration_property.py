@@ -79,6 +79,6 @@ class ConfigurationProperty:
             dict: The updated configuration dictionary with default values set.
         """
         for prop in properties:
-            if prop.name not in configuration and prop.default is not None:
+            if prop.name not in configuration:
                 configuration[prop.name] = prop.default
         return configuration

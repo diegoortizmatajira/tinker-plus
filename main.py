@@ -78,11 +78,13 @@ class MainApp:
         try:
             runtime = RuntimeProvider(
                 [
-                    ReadConfig(),
                     ProtonSelection(),
                     PrefixSelection(),
                     LinkUserFolders(),
                     TrainerLaunchSettings(),
+                    # ReadConfig has to be the last before GameRunner, to ensure default
+                    # configs are read first, then overridden by user configs
+                    ReadConfig(),
                     GameRunner(),
                 ]
             )
