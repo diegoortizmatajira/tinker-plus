@@ -5,6 +5,7 @@ Main entry point for the Tinker-Plus application.
 import logging
 import sys
 import argparse
+from core.config_storage import ConfigStorage
 from core.runtime_provider import RuntimeProvider
 from features.game_runner import GameRunner
 from features.link_user_folders import LinkUserFolders
@@ -76,6 +77,7 @@ class MainApp:
         execute_trainer = getattr(args, "trainer", True)
 
         try:
+            storage = ConfigStorage()
             runtime = RuntimeProvider(
                 [
                     ProtonSelection(),
@@ -84,7 +86,7 @@ class MainApp:
                     TrainerLaunchSettings(),
                     # ReadConfig has to be the last before GameRunner, to ensure default
                     # configs are read first, then overridden by user configs
-                    ReadConfig(),
+                    ReadConfig(storage),
                     GameRunner(),
                 ]
             )

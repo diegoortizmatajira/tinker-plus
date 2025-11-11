@@ -2,18 +2,9 @@
 Module for reading and building configuration from default or config files.
 """
 
-import os
-import json
 from typing import override
-from core import (
-    FeatureProvider,
-)
-from core.defaults import (
-    CONFIG_LOCATION,
-    GAME_CONFIG_DIR,
-    GAME_CONFIG_FILE_TEMPLATE,
-    GLOBAL_CONFIG_FILE,
-)
+from core import FeatureProvider
+from core.config_storage import ConfigStorage
 
 
 class ReadConfig(FeatureProvider):
@@ -26,8 +17,9 @@ class ReadConfig(FeatureProvider):
     management capabilities.
     """
 
-    def __init__(self):
+    def __init__(self, config_storage: ConfigStorage):
         super().__init__([])
+        self.config_storage = config_storage
 
     @override
     def build_configuration(
@@ -37,45 +29,19 @@ class ReadConfig(FeatureProvider):
             sourced_configuration, game_id, app_id
         )
         # At this point, sourced_configuration contains all default configurations
-        # Check if global configuration file exists
-        if not os.path.exists(GLOBAL_CONFIG_FILE):
-            self.logger.warning(
-                "Creating global configuration file at: %s", GLOBAL_CONFIG_FILE
-            )
-            os.makedirs(CONFIG_LOCATION, exist_ok=True)
-            # Convert sourced_configuration to json and save to GLOBAL_CONFIG_FILE
-            global_json_content = json.dumps(sourced_configuration, indent=4)
-            with open(GLOBAL_CONFIG_FILE, "w", encoding="utf-8") as f:
-                f.write(global_json_content)
-        else:
-            self.logger.info(
-                "Reading global configuration from: %s", GLOBAL_CONFIG_FILE
-            )
-            # Load global configuration and update sourced_configuration
-            with open(GLOBAL_CONFIG_FILE, "r", encoding="utf-8") as f:
-                global_config = json.load(f)
-                sourced_configuration.update(global_config)
 
-        game_configuration_file = str.format(
-            GAME_CONFIG_FILE_TEMPLATE, game_id or app_id
-        )
+        global_config = self.config_storage.get_global_config()
+        if global_config is None:
+            # Create global configuration file if it doesn't exist with defaults
+            self.config_storage.save_global_config(sourced_configuration)
+        sourced_configuration.update(global_config or {})
+        self.logger.info("Global configuration loaded and applied.")
+
         # Check for game-specific configuration file
-        if not os.path.exists(game_configuration_file):
-            self.logger.warning(
-                "Creating game-specific configuration file at: %s",
-                game_configuration_file,
-            )
-            os.makedirs(GAME_CONFIG_DIR, exist_ok=True)
-            # Convert sourced_configuration to json and save to game_configuration_file
-            game_json_content = json.dumps({}, indent=4)
-            with open(game_configuration_file, "w", encoding="utf-8") as f:
-                f.write(game_json_content)
-        else:
-            self.logger.info(
-                "Reading game-specific configuration from: %s",
-                game_configuration_file,
-            )
-            with open(game_configuration_file, "r", encoding="utf-8") as f:
-                game_config = json.load(f)
-                sourced_configuration.update(game_config)
+        game_config = self.config_storage.get_game_config(game_id or app_id)
+        if game_config is None:
+            # Create game-specific configuration file if it doesn't exist with empty config
+            self.config_storage.save_game_config({}, game_id or app_id)
+        sourced_configuration.update(game_config or {})
+        self.logger.info("Game-specific configuration loaded and applied.")
         return sourced_configuration
