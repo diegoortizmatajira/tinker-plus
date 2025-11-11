@@ -2,9 +2,8 @@
 Feature Provider Base Class
 """
 
-import logging
 
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import List
 from .runtime_configuration import RuntimeConfiguration
 from .configuration_property import ConfigurationProperty
