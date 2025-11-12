@@ -52,6 +52,9 @@ class MainApp:
             "--cli", action="store_true", help="Run in CLI-only mode"
         )
         run_parser.add_argument(
+            "--dry", action="store_true", help="Run in DRY mode (no game launch)"
+        )
+        run_parser.add_argument(
             "--trainer", action="store_true", help="Run with trainer"
         )
         run_parser.add_argument(
@@ -79,8 +82,9 @@ class MainApp:
             args (argparse.Namespace): Parsed command-line arguments.
         """
         use_cli = getattr(args, "cli", False)
+        dry_run = getattr(args, "dry", False)
         execute_trainer = getattr(args, "trainer", True)
-        game_command = getattr(args, "game_command", "")
+        game_command = getattr(args, "game_command", [])
 
         try:
             storage = ConfigStorage()
@@ -94,7 +98,7 @@ class MainApp:
                     # ReadConfig has to be the last before GameRunner, to ensure default
                     # configs are read first, then overridden by user configs
                     ReadConfig(storage),
-                    GameRunner(),
+                    GameRunner(dry_run),
                 ],
             )
             runtime.build_configuration()

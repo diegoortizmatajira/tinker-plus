@@ -5,6 +5,7 @@ as well as feature-specific customizations to build a comprehensive runtime envi
 """
 
 import os
+import re
 
 from typing import List
 from .runtime_configuration import RuntimeConfiguration
@@ -12,6 +13,47 @@ from .feature_provider import FeatureProvider
 from .log_storage import logger_factory
 
 EMPTY = "(not provided)"
+
+
+def parse_command(runtime_configuration: RuntimeConfiguration):
+    """
+    Parses the game command line and extracts runtime configuration components.
+
+    This method analyzes the original command line for specific runtime components
+    such as the Steam Launch Wrapper, Reaper command, Sniper command, Compatibility
+    Tool, and Game Executable. If the parsed components match the expected pattern,
+    they are logged and assigned to the runtime configuration attributes. If the
+    parsing fails, a warning is logged.
+
+    Updates:
+        - runtime_configuration.steam_wrapper: The Steam Launch Wrapper command.
+        - runtime_configuration.steam_reaper: The Reaper command.
+        - runtime_configuration.steam_sniper: The Sniper command.
+        - runtime_configuration.steam_compatibility_tool: The Compatibility Tool command.
+        - runtime_configuration.steam_game_exe: The Game Executable command.
+
+    Logs:
+        - Logs the identified components or warnings if the pattern does not match.
+    """
+    full_pattern = (
+        r"^(?P<stlwrapper>\S+steam-launch-wrapper)\s+"
+        r"(?P<reaper>\S+reaper)\s+"
+        r".+?(--)?\s+"
+        r"(?P<sniper>\S+sniper\S+(\s+--\w+=.+)+)\s+"
+        r"--\s+"
+        r"(?P<compatibility>\S+compatibilitytools\S+\swaitforexitandrun)\s+"
+        r"(?P<gameexe>.*)$"
+    )
+
+    match = re.search(full_pattern, " ".join(runtime_configuration.original_command))
+    if not match:
+        raise RuntimeError("Pattern did not match the command line.")
+
+    runtime_configuration.steam_wrapper = match.group("stlwrapper")
+    runtime_configuration.steam_reaper = match.group("reaper")
+    runtime_configuration.steam_sniper = match.group("sniper")
+    runtime_configuration.steam_compatibility_tool = match.group("compatibility")
+    runtime_configuration.steam_game_exe = match.group("gameexe")
 
 
 class RuntimeProvider:
@@ -31,32 +73,79 @@ class RuntimeProvider:
             to building the runtime configuration.
     """
 
-    def __init__(self, game_command: str, features: List[FeatureProvider]):
+    def __init__(self, game_command: List[str], features: List[FeatureProvider]):
         self.logger = logger_factory.get_logger(self.__class__.__name__)
         self.configuration: dict = {}
         self.features = features
         self.runtime_configuration = RuntimeConfiguration(game_command)
-        self.read_steam_context()
+        self.read_steam_environment()
+        self.parse_command()
 
-    def read_steam_context(self):
+    def parse_command(self):
         """
-        Reads the Steam context for the runtime configuration.
+        Parses the game command line and extracts runtime configuration components.
 
-        This method retrieves the Steam-specific environment variables such as
-        `STEAM_APP_ID`, `STEAM_GAME_ID`, `STEAM_COMPAT_INSTALL_PATH`, and
-        `STEAM_COMPAT_DATA_PATH`, and updates the runtime configuration with their
-        values. If the environment variables are not present, it retains the default
-        values in the runtime configuration.
-
-        The method also logs the retrieved values or indicates if they are not provided.
+        This method analyzes the original command line for specific runtime components
+        such as the Steam Launch Wrapper, Reaper command, Sniper command, Compatibility
+        Tool, and Game Executable. If the parsed components match the expected pattern,
+        they are logged and assigned to the runtime configuration attributes. If the
+        parsing fails, a warning is logged.
 
         Updates:
-            - steam_app_id: Steam application ID.
-            - steam_game_id: Steam game ID.
-            - steam_compat_install_path: Path to the Steam compatibility installation directory.
-            - steam_compat_data_path: Path to the Steam compatibility data directory.
-            - prefix_path: Path to the default prefix directory derived from
-              `steam_compat_data_path`.
+            - runtime_configuration.steam_wrapper: The Steam Launch Wrapper command.
+            - runtime_configuration.steam_reaper: The Reaper command.
+            - runtime_configuration.steam_sniper: The Sniper command.
+            - runtime_configuration.steam_compatibility_tool: The Compatibility Tool command.
+            - runtime_configuration.steam_game_exe: The Game Executable command.
+
+        Logs:
+            - Logs the identified components or warnings if the pattern does not match.
+        """
+        self.logger.info(
+            "Steam Original Game Command: %s",
+            " ".join(self.runtime_configuration.original_command),
+        )
+        try:
+            parse_command(self.runtime_configuration)
+        except RuntimeError as e:
+            self.logger.warning("Failed to parse the game command line: %s", e)
+            return
+
+        self.logger.info(
+            "Steam Launch Wrapper: %s", self.runtime_configuration.steam_wrapper
+        )
+        self.logger.info("Steam Reaper Command: %s", self.runtime_configuration.steam_reaper)
+        self.logger.info("Steam Sniper Command: %s", self.runtime_configuration.steam_sniper)
+        self.logger.info(
+            "Steam Compatibility Tool: %s",
+            self.runtime_configuration.steam_compatibility_tool,
+        )
+        self.logger.info(
+            "Steam Game Executable: %s", self.runtime_configuration.steam_game_exe
+        )
+
+    def read_steam_environment(self):
+        """
+        Reads the Steam environment variables and updates the runtime configuration.
+
+        This method retrieves relevant environment variables such as `SteamAppId`,
+        `SteamGameId`, `STEAM_COMPAT_INSTALL_PATH`, and `STEAM_COMPAT_DATA_PATH`
+        to set up the runtime configuration. It populates missing values with the
+        defaults from the runtime configuration instance if the environment variables
+        are not available.
+
+        Updates:
+            - runtime_configuration.steam_app_id: The Steam application ID.
+            - runtime_configuration.steam_game_id: The Steam game ID.
+            - runtime_configuration.steam_compat_install_path: The installation path
+              for Steam compatibility tools.
+            - runtime_configuration.steam_compat_data_path: The data path for Steam
+              compatibility tools.
+            - runtime_configuration.prefix_path: Derived prefix path based on the
+              compatibility data path.
+
+        Logs:
+            - Logs the retrieved or default values for each updated configuration field.
         """
         self.runtime_configuration.steam_app_id = (
             os.getenv("SteamAppId") or self.runtime_configuration.steam_app_id
