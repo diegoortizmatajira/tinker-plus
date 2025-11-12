@@ -40,6 +40,7 @@ class RuntimeConfiguration:
         prefix_path (str): The path to the runtime prefix. Defaults to an empty string.
     """
 
+    original_command: str
     steam_app_id: Optional[str] = None
     steam_game_id: Optional[str] = None
     steam_compat_install_path: Optional[str] = None

@@ -9,7 +9,8 @@ class LogFactory:
     Factory class to set up logging for the application.
     """
 
-    def __init__(self, level: int = logging.INFO):
+    def __init__(self, level=logging.INFO):
+        logging.basicConfig(level=level)
         self.log_formatter = logging.Formatter(
             "%(asctime)s - %(levelname)s - %(message)s"
         )

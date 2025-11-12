@@ -3,12 +3,10 @@ Main entry point for the Tinker-Plus application.
 """
 
 import logging
-import os
 import sys
 import argparse
 from core import logger_factory
 from core.config_storage import ConfigStorage
-from core.defaults import APP_LOG_FILE, APP_LOGS_DIR, PROTON_LOGS_DIR
 from core.runtime_provider import RuntimeProvider
 from features.game_runner import GameRunner
 from features.link_user_folders import LinkUserFolders
@@ -57,6 +55,10 @@ class MainApp:
         run_parser.add_argument(
             "--trainer", action="store_true", help="Run with trainer"
         )
+        run_parser.add_argument(
+            "game_command",
+            help="The command to launch the game (e.g., path to executable)",
+        )
 
         if len(sys.argv) == 1:
             parser.print_help()
@@ -78,10 +80,12 @@ class MainApp:
         """
         use_cli = getattr(args, "cli", False)
         execute_trainer = getattr(args, "trainer", True)
+        game_command = getattr(args, "game_command", "")
+        self.logger.info("Running game command: %s", game_command)
 
         try:
             storage = ConfigStorage()
-            runtime = RuntimeProvider(
+            runtime = RuntimeProvider(game_command,
                 [
                     ProtonSelection(),
                     PrefixSelection(),
@@ -116,39 +120,7 @@ class MainApp:
         """
         self.logger.info("Installing as Steam compatibility tool... (not implemented)")
 
-    # def save_environment_variables(self):
-    #     """
-    #     Saves the current environment variables to a persistent storage.
-    #
-    #     Note:
-    #         This is a placeholder for future implementation and currently does not
-    #         contain any logic.
-    #     """
-    #     output_file = "/home/diegoortizmatajira/environment_variables.txt"
-    #     # Read all environment variables and save them to output_file
-    #     with open(output_file, "a", encoding="utf-8") as f:
-    #         for var, value in os.environ.items():
-    #             f.write(f"{var}={value}\n")
-    #         # Also write a separator for clarity
-    #         f.write("\n--- End of Environment Variables ---\n\n")
-    #         # Also write any parameters passed to the application
-    #         f.write("Application Parameters:\n")
-    #         for param in sys.argv:
-    #             f.write(f"{param}\n")
-
-    def execute_game(self, use_ui: bool = True):
-        """
-        Executes the game with the given runtime configuration.
-
-        Args:
-            use_ui (bool): Determines whether to use the graphical UI for the game execution.
-                           If set to True, the MainForm UI is displayed; otherwise, the game
-                           is executed directly in the runtime without a UI.
-        """
-        # self.save_environment_variables()
-
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
     app = MainApp()
     app.run()

@@ -17,6 +17,13 @@ class GameRunner(FeatureProvider):
         super().__init__([])
 
     @override
+    def apply_configuration(
+        self, configuration: dict, runtime_configuration: RuntimeConfiguration
+    ) -> RuntimeConfiguration:
+        runtime_configuration.command = runtime_configuration.original_command
+        return runtime_configuration
+
+    @override
     def execute_in_pipeline(
         self, configuration: dict, runtime_configuration: RuntimeConfiguration
     ):

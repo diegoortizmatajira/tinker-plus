@@ -31,11 +31,11 @@ class RuntimeProvider:
             to building the runtime configuration.
     """
 
-    def __init__(self, features: List[FeatureProvider]):
+    def __init__(self, game_command: str, features: List[FeatureProvider]):
         self.logger = logger_factory.get_logger(self.__class__.__name__)
         self.configuration: dict = {}
         self.features = features
-        self.runtime_configuration = RuntimeConfiguration()
+        self.runtime_configuration = RuntimeConfiguration(game_command)
         self.read_steam_context()
 
     def read_steam_context(self):
