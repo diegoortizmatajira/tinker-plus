@@ -2,7 +2,6 @@
 Main entry point for the Tinker-Plus application.
 """
 
-import logging
 import sys
 import argparse
 from core import logger_factory
@@ -57,7 +56,8 @@ class MainApp:
         )
         run_parser.add_argument(
             "game_command",
-            help="The command to launch the game (e.g., path to executable)",
+                    nargs="+",  # Accepts any number of arguments as a list
+                    help="The command to launch the game followed by its parameters (e.g., executable + arguments)",
         )
 
         if len(sys.argv) == 1:

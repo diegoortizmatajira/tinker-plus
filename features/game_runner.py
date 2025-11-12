@@ -20,7 +20,14 @@ class GameRunner(FeatureProvider):
     def apply_configuration(
         self, configuration: dict, runtime_configuration: RuntimeConfiguration
     ) -> RuntimeConfiguration:
+        self.logger.info(
+            "Original game command: %s",
+            " ".join(runtime_configuration.original_command),
+        )
         runtime_configuration.command = runtime_configuration.original_command
+        self.logger.info(
+            "Final game command: %s", " ".join(runtime_configuration.command)
+        )
         return runtime_configuration
 
     @override
