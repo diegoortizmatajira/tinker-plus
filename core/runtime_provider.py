@@ -59,13 +59,13 @@ class RuntimeProvider:
               `steam_compat_data_path`.
         """
         self.runtime_configuration.steam_app_id = (
-            os.getenv("STEAM_APP_ID") or self.runtime_configuration.steam_app_id
+            os.getenv("SteamAppId") or self.runtime_configuration.steam_app_id
         )
         self.logger.info(
             "Steam App ID: %s", self.runtime_configuration.steam_app_id or EMPTY
         )
         self.runtime_configuration.steam_game_id = (
-            os.getenv("STEAM_GAME_ID") or self.runtime_configuration.steam_game_id
+            os.getenv("SteamGameId") or self.runtime_configuration.steam_game_id
         )
         self.logger.info(
             "Steam Game ID: %s", self.runtime_configuration.steam_game_id or EMPTY

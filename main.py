@@ -56,8 +56,8 @@ class MainApp:
         )
         run_parser.add_argument(
             "game_command",
-                    nargs="+",  # Accepts any number of arguments as a list
-                    help="The command to launch the game followed by its parameters (e.g., executable + arguments)",
+            nargs="+",  # Accepts any number of arguments as a list
+            help="The command to launch the game followed by its parameters (e.g., executable + arguments)",
         )
 
         if len(sys.argv) == 1:
@@ -81,11 +81,11 @@ class MainApp:
         use_cli = getattr(args, "cli", False)
         execute_trainer = getattr(args, "trainer", True)
         game_command = getattr(args, "game_command", "")
-        self.logger.info("Running game command: %s", game_command)
 
         try:
             storage = ConfigStorage()
-            runtime = RuntimeProvider(game_command,
+            runtime = RuntimeProvider(
+                game_command,
                 [
                     ProtonSelection(),
                     PrefixSelection(),
@@ -95,7 +95,7 @@ class MainApp:
                     # configs are read first, then overridden by user configs
                     ReadConfig(storage),
                     GameRunner(),
-                ]
+                ],
             )
             runtime.build_configuration()
             if runtime.runtime_configuration is None:

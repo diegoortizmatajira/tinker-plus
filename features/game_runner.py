@@ -2,6 +2,8 @@
 A feature provider for executing the main game command and any forked commands
 """
 
+import subprocess
+
 from typing import override
 from core import FeatureProvider, RuntimeConfiguration
 from core.runtime_configuration import COMMAND_TRAINER
@@ -34,23 +36,29 @@ class GameRunner(FeatureProvider):
     def execute_in_pipeline(
         self, configuration: dict, runtime_configuration: RuntimeConfiguration
     ):
-        for command in runtime_configuration.fork_commands or []:
-            if (
-                command.category == COMMAND_TRAINER
-                and not runtime_configuration.execute_trainers
-            ):
-                # Skip trainer commands if trainers are disabled
-                continue
+        # # Execute forked commands
+        # for command in runtime_configuration.fork_commands or []:
+        #     if (
+        #         command.category == COMMAND_TRAINER
+        #         and not runtime_configuration.execute_trainers
+        #     ):
+        #         continue  # Skip trainer commands if trainers are disabled
+        #
+        #     full_command = f"{command.command} {command.args}full_command
+        #     self.logger.info(
+        #         "Executing forked command (%s): %s",
+        #         command.category or "Uncategorized",
+        #         full_command,
+        #     )
+        #     try:
+        #         subprocess.run(full_command, check=True)
+        #     except subprocess.CalledProcessError as e:
+        #         self.logger.error("Forked command failed: %s", e)
 
-            # TODO: Execute forked command here
-            self.logger.info(
-                "Executing forked command (%s): %s %s",
-                command.category or "Uncategorized",
-                command.command,
-                command.args or "",
-            )
-
-        # TODO: Execute main game command here
-        self.logger.info(
-            "Executing main game command: %s", runtime_configuration.command
-        )
+        # Execute main game command
+        full_command = " ".join(runtime_configuration.command or [])
+        self.logger.info("Executing main game command: %s", full_command)
+        try:
+            subprocess.run(full_command, check=True)
+        except subprocess.CalledProcessError as e:
+            self.logger.error("Main game command failed: %s", e)

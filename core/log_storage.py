@@ -12,7 +12,7 @@ class LogFactory:
     def __init__(self, level=logging.INFO):
         logging.basicConfig(level=level)
         self.log_formatter = logging.Formatter(
-            "%(asctime)s - %(levelname)s - %(message)s"
+                "%(asctime)s - %(levelname)s - [%(name)s] - %(message)s"
         )
         # Create log folders if they don't exist
         os.makedirs(APP_LOGS_DIR, exist_ok=True)
