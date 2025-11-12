@@ -48,7 +48,9 @@ class RuntimeConfiguration:
     steam_wrapper: Optional[str] = None
     steam_reaper: Optional[str] = None
     steam_sniper: Optional[str] = None
+    steam_compatibility_command: Optional[str] = None
     steam_compatibility_tool: Optional[str] = None
+    steam_compatibility_tools_path: Optional[str] = None
     steam_game_exe: Optional[str] = None
     use_proton: Optional[str] = None
     fork_commands: Optional[List[ExecutableCommand]] = None

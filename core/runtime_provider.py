@@ -41,7 +41,9 @@ def parse_command(runtime_configuration: RuntimeConfiguration):
         r".+?(--)?\s+"
         r"(?P<sniper>\S+sniper\S+(\s+--\w+=.+)+)\s+"
         r"--\s+"
-        r"(?P<compatibility>\S+compatibilitytools\S+\swaitforexitandrun)\s+"
+        r"(?P<compatibility>"
+        r"(?P<compatibility_dir>\S+compatibilitytools\.d)/"
+        r"(?P<compatibility_tool>\S+)/\S+\swaitforexitandrun)\s+"
         r"(?P<gameexe>.*)$"
     )
 
@@ -52,7 +54,11 @@ def parse_command(runtime_configuration: RuntimeConfiguration):
     runtime_configuration.steam_wrapper = match.group("stlwrapper")
     runtime_configuration.steam_reaper = match.group("reaper")
     runtime_configuration.steam_sniper = match.group("sniper")
-    runtime_configuration.steam_compatibility_tool = match.group("compatibility")
+    runtime_configuration.steam_compatibility_command = match.group("compatibility")
+    runtime_configuration.steam_compatibility_tool = match.group("compatibility_tool")
+    runtime_configuration.steam_compatibility_tools_path = match.group(
+        "compatibility_dir"
+    )
     runtime_configuration.steam_game_exe = match.group("gameexe")
 
 
@@ -114,11 +120,23 @@ class RuntimeProvider:
         self.logger.info(
             "Steam Launch Wrapper: %s", self.runtime_configuration.steam_wrapper
         )
-        self.logger.info("Steam Reaper Command: %s", self.runtime_configuration.steam_reaper)
-        self.logger.info("Steam Sniper Command: %s", self.runtime_configuration.steam_sniper)
+        self.logger.info(
+            "Steam Reaper Command: %s", self.runtime_configuration.steam_reaper
+        )
+        self.logger.info(
+            "Steam Sniper Command: %s", self.runtime_configuration.steam_sniper
+        )
+        self.logger.info(
+            "Steam Compatibility Tool Command: %s",
+            self.runtime_configuration.steam_compatibility_command,
+        )
         self.logger.info(
             "Steam Compatibility Tool: %s",
             self.runtime_configuration.steam_compatibility_tool,
+        )
+        self.logger.info(
+            "Steam Compatibility Tools path: %s",
+            self.runtime_configuration.steam_compatibility_tools_path,
         )
         self.logger.info(
             "Steam Game Executable: %s", self.runtime_configuration.steam_game_exe

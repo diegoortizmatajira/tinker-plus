@@ -5,6 +5,8 @@ This module defines a ConfigurationProperty class
 from dataclasses import dataclass
 from typing import Callable, List, Optional
 
+from core.runtime_configuration import RuntimeConfiguration
+
 
 @dataclass
 class ConfigurationProperty:
@@ -16,7 +18,7 @@ class ConfigurationProperty:
     name: str
     description: str
     default: Optional[str] = None
-    values_provider: Optional[Callable[[], List[str]]] = None
+    values_provider: Optional[Callable[[RuntimeConfiguration], List[str]]] = None
 
     def get(self, configuration: dict) -> Optional[str]:
         """

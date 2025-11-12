@@ -50,6 +50,14 @@ class TestParseCommand(unittest.TestCase):
         )
         self.assertEqual(
             "/home/diegoortizmatajira/.local/share/Steam/compatibilitytools.d/GE-Proton10-25/proton waitforexitandrun",
+            runtime_configuration.steam_compatibility_command,
+        )
+        self.assertEqual(
+            "/home/diegoortizmatajira/.local/share/Steam/compatibilitytools.d",
+            runtime_configuration.steam_compatibility_tools_path,
+        )
+        self.assertEqual(
+            "GE-Proton10-25",
             runtime_configuration.steam_compatibility_tool,
         )
         self.assertEqual(

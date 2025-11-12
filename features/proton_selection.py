@@ -2,11 +2,27 @@
 Module for selecting proton version.
 """
 
-from typing import override
+import pathlib
+
+from typing import List, override
 from core import FeatureProvider, ConfigurationProperty, RuntimeConfiguration
 
+
+def get_proton_versions_list(configuration: RuntimeConfiguration) -> List[str]:
+    """
+    Retrieves a list of available proton versions from the specified
+    steam compatibility tools path.
+    """
+    folders = pathlib.Path(configuration.steam_compatibility_tools_path or ".").glob(
+        "proton"
+    )
+    return [folder.name for folder in folders if folder.is_dir()]
+
+
 PROTON_VERSION_PROPERTY = ConfigurationProperty(
-    "USE_PROTON", "Defines which proton version to use."
+    "USE_PROTON",
+    "Defines which proton version to use.",
+    values_provider=get_proton_versions_list,
 )
 
 
@@ -42,8 +58,9 @@ class ProtonSelection(FeatureProvider):
         Returns:
             RuntimeConfiguration: The updated runtime configuration object.
         """
-        runtime_configuration.use_proton = PROTON_VERSION_PROPERTY.get_or_fail(
-            configuration
+        runtime_configuration.use_proton = (
+            PROTON_VERSION_PROPERTY.get(configuration)
+            or runtime_configuration.steam_compatibility_tool
         )
         self.logger.info("Using proton version: %s", runtime_configuration.use_proton)
         return runtime_configuration
