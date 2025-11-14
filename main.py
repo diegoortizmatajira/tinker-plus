@@ -13,6 +13,7 @@ from features.prefix_selection import PrefixSelection
 from features.proton_selection import ProtonSelection
 from features.read_config import ReadConfig
 from features.trainer_launch_settings import TrainerLaunchSettings
+from features.winetricks_install import WinetricksInstall
 from gui.main_form import MainForm
 
 
@@ -90,15 +91,17 @@ class MainApp:
             storage = ConfigStorage()
             runtime = RuntimeProvider(
                 game_command,
+                dry_run,
                 [
                     ProtonSelection(),
                     PrefixSelection(),
                     LinkUserFolders(),
                     TrainerLaunchSettings(),
+                    WinetricksInstall(),
                     # ReadConfig has to be the last before GameRunner, to ensure default
                     # configs are read first, then overridden by user configs
                     ReadConfig(storage),
-                    GameRunner(dry_run),
+                    GameRunner(),
                 ],
             )
             runtime.build_configuration()

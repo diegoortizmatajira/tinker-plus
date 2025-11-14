@@ -41,6 +41,7 @@ class RuntimeConfiguration:
     """
 
     original_command: List[str]
+    dry_run: bool= False
     steam_app_id: Optional[str] = None
     steam_game_id: Optional[str] = None
     steam_compat_install_path: Optional[str] = None
@@ -52,9 +53,9 @@ class RuntimeConfiguration:
     steam_compatibility_tool: Optional[str] = None
     steam_compatibility_tools_path: Optional[str] = None
     steam_game_exe: Optional[str] = None
+    steam_other_wrapper_commands: Optional[str] = None
     use_proton: Optional[str] = None
     fork_commands: Optional[List[ExecutableCommand]] = None
-    command: Optional[List[str]] = None
     winetricks: Optional[List[str]] = None
     prefix_path: Optional[str] = None
     execute_trainers: bool = True
@@ -87,7 +88,7 @@ class RuntimeConfiguration:
             self.winetricks = []
         for trick in tricks:
             # Avoid duplicates
-            if trick not in self.winetricks:
+            if trick != "" and trick not in self.winetricks:
                 self.winetricks.append(trick)
 
     def add_fork_command(self, command: ExecutableCommand) -> None:

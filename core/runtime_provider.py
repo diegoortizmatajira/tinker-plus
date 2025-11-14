@@ -36,7 +36,8 @@ def parse_command(runtime_configuration: RuntimeConfiguration):
         - Logs the identified components or warnings if the pattern does not match.
     """
     full_pattern = (
-        r"^(?P<stlwrapper>\S+steam-launch-wrapper)\s+"
+        r"^(?P<othercommands>(\S+\s+)+)?"
+        r"(?P<stlwrapper>\S+steam-launch-wrapper)\s+"
         r"(?P<reaper>\S+reaper)\s+"
         r".+?(--)?\s+"
         r"(?P<sniper>\S+sniper\S+(\s+--\w+=.+)+)\s+"
@@ -51,6 +52,7 @@ def parse_command(runtime_configuration: RuntimeConfiguration):
     if not match:
         raise RuntimeError("Pattern did not match the command line.")
 
+    runtime_configuration.steam_other_wrapper_commands = match.group("othercommands")
     runtime_configuration.steam_wrapper = match.group("stlwrapper")
     runtime_configuration.steam_reaper = match.group("reaper")
     runtime_configuration.steam_sniper = match.group("sniper")
@@ -79,11 +81,13 @@ class RuntimeProvider:
             to building the runtime configuration.
     """
 
-    def __init__(self, game_command: List[str], features: List[FeatureProvider]):
+    def __init__(
+        self, game_command: List[str], dry_run: bool, features: List[FeatureProvider]
+    ):
         self.logger = logger_factory.get_logger(self.__class__.__name__)
         self.configuration: dict = {}
         self.features = features
-        self.runtime_configuration = RuntimeConfiguration(game_command)
+        self.runtime_configuration = RuntimeConfiguration(game_command, dry_run)
         self.read_steam_environment()
         self.parse_command()
 
@@ -117,6 +121,10 @@ class RuntimeProvider:
             self.logger.warning("Failed to parse the game command line: %s", e)
             return
 
+        self.logger.info(
+            "Steam Other Wrapper Commands: %s",
+            self.runtime_configuration.steam_other_wrapper_commands,
+        )
         self.logger.info(
             "Steam Launch Wrapper: %s", self.runtime_configuration.steam_wrapper
         )
