@@ -12,12 +12,13 @@ CUSTOM_PREFIX_PROPERTY = ConfigurationProperty(
 
 class PrefixSelection(FeatureProvider):
     """
-    Represents a feature provider for prefix selection. 
-    
-    This class uses the CUSTOM_PREFIX_PROPERTY to allow the selection of a specific 
-    prefix for runtime configurations. It overrides the apply_configuration method 
+    Represents a feature provider for prefix selection.
+
+    This class uses the CUSTOM_PREFIX_PROPERTY to allow the selection of a specific
+    prefix for runtime configurations. It overrides the apply_configuration method
     to modify the runtime configuration based on the given parameters.
     """
+
     def __init__(self):
         super().__init__([CUSTOM_PREFIX_PROPERTY])
 
@@ -25,11 +26,9 @@ class PrefixSelection(FeatureProvider):
     def apply_configuration(
         self, configuration: dict, runtime_configuration: RuntimeConfiguration
     ) -> RuntimeConfiguration:
-        if CUSTOM_PREFIX_PROPERTY.name in configuration:
-            runtime_configuration.prefix_path = (
-                CUSTOM_PREFIX_PROPERTY.get(configuration)
-                or runtime_configuration.prefix_path
-            )
+        custom_prefix = CUSTOM_PREFIX_PROPERTY.get(configuration)
+        if custom_prefix:
+            runtime_configuration.prefix_path = custom_prefix
             self.logger.info(
                 "Using custom prefix: %s", runtime_configuration.prefix_path
             )
