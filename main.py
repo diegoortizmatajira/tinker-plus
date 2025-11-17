@@ -12,6 +12,7 @@ from features.link_user_folders import LinkUserFolders
 from features.prefix_selection import PrefixSelection
 from features.proton_selection import ProtonSelection
 from features.read_config import ReadConfig
+from features.steam_tools import SteamTools
 from features.trainer_launch_settings import TrainerLaunchSettings
 from features.winetricks_install import WinetricksInstall
 from gui.main_form import MainForm
@@ -95,6 +96,7 @@ class MainApp:
                 dry_run,
                 [
                     ProtonSelection(),
+                    SteamTools(),
                     PrefixSelection(),
                     LinkUserFolders(),
                     TrainerLaunchSettings(),

@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
+from core.pipeline_wrapper import PipelineWrapper
+
 COMMAND_TRAINER = "trainer"
 COMMAND_GAME = "game"
 
@@ -59,6 +61,7 @@ class RuntimeConfiguration:
     prefix_path: Optional[str] = None
     execute_trainers: bool = True
     environment_variables: Optional[dict[str, str]] = None
+    pipeline_wrappers: Optional[List[PipelineWrapper]] = None
 
     @property
     def has_trainers(self) -> bool:
@@ -114,3 +117,15 @@ class RuntimeConfiguration:
         if self.environment_variables is None:
             self.environment_variables = {}
         self.environment_variables[key] = value
+
+    def add_pipeline_wrapper(self, wrapper: PipelineWrapper) -> None:
+        """
+        Adds a pipeline wrapper to the current configuration.
+
+        Args:
+            wrapper (PipelineWrapper): The pipeline wrapper to be added. An empty
+            list will initialize the pipeline_wrappers list if it is currently None.
+        """
+        if self.pipeline_wrappers is None:
+            self.pipeline_wrappers = []
+        self.pipeline_wrappers.append(wrapper)
