@@ -44,6 +44,7 @@ class MainApp:
         command_handlers = {
             "install": self.install_as_steam_compatibility_tool,
             "run": self.handle_run_command,
+            "": self.handle_run_command,
         }
 
         subparsers.add_parser("install", help="Install as Steam compatibility tool")

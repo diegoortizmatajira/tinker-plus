@@ -20,6 +20,7 @@ class ListItem:
 
 BINARY_PROPERTY = "BINARY_PROPERTY"
 LIST_PROPERTY = "LIST_PROPERTY"
+MULTIVALUELIST_PROPERTY = "MULTIVALUELIST_PROPERTY"
 TEXT_PROPERTY = "TEXT_PROPERTY"
 
 
@@ -35,7 +36,9 @@ class ConfigurationProperty:
     default: Optional[str] = None
     values_provider: Optional[Callable[[RuntimeConfiguration], List[ListItem]]] = None
     values_cache: Optional[List[ListItem]] = None
-    type: Literal["BINARY_PROPERTY", "LIST_PROPERTY", "TEXT_PROPERTY"] = TEXT_PROPERTY
+    type: Literal[
+        "BINARY_PROPERTY", "LIST_PROPERTY", "MULTIVALUELIST_PROPERTY", "TEXT_PROPERTY"
+    ] = TEXT_PROPERTY
 
     def get(self, configuration: dict) -> Optional[str]:
         """

@@ -1,7 +1,9 @@
+"""Module to set up logging for the application."""
+
 import logging
 import os
 
-from core.defaults import APP_LOG_FILE, APP_LOGS_DIR, PROTON_LOGS_DIR
+from core.defaults import APP_LOG_FILE, APP_LOGS_DIR, PROTON_LOG_DIR
 
 
 class LogFactory:
@@ -12,11 +14,11 @@ class LogFactory:
     def __init__(self, level=logging.INFO):
         logging.basicConfig(level=level)
         self.log_formatter = logging.Formatter(
-                "%(asctime)s - %(levelname)s - [%(name)s] - %(message)s"
+            "%(asctime)s - %(levelname)s - [%(name)s] - %(message)s"
         )
         # Create log folders if they don't exist
         os.makedirs(APP_LOGS_DIR, exist_ok=True)
-        os.makedirs(PROTON_LOGS_DIR, exist_ok=True)
+        os.makedirs(PROTON_LOG_DIR, exist_ok=True)
 
         # Log to file
         self.file_handler = logging.FileHandler(APP_LOG_FILE)

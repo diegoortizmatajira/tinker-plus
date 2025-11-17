@@ -1,8 +1,42 @@
 import logging
 import os
 import subprocess
-from core.defaults import GAME_BAT_LAUNCHER_DIR, GAME_BAT_LAUNCHER_FILE_TEMPLATE
+from typing import Optional
+from core.defaults import (
+    GAME_BAT_LAUNCHER_DIR,
+    GAME_BAT_LAUNCHER_FILE_TEMPLATE,
+    GENERAL_TOOLS_LOG_FILE,
+)
 from core.runtime_configuration import COMMAND_TRAINER, RuntimeConfiguration
+
+
+def run_in_wine_prefix(
+    exe_command: str,
+    runtime_configuration: RuntimeConfiguration,
+    logger: logging.Logger,
+    output_log_file: Optional[str] = None,
+):
+    """
+    Executes a given command within a specified Wine prefix using subprocess.
+
+    Args:
+        command (str): The command to execute.
+    """
+    wine_prefix = runtime_configuration.prefix_path
+    if not wine_prefix:
+        raise RuntimeError("WINEPREFIX environment variable is not set.")
+
+    command = f'WINEPREFIX="{wine_prefix}" {exe_command} >> {output_log_file or GENERAL_TOOLS_LOG_FILE} 2>&1'
+    if runtime_configuration.dry_run:
+        logger.info("[DRY RUN] Would execute command in Wine prefix: %s", command)
+        return
+    try:
+        subprocess.run(command, shell=True, check=True)
+    except Exception as e:
+        logger.error("Error while running command in Wine prefix: %s", e)
+        raise RuntimeError(
+            f"Error executing command in Wine prefix: '{exe_command}'"
+        ) from e
 
 
 def run_with_compatibility_tool(

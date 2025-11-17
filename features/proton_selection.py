@@ -2,7 +2,6 @@
 Module for selecting proton version.
 """
 
-from os import name
 import pathlib
 
 from typing import List, override
