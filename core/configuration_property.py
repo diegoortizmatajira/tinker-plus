@@ -3,9 +3,24 @@ This module defines a ConfigurationProperty class
 """
 
 from dataclasses import dataclass
-from typing import Callable, List, Optional
+from typing import Callable, List, Literal, Optional
 
 from core.runtime_configuration import RuntimeConfiguration
+
+
+@dataclass
+class ListItem:
+    """
+    Represents an item in a list with a name and value.
+    """
+
+    name: str
+    value: str
+
+
+BINARY_PROPERTY = "BINARY_PROPERTY"
+LIST_PROPERTY = "LIST_PROPERTY"
+TEXT_PROPERTY = "TEXT_PROPERTY"
 
 
 @dataclass
@@ -18,7 +33,9 @@ class ConfigurationProperty:
     name: str
     description: str
     default: Optional[str] = None
-    values_provider: Optional[Callable[[RuntimeConfiguration], List[str]]] = None
+    values_provider: Optional[Callable[[RuntimeConfiguration], List[ListItem]]] = None
+    values_cache: Optional[List[ListItem]] = None
+    type: Literal["BINARY_PROPERTY", "LIST_PROPERTY", "TEXT_PROPERTY"] = TEXT_PROPERTY
 
     def get(self, configuration: dict) -> Optional[str]:
         """
@@ -55,16 +72,18 @@ class ConfigurationProperty:
             " is required and has no default."
         )
 
-    def get_possible_values(self) -> Optional[List[str]]:
+    def get_possible_values(
+        self, runtime_configuration: RuntimeConfiguration
+    ) -> Optional[List[ListItem]]:
         """
         Retrieves the possible values for the configuration property if a values provider is set.
 
         Returns:
-            Optional[List[str]]: A list of possible values or None if no provider is set.
+            Optional[List[ListItem]]: A list of possible values or None if no provider is set.
         """
-        if self.values_provider:
-            return self.values_provider()
-        return None
+        if not self.values_cache and self.values_provider:
+            return self.values_provider(runtime_configuration)
+        return self.values_cache
 
     @staticmethod
     def initialize_defaults(

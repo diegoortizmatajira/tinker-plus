@@ -6,7 +6,6 @@ COMMAND_GAME = "game"
 
 
 @dataclass
-@dataclass
 class ExecutableCommand:
     """
     Represents a command that can be executed with optional arguments and category.
@@ -41,7 +40,7 @@ class RuntimeConfiguration:
     """
 
     original_command: List[str]
-    dry_run: bool= False
+    dry_run: bool = False
     steam_app_id: Optional[str] = None
     steam_game_id: Optional[str] = None
     steam_compat_install_path: Optional[str] = None
@@ -59,6 +58,7 @@ class RuntimeConfiguration:
     winetricks: Optional[List[str]] = None
     prefix_path: Optional[str] = None
     execute_trainers: bool = True
+    environment_variables: Optional[dict[str, str]] = None
 
     @property
     def has_trainers(self) -> bool:
@@ -102,3 +102,15 @@ class RuntimeConfiguration:
         if self.fork_commands is None:
             self.fork_commands = []
         self.fork_commands.append(command)
+
+    def set_environment_variable(self, key: str, value: str) -> None:
+        """
+        Sets an environment variable in the current configuration.
+
+        Args:
+            key (str): The environment variable key.
+            value (str): The environment variable value.
+        """
+        if self.environment_variables is None:
+            self.environment_variables = {}
+        self.environment_variables[key] = value

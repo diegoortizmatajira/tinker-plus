@@ -20,6 +20,7 @@ class ReadConfig(FeatureProvider):
     def __init__(self, config_storage: ConfigStorage):
         super().__init__([])
         self.config_storage = config_storage
+        self.global_config = {}
 
     @override
     def build_configuration(
@@ -30,11 +31,13 @@ class ReadConfig(FeatureProvider):
         )
         # At this point, sourced_configuration contains all default configurations
 
-        global_config = self.config_storage.get_global_config()
-        if global_config is None:
-            # Create global configuration file if it doesn't exist with defaults
-            self.config_storage.save_global_config(sourced_configuration)
-        sourced_configuration.update(global_config or {})
+        self.global_config = self.config_storage.get_global_config() or {}
+        sourced_configuration.update(self.global_config)
+        # Persist the global configuration back to storage
+        # Applies any new defaults that were not present before
+        self.global_config = sourced_configuration.copy()
+        self.config_storage.save_global_config(self.global_config)
+
         self.logger.info("Global configuration loaded and applied.")
 
         # Check for game-specific configuration file

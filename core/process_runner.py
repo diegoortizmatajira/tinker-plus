@@ -19,11 +19,20 @@ def run_with_compatibility_tool(
         command (str): The command to execute.
     """
 
+    environment_variables = ""
+    if runtime_configuration.environment_variables:
+        environment_variables = " ".join(
+            [
+                f"{key}={value if ' ' not in value else f'''{value}'''}"
+                for key, value in (runtime_configuration.environment_variables).items()
+            ]
+        ).strip()
     compatibility_tool = (
         f"{runtime_configuration.steam_compatibility_tools_path}/"
         f"{runtime_configuration.steam_compatibility_tool}/proton waitforexitandrun"
     )
     command = (
+        f"{environment_variables} "
         #        f"{runtime_configuration.steam_wrapper} "
         f"{runtime_configuration.steam_reaper} "
         f"SteamLaunch AppId={runtime_configuration.steam_app_id} -- "
@@ -54,7 +63,7 @@ def run_game_and_forks_with_compatibility_tool(
     Prepares and executes a game and its associated fork commands using a compatibility tool.
 
     This function generates a batch script (.bat) that includes the commands to be run,
-    such as forked processes and the main game executable. The generated script is then 
+    such as forked processes and the main game executable. The generated script is then
     executed using the defined compatibility tool.
 
     Args:
