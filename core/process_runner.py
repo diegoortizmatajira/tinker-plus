@@ -61,18 +61,15 @@ def run_with_compatibility_tool(
                 for key, value in (runtime_configuration.environment_variables).items()
             ]
         ).strip()
-    compatibility_tool = (
-        f"{runtime_configuration.steam_compatibility_tools_path}/"
-        f"{runtime_configuration.steam_compatibility_tool}/proton waitforexitandrun"
-    )
-    command = (
-        f"{environment_variables} "
-        #        f"{runtime_configuration.steam_wrapper} "
-        f"{runtime_configuration.steam_reaper} "
-        f"SteamLaunch AppId={runtime_configuration.steam_app_id} -- "
-        f"{runtime_configuration.steam_sniper} -- "
-        f"{compatibility_tool} {exe_command}"
-    )
+    # Takes the pipeline wrappers in reverse order
+    reversed_wrappers = runtime_configuration.pipeline_wrappers or []
+    reversed_wrappers.reverse()
+
+    command = exe_command
+    for wrapper in reversed_wrappers:
+        command = wrapper.wrap(command, runtime_configuration)
+
+    command = f"{environment_variables} {command}"
     if runtime_configuration.dry_run:
         logger.info("[DRY RUN] Would execute %s command: %s", category, command)
         return

@@ -95,8 +95,8 @@ class MainApp:
                 game_command,
                 dry_run,
                 [
-                    ProtonSelection(),
                     SteamTools(),
+                    ProtonSelection(),
                     PrefixSelection(),
                     LinkUserFolders(),
                     TrainerLaunchSettings(),

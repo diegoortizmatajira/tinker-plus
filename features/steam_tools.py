@@ -3,8 +3,7 @@
 from typing import override
 from core.configuration_property import BINARY_PROPERTY, ConfigurationProperty
 from core.feature_provider import FeatureProvider
-from core.pipeline_wrapper import PipelineWrapper
-from core.runtime_configuration import RuntimeConfiguration
+from core.runtime_configuration import RuntimeConfiguration, PipelineWrapper
 
 STEAM_USE_WRAPPER_PROPERTY = ConfigurationProperty(
     "STEAM_USE_WRAPPER",
@@ -53,7 +52,7 @@ class SteamTools(FeatureProvider):
     ) -> RuntimeConfiguration:
         # Apply the Steam wrapper
         if (
-            configuration.get("STEAM_USE_WRAPPER") == "1"
+            STEAM_USE_WRAPPER_PROPERTY.get(configuration) == "1"
             and runtime_configuration.steam_wrapper
         ):
             runtime_configuration.add_pipeline_wrapper(
@@ -61,7 +60,7 @@ class SteamTools(FeatureProvider):
             )
         # Apply the Sniper
         if (
-            configuration.get("STEAM_USE_SNIPER") == "1"
+            STEAM_USE_SNIPER_PROPERTY.get(configuration) == "1"
             and runtime_configuration.steam_sniper
         ):
             runtime_configuration.add_pipeline_wrapper(
@@ -69,16 +68,16 @@ class SteamTools(FeatureProvider):
             )
         # Apply the Reaper
         if (
-            configuration.get("STEAM_USE_REAPER") == "1"
+            STEAM_USE_REAPER_PROPERTY.get(configuration) == "1"
             and runtime_configuration.steam_reaper
         ):
             runtime_configuration.add_pipeline_wrapper(
                 PipelineWrapper(
-                    f"{runtime_configuration.steam_reaper}"
-                    f"SteamLaunch AppId={runtime_configuration.steam_app_id} --"
+                    wrapper=lambda cmd, runtime_configuration: (
+                        f"{runtime_configuration.steam_reaper}"
+                        f" SteamLaunch AppId={runtime_configuration.steam_app_id}"
+                        f" -- {cmd}"
+                    ),
                 )
             )
         return runtime_configuration
-
-
-# tplus run --cli --dry gamemoderun /home/diegoortizmatajira/.local/share/Steam/ubuntu12_32/steam-launch-wrapper /home/diegoortizmatajira/.local/share/Steam/ubuntu12_32/reaper SteamLaunch AppId=367520 -- /home/diegoortizmatajira/.local/share/Steam/steamapps/common/SteamLinuxRuntime_sniper/_v2-entry-point --verb=waitforexitandrun -- /home/diegoortizmatajira/.local/share/Steam/compatibilitytools.d/GE-Proton10-25/proton waitforexitandrun /home/diegoortizmatajira/.local/share/Steam/steamapps/common/Hollow Knight/hollow_knight.exe

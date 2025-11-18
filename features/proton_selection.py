@@ -7,6 +7,7 @@ import pathlib
 from typing import List, override
 from core import FeatureProvider, ConfigurationProperty, RuntimeConfiguration, ListItem
 from core.configuration_property import BINARY_PROPERTY, LIST_PROPERTY
+from core.runtime_configuration import PipelineWrapper
 
 
 def get_proton_versions_list(configuration: RuntimeConfiguration) -> List[ListItem]:
@@ -69,9 +70,19 @@ class ProtonSelection(FeatureProvider):
         if PROTON_LOG_PROPERTY.get(configuration) == "1":
             runtime_configuration.set_environment_variable("PROTON_LOG", "1")
             self.logger.info("Proton logging enabled.")
-        runtime_configuration.use_proton = (
+        runtime_configuration.steam_compatibility_tool = (
             PROTON_VERSION_PROPERTY.get(configuration)
             or runtime_configuration.steam_compatibility_tool
         )
-        self.logger.info("Using proton version: %s", runtime_configuration.use_proton)
+
+        runtime_configuration.add_pipeline_wrapper(
+            PipelineWrapper(
+                wrapper=lambda cmd, runtime_configuration: (
+                    f"{runtime_configuration.steam_compatibility_tools_path}/"
+                    f"{runtime_configuration.steam_compatibility_tool}/proton waitforexitandrun"
+                    f" {cmd}"
+                ),
+            )
+        )
+        self.logger.info("Using proton version: %s", runtime_configuration.steam_compatibility_tool)
         return runtime_configuration
