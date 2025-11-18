@@ -159,7 +159,8 @@ class RuntimeConfiguration:
 
     def add_pipeline_wrapper(self, wrapper: PipelineWrapper) -> None:
         """
-        Adds a pipeline wrapper to the current configuration.
+        Adds a pipeline wrapper to the current configuration. Each wrapper
+        will affect the final command in the order they were added.
 
         Args:
             wrapper (PipelineWrapper): The pipeline wrapper to be added. An empty

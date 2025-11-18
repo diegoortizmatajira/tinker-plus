@@ -1,3 +1,5 @@
+"""Module to manage external tools being used when running the game."""
+
 from typing import override
 from core.configuration_property import (
     BINARY_PROPERTY,
@@ -28,6 +30,15 @@ GAMESCOPE_ARGS_PROPERTY = ConfigurationProperty(
 
 
 class ExternalTools(FeatureProvider):
+    """
+    A feature provider for managing external tools configuration.
+
+    ExternalTools enables the configuration of properties related to external
+    utilities such as GameModeRun and Gamescope. This class applies the
+    specified configuration to the runtime environment by enabling or disabling
+    respective tools based on the configuration values.
+    """
+
     def __init__(self):
         super().__init__(
             [

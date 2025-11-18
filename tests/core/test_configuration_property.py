@@ -1,5 +1,6 @@
 import unittest
-from core.configuration_property import ConfigurationProperty
+from core.configuration_property import ConfigurationProperty, ListItem
+from core.runtime_configuration import RuntimeConfiguration
 
 
 class TestConfigurationProperty(unittest.TestCase):
@@ -40,17 +41,20 @@ class TestConfigurationProperty(unittest.TestCase):
 
     def test_get_possible_values(self):
         # Scenario: values provider is set and returns values
-        def values_provider():
-            return ["value1", "value2"]
+        values = [ListItem("value1", "value1"), ListItem("value2", "value2")]
+
+        def values_provider(_):
+            return values
 
         prop = ConfigurationProperty(
             name="key", description="A key", values_provider=values_provider
         )
-        self.assertEqual(prop.get_possible_values(), ["value1", "value2"])
+        runtime_configuration = RuntimeConfiguration([], True)
+        self.assertEqual(prop.get_possible_values(runtime_configuration), values)
 
         # Scenario: values provider is not set
         prop_no_provider = ConfigurationProperty(name="key", description="A key")
-        self.assertIsNone(prop_no_provider.get_possible_values())
+        self.assertIsNone(prop_no_provider.get_possible_values(runtime_configuration))
 
     def test_initialize_defaults(self):
         # Scenario: properties with defaults initialize the configuration

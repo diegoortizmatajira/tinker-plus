@@ -1,9 +1,11 @@
+"""Module for enabling and configuring custom trainers or WeMod integration."""
+
 from typing import override
 from core import FeatureProvider, ConfigurationProperty, RuntimeConfiguration
 from core.runtime_configuration import COMMAND_TRAINER, ExecutableCommand
 
-TRAINER_PATH_PROPERTY = ConfigurationProperty(
-    "TRAINER_PATH", "Allows selection of a specific trainer excecutable program."
+TRAINER_EXE_PROPERTY = ConfigurationProperty(
+    "TRAINER_EXE", "Allows selection of a specific trainer excecutable program."
 )
 
 TRAINER_ARGS_PROPERTY = ConfigurationProperty(
@@ -14,8 +16,8 @@ WEMOD_ENABLED_PROPERTY = ConfigurationProperty(
     "WEMOD_ENABLED", "Enables WeMod integration for trainer launching."
 )
 
-WEMOD_PATH_PROPERTY = ConfigurationProperty(
-    "WEMOD_PATH", "Specifies the path to the WeMod executable."
+WEMOD_EXE_PROPERTY = ConfigurationProperty(
+    "WEMOD_EXE", "Specifies the path to the WeMod executable."
 )
 
 WEMOD_WINETRICKS_REQUIREMENTS = ConfigurationProperty(
@@ -33,10 +35,10 @@ class TrainerLaunchSettings(FeatureProvider):
     def __init__(self):
         super().__init__(
             [
-                TRAINER_PATH_PROPERTY,
+                TRAINER_EXE_PROPERTY,
                 TRAINER_ARGS_PROPERTY,
                 WEMOD_ENABLED_PROPERTY,
-                WEMOD_PATH_PROPERTY,
+                WEMOD_EXE_PROPERTY,
                 WEMOD_WINETRICKS_REQUIREMENTS,
             ]
         )
@@ -47,7 +49,7 @@ class TrainerLaunchSettings(FeatureProvider):
     ) -> RuntimeConfiguration:
         execute_trainer = False
         # Check for custom trainer configuration
-        custom_trainer = TRAINER_PATH_PROPERTY.get(configuration)
+        custom_trainer = TRAINER_EXE_PROPERTY.get(configuration)
         if custom_trainer:
             custom_trainer_args = TRAINER_ARGS_PROPERTY.get(configuration)
             runtime_configuration.add_fork_command(
@@ -64,7 +66,7 @@ class TrainerLaunchSettings(FeatureProvider):
         # Check for WeMod integration
         wemod_path = (
             WEMOD_ENABLED_PROPERTY.get(configuration) == "1"
-            and WEMOD_PATH_PROPERTY.get(configuration)
+            and WEMOD_EXE_PROPERTY.get(configuration)
             or None
         )
         if wemod_path:

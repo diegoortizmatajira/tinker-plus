@@ -214,7 +214,6 @@ class RuntimeProvider:
         - Reads global and game-specific configurations.
         - Merges the configurations.
         - Builds the feature configurations by calling `build_configuration` on each feature.
-        - Applies the configuration to the runtime environment using `apply_configuration`.
 
         Raises:
             RuntimeError: If any critical configuration step fails.
@@ -226,29 +225,24 @@ class RuntimeProvider:
                 self.runtime_configuration.steam_game_id or "unknown",
                 self.runtime_configuration.steam_app_id or "unknown",
             )
+
+    def run(self, run_with_trainers: bool = True):
+        """
+        Executes the runtime environment using the provided configuration and optional trainers.
+
+        This method applies the prepared runtime configuration to the environment,
+        executing all enabled features within the pipeline. It provides an option to
+        include or exclude trainers during the runtime execution.
+
+        Args:
+            run_with_trainers (bool): A flag indicating whether trainers should be
+                executed as part of the runtime environment. Defaults to True.
+        """
         # Apply configurations to runtime
         for feature in self.features:
             feature.try_apply_configuration(
                 self.configuration, self.runtime_configuration
             )
-
-    def run(self, run_with_trainers: bool = True):
-        """
-        Runs the runtime environment using the built configuration.
-
-        This method ensures that the runtime configuration is initialized
-        and then proceeds with the execution. If the runtime configuration is
-        not built, an exception is raised.
-        Args:
-            update_configuration (Callable): A function that takes the current
-                runtime configuration and returns an updated configuration.
-                Defaults to an identity function.
-
-        Raises:
-            RuntimeError: If the runtime configuration has not been built.
-        """
-        if self.runtime_configuration is None:
-            raise RuntimeError("Runtime configuration has not been built.")
 
         self.runtime_configuration.execute_trainers = run_with_trainers
 

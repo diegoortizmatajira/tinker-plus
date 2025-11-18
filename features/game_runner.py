@@ -14,6 +14,11 @@ GAME_CUSTOM_EXE_PROPERTY = ConfigurationProperty(
     "Allows specifying the main game executable to run.",
     None,
 )
+GAME_CUSTOM_ARGS_PROPERTY = ConfigurationProperty(
+    "GAME_CUSTOM_ARGS",
+    "Allows specifying additional arguments for the game executable.",
+    None,
+)
 
 
 class GameRunner(FeatureProvider):
@@ -23,7 +28,12 @@ class GameRunner(FeatureProvider):
     """
 
     def __init__(self):
-        super().__init__([GAME_CUSTOM_EXE_PROPERTY])
+        super().__init__(
+            [
+                GAME_CUSTOM_EXE_PROPERTY,
+                GAME_CUSTOM_ARGS_PROPERTY,
+            ]
+        )
 
     @override
     def apply_configuration(

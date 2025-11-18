@@ -2,12 +2,12 @@
 Main entry point for the Tinker-Plus application.
 """
 
+import os
 import sys
 import argparse
 from core import logger_factory
 from core.config_storage import ConfigStorage
 from core.defaults import TPLUS_BIN_LOCATION
-from core.process_runner import create_symbolic_link
 from core.runtime_provider import RuntimeProvider
 from features.external_tools import ExternalTools
 from features.game_runner import GameRunner
@@ -31,7 +31,6 @@ class MainApp:
 
     def __init__(self):
         self.logger = logger_factory.get_logger(self.__class__.__name__)
-        create_symbolic_link("./tinker-plus.sh", TPLUS_BIN_LOCATION, self.logger)
 
     def run(self):
         """
@@ -67,7 +66,10 @@ class MainApp:
         run_parser.add_argument(
             "game_command",
             nargs="+",  # Accepts any number of arguments as a list
-            help="The command to launch the game followed by its parameters (e.g., executable + arguments)",
+            help=(
+                "The command to launch the game followed by its parameters"
+                " (e.g., executable + arguments)"
+            ),
         )
 
         if len(sys.argv) == 1:
@@ -98,18 +100,20 @@ class MainApp:
             runtime = RuntimeProvider(
                 game_command,
                 dry_run,
+                # List of feature providers (Order matters as it affects
+                # how the command pipeline is built)
                 [
                     ExternalTools(),
                     SteamTools(),
                     ProtonSelection(),
                     PrefixSelection(),
-                    LinkUserFolders(),
+                    LinkUserFolders(storage),
                     TrainerLaunchSettings(),
                     WinetricksInstall(),
-                    # ReadConfig has to be the last before GameRunner, to ensure default
+                    GameRunner(),
+                    # ReadConfig has to be the last to ensure default
                     # configs are read first, then overridden by user configs
                     ReadConfig(storage),
-                    GameRunner(),
                 ],
             )
             runtime.build_configuration()
@@ -133,6 +137,10 @@ class MainApp:
             This is a placeholder for future implementation and currently does not
             contain any logic.
         """
+        current_script_directory = os.path.dirname(os.path.abspath(__file__))
+        tinker_plus_sh_path = os.path.join(current_script_directory, "tinker-plus.sh")
+        storage = ConfigStorage()
+        storage.create_symbolic_link(tinker_plus_sh_path, TPLUS_BIN_LOCATION)
         self.logger.info("Installing as Steam compatibility tool... (not implemented)")
 
 

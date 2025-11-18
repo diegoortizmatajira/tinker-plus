@@ -1,8 +1,10 @@
+"""Module for managing configuration storage, including global and game-specific"""
+
 import json
+import logging
 import os
 from typing import Optional
 
-from .log_storage import logger_factory
 from core.defaults import (
     CONFIG_LOCATION,
     GAME_CONFIG_DIR,
@@ -10,12 +12,33 @@ from core.defaults import (
     GLOBAL_CONFIG_FILE,
 )
 
+from .log_storage import logger_factory
+
 
 class ConfigStorage:
+    """
+    A class for handling storage and management of configuration files, including
+    global and game-specific configurations. Provides methods for loading,
+    saving, and updating configuration data.
+
+    Attributes:
+        logger: A logger instance for logging operations within the class.
+    """
+
     def __init__(self):
         self.logger = logger_factory.get_logger(self.__class__.__name__)
 
     def get_global_config(self) -> Optional[dict]:
+        """
+        Retrieve the global configuration.
+
+        This method loads the global configuration file and returns its content
+        as a dictionary. If the file does not exist, it returns None.
+
+        Returns:
+            dict: The contents of the global configuration file if it exists,
+            otherwise None.
+        """
         if not os.path.exists(GLOBAL_CONFIG_FILE):
             return None
         self.logger.info("Loading global configuration from: %s", GLOBAL_CONFIG_FILE)
@@ -23,6 +46,19 @@ class ConfigStorage:
             return json.load(f)
 
     def get_game_config(self, game_id: str) -> Optional[dict]:
+        """
+        Retrieve the game-specific configuration for a given game ID.
+
+        This method loads the configuration file for the specified game ID and
+        returns its content as a dictionary. If the file does not exist, it returns None.
+
+        Args:
+            game_id (str): The unique identifier of the game whose configuration is to be retrieved.
+
+        Returns:
+            Optional[dict]: The contents of the game-specific configuration file if it exists,
+            otherwise None.
+        """
         game_configuration_file = str.format(GAME_CONFIG_FILE_TEMPLATE, game_id)
         if not os.path.exists(game_configuration_file):
             return None
@@ -34,6 +70,16 @@ class ConfigStorage:
             return json.load(f)
 
     def save_global_config(self, config: dict):
+        """
+        Save the global configuration.
+
+        This method saves the provided global configuration dictionary to the global
+        configuration file. If the file does not exist, it creates a new one.
+        If the file exists, it updates its contents.
+
+        Args:
+            config (dict): The global configuration data to be saved, represented as a dictionary.
+        """
         if not os.path.exists(GLOBAL_CONFIG_FILE):
             self.logger.warning(
                 "Creating global configuration file at: %s", GLOBAL_CONFIG_FILE
@@ -47,6 +93,17 @@ class ConfigStorage:
             f.write(global_json_content)
 
     def save_game_config(self, config: dict, game_id: str):
+        """
+        Save the game-specific configuration for a given game ID.
+        This method saves the provided game-specific configuration dictionary to the
+        configuration file corresponding to the specified game ID. If the file does
+        not exist, it creates a new one. If the file exists, it updates its contents.
+
+        Args:
+            config (dict): The game-specific configuration data to be saved,
+            represented as a dictionary.
+            game_id (str): The unique identifier of the game whose configuration is to be saved.
+        """
         game_configuration_file = str.format(GAME_CONFIG_FILE_TEMPLATE, game_id)
         if not os.path.exists(game_configuration_file):
             self.logger.warning(
@@ -62,3 +119,50 @@ class ConfigStorage:
         game_json_content = json.dumps(config, indent=4)
         with open(game_configuration_file, "w", encoding="utf-8") as f:
             f.write(game_json_content)
+
+    def _diff_configs(self, global_config: dict, game_config: dict) -> dict:
+        """
+        Compute the difference between global and game-specific configurations.
+
+        This method identifies the differences between the provided global and
+        game-specific configuration dictionaries. It returns a new dictionary
+        containing only the key-value pairs that differ in the game-specific
+        configuration compared to the global configuration.
+
+        Args:
+            global_config (dict): The global configuration
+            game_config (dict): The game-specific configuration
+        Returns:
+            dict: A dictionary containing only the differing key-value pairs from
+            the game-specific configuration.
+        """
+        diff = {}
+        for key, value in game_config.items():
+            if key not in global_config or global_config[key] != value:
+                diff[key] = value
+        return diff
+
+    def create_symbolic_link(self, target: str, link_name: str):
+        """
+        Creates a symbolic link pointing to target named link_name.
+
+        Args:
+            target (str): The path the symbolic link points to.
+            link_name (str): The path of the symbolic link to be created.
+            logger (logging.Logger): The logger instance for logging progress and errors.
+        """
+        try:
+            if os.path.exists(link_name):
+                self.logger.info(
+                    "Symbolic link %s already exists. Skipping creation.", link_name
+                )
+                return
+            os.symlink(target, link_name)
+            self.logger.info("Created symbolic link %s -> %s", link_name, target)
+        except Exception as e:
+            self.logger.error(
+                "Error creating symbolic link %s -> %s: %s", link_name, target, e
+            )
+            raise RuntimeError(
+                f"Error creating symbolic link {link_name} -> {target}"
+            ) from e

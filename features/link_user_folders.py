@@ -4,6 +4,7 @@ Feature to link user folders to specified locations to manage saved games and se
 
 from typing import override
 from core import ConfigurationProperty, FeatureProvider, RuntimeConfiguration
+from core.config_storage import ConfigStorage
 
 LINK_STEAM_USER_FOLDER_PROPERTY = ConfigurationProperty(
     "LINK_STEAM_USER_FOLDER",
@@ -27,13 +28,14 @@ class LinkUserFolders(FeatureProvider):
     organization and management.
     """
 
-    def __init__(self):
+    def __init__(self, config_storage: ConfigStorage):
         super().__init__(
             [
                 LINK_STEAM_USER_FOLDER_PROPERTY,
                 LINK_PUBLIC_USER_FOLDER_PROPERTY,
             ]
         )
+        self.config_storage = config_storage
 
     @override
     def execute_in_pipeline(
