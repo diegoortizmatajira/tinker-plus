@@ -6,7 +6,10 @@ import sys
 import argparse
 from core import logger_factory
 from core.config_storage import ConfigStorage
+from core.defaults import TPLUS_BIN_LOCATION
+from core.process_runner import create_symbolic_link
 from core.runtime_provider import RuntimeProvider
+from features.external_tools import ExternalTools
 from features.game_runner import GameRunner
 from features.link_user_folders import LinkUserFolders
 from features.prefix_selection import PrefixSelection
@@ -28,6 +31,7 @@ class MainApp:
 
     def __init__(self):
         self.logger = logger_factory.get_logger(self.__class__.__name__)
+        create_symbolic_link("./tinker-plus.sh", TPLUS_BIN_LOCATION, self.logger)
 
     def run(self):
         """
@@ -95,6 +99,7 @@ class MainApp:
                 game_command,
                 dry_run,
                 [
+                    ExternalTools(),
                     SteamTools(),
                     ProtonSelection(),
                     PrefixSelection(),

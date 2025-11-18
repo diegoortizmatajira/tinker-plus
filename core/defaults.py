@@ -11,6 +11,7 @@ def timestamped_log(folder: str, base: str) -> str:
     return f"{folder}/{base}-{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.log"
 
 
+TPLUS_BIN_LOCATION = os.path.expandvars("$HOME/.local/bin/tplus")
 CONFIG_LOCATION = os.path.expandvars("$HOME/.config/tinker-plus")
 GLOBAL_CONFIG_FILE = f"{CONFIG_LOCATION}/global_config.json"
 GAME_CONFIG_DIR = f"{CONFIG_LOCATION}/game_configs"

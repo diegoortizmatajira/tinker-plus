@@ -1,0 +1,5 @@
+"manifest"
+{
+  "commandline" "/tplus run"
+  "commandline_waitforexitandrun" "/tplus run"
+}
