@@ -2,10 +2,11 @@
 Main entry point for the Tinker-Plus application.
 """
 
+import logging
 import os
 import sys
 import argparse
-from core import logger_factory
+from core import LogFactory
 from core.config_storage import ConfigStorage
 from core.defaults import TPLUS_BIN_LOCATION
 from core.runtime_provider import RuntimeProvider
@@ -30,17 +31,8 @@ class MainApp:
     """
 
     def __init__(self):
-        self.logger = logger_factory.get_logger(self.__class__.__name__)
-
-    def run(self):
-        """
-        Runs the main application.
-
-        This method initializes the application by logging the start process,
-        executing the main game functionality, and logging the completion of the application.
-        """
         parser = argparse.ArgumentParser(description="Tinker-Plus Application")
-
+        parser.add_argument("--debug", action="store_true", help="Enable debug mode")
         subparsers = parser.add_subparsers(title="Commands", dest="command")
         subparsers.required = True
 
@@ -76,12 +68,27 @@ class MainApp:
             parser.print_help()
             sys.exit(1)
 
-        args = parser.parse_args()
+        self.args = parser.parse_args()
+        self.handler = command_handlers.get(self.args.command)
 
+        debug_mode = getattr(self.args, "debug", False)
+        factory = LogFactory.initialize(
+            logging.DEBUG if debug_mode else logging.INFO, True
+        )
+        self.logger = factory.get_logger("TinkerPlus")
+
+    def run(self):
+        """
+        Runs the main application.
+
+        This method initializes the application by logging the start process,
+        executing the main game functionality, and logging the completion of the application.
+        """
         self.logger.info("Starting Tinker-Plus application...")
-        handler = command_handlers.get(args.command)
-        if handler:
-            handler(args)
+        if self.handler:
+            self.handler(self.args)
+        else:
+            self.logger.error("No valid command handler found.")
         self.logger.info("Tinker-Plus application finished.")
 
     def handle_run_command(self, args):

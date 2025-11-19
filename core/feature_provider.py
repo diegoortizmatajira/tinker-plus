@@ -6,7 +6,7 @@ from abc import ABC
 from typing import List
 from .runtime_configuration import RuntimeConfiguration
 from .configuration_property import ConfigurationProperty
-from .log_storage import logger_factory
+from .log_storage import LogFactory
 
 
 class FeatureProvider(ABC):
@@ -19,7 +19,7 @@ class FeatureProvider(ABC):
 
     def __init__(self, properties: List[ConfigurationProperty]):
         self.properties = properties
-        self.logger = logger_factory.get_logger(self.__class__.__name__)
+        self.logger = LogFactory.singleton().get_logger(self.__class__.__name__)
 
     def build_configuration(
         self, sourced_configuration: dict, game_id: str, app_id: str

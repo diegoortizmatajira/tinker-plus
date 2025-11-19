@@ -21,9 +21,8 @@ GAME_BAT_LAUNCHER_FILE_TEMPLATE = f"{GAME_BAT_LAUNCHER_DIR}/{{}}_launcher.bat"
 LOGS_DIR = f"{CONFIG_LOCATION}/logs"
 PROTON_LOG_DIR = f"{LOGS_DIR}/proton"
 PROTON_LOG_FILE = timestamped_log(PROTON_LOG_DIR, "proton")
-APP_LOGS_DIR = f"{LOGS_DIR}/app"
 # Add dynamic date to the log file name
-APP_LOG_FILE = timestamped_log(APP_LOGS_DIR, "tinker-plus")
+APP_LOG_FILE = f"{LOGS_DIR}/tinker-plus-last-run.log"
 GENERAL_TOOLS_LOG_DIR = f"{LOGS_DIR}/general"
 GENERAL_TOOLS_LOG_FILE = timestamped_log(GENERAL_TOOLS_LOG_DIR, "tools")
 WINETRICKS_LOG_FILE = timestamped_log(GENERAL_TOOLS_LOG_DIR, "winetricks")
@@ -31,5 +30,5 @@ WINETRICKS_LOG_FILE = timestamped_log(GENERAL_TOOLS_LOG_DIR, "winetricks")
 # Create directories if they do not exist
 os.makedirs(GAME_CONFIG_DIR, exist_ok=True)
 os.makedirs(PROTON_LOG_DIR, exist_ok=True)
-os.makedirs(APP_LOGS_DIR, exist_ok=True)
+os.makedirs(LOGS_DIR, exist_ok=True)
 os.makedirs(GENERAL_TOOLS_LOG_DIR, exist_ok=True)

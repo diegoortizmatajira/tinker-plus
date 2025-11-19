@@ -20,6 +20,9 @@ WEMOD_EXE_PROPERTY = ConfigurationProperty(
     "WEMOD_EXE", "Specifies the path to the WeMod executable."
 )
 
+WEMOD_GAMEID_PROPERTY = ConfigurationProperty(
+    "WEMOD_GAMEID", "Specifies the WeMod game ID for the target game."
+)
 WEMOD_WINETRICKS_REQUIREMENTS = ConfigurationProperty(
     "WEMOD_WINETRICKS_REQUIREMENTS",
     "Specifies the Winetricks requirements for WeMod integration.",
@@ -39,6 +42,7 @@ class TrainerLaunchSettings(FeatureProvider):
                 TRAINER_ARGS_PROPERTY,
                 WEMOD_ENABLED_PROPERTY,
                 WEMOD_EXE_PROPERTY,
+                WEMOD_GAMEID_PROPERTY,
                 WEMOD_WINETRICKS_REQUIREMENTS,
             ]
         )
@@ -70,8 +74,18 @@ class TrainerLaunchSettings(FeatureProvider):
             or None
         )
         if wemod_path:
+            game_id = WEMOD_GAMEID_PROPERTY.get_string(configuration)
+            wemod_args = (
+                f'"wemod://play?titleId={game_id}&gameId={game_id}"'
+                if game_id
+                else None
+            )
             runtime_configuration.add_fork_command(
-                ExecutableCommand(wemod_path, None, COMMAND_TRAINER)
+                ExecutableCommand(
+                    wemod_path,
+                    wemod_args,
+                    COMMAND_TRAINER,
+                )
             )
             wemod_winetricks = (
                 WEMOD_WINETRICKS_REQUIREMENTS.get_string_list(configuration) or []
@@ -79,6 +93,7 @@ class TrainerLaunchSettings(FeatureProvider):
             runtime_configuration.add_winetricks(wemod_winetricks)
             execute_trainer = True
             self.logger.info("WeMod trainer: %s", wemod_path)
+            self.logger.info("WeMod trainer game id: %s", game_id or "Not specified")
             self.logger.info("WeMod trainer winetricks: %s", ",".join(wemod_winetricks))
 
         # Set the execute_trainers flag based on the configuration

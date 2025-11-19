@@ -52,6 +52,9 @@ class ExternalTools(FeatureProvider):
     def apply_configuration(
         self, configuration: dict, runtime_configuration: RuntimeConfiguration
     ) -> RuntimeConfiguration:
-        if GAMEMODERUN_ENABLED_PROPERTY.get(configuration) == "1":
-            runtime_configuration.add_pipeline_wrapper(PipelineWrapper("gamemoderun"))
+        if GAMEMODERUN_ENABLED_PROPERTY.get_boolean(configuration):
+            self.logger.info("Enabling GameModeRun wrapper.")
+            runtime_configuration.add_pipeline_wrapper(
+                PipelineWrapper("gamemoderun", applies_to_forks=False)
+            )
         return runtime_configuration

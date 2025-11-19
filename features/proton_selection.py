@@ -67,7 +67,7 @@ class ProtonSelection(FeatureProvider):
         Returns:
             RuntimeConfiguration: The updated runtime configuration object.
         """
-        if PROTON_LOG_PROPERTY.get(configuration) == "1":
+        if PROTON_LOG_PROPERTY.get_boolean(configuration):
             runtime_configuration.set_environment_variable("PROTON_LOG", "1")
             self.logger.info("Proton logging enabled.")
         runtime_configuration.steam_compatibility_tool = (
@@ -77,9 +77,10 @@ class ProtonSelection(FeatureProvider):
 
         runtime_configuration.add_pipeline_wrapper(
             PipelineWrapper(
-                wrapper=lambda cmd, runtime_configuration: (
+                wrapper=lambda cmd, runtime_configuration, is_fork: (
                     f"{runtime_configuration.steam_compatibility_tools_path}/"
-                    f"{runtime_configuration.steam_compatibility_tool}/proton waitforexitandrun"
+                    f"{runtime_configuration.steam_compatibility_tool}/proton"
+                    f" {'run' if is_fork else 'waitforexitandrun'}"
                     f" {cmd}"
                 ),
             )

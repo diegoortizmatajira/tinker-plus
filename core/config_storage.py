@@ -1,7 +1,6 @@
 """Module for managing configuration storage, including global and game-specific"""
 
 import json
-import logging
 import os
 from typing import Optional
 
@@ -12,7 +11,7 @@ from core.defaults import (
     GLOBAL_CONFIG_FILE,
 )
 
-from .log_storage import logger_factory
+from .log_storage import LogFactory
 
 
 class ConfigStorage:
@@ -26,7 +25,7 @@ class ConfigStorage:
     """
 
     def __init__(self):
-        self.logger = logger_factory.get_logger(self.__class__.__name__)
+        self.logger = LogFactory.singleton().get_logger(self.__class__.__name__)
 
     def get_global_config(self) -> Optional[dict]:
         """

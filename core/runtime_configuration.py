@@ -1,6 +1,7 @@
 """Defines the Runtime configuration for the application."""
 
 from dataclasses import dataclass
+import logging
 from typing import Callable, List, Optional
 
 
@@ -37,12 +38,16 @@ class PipelineWrapper:
     """
 
     command: Optional[str] = None
-    wrapper: Optional[Callable[[str, "RuntimeConfiguration"], str]] = None
+    wrapper: Optional[Callable[[str, "RuntimeConfiguration", bool], str]] = None
+    applies_to_forks: bool = True
 
     def wrap(
         self,
         pipeline_assembled_command: str,
         runtime_configuration: "RuntimeConfiguration",
+        *,
+        is_fork: bool = False,
+        logger: logging.Logger,
     ) -> str:
         """
         Wraps the provided pipeline assembled command using the defined wrapper.
@@ -57,12 +62,16 @@ class PipelineWrapper:
         Returns:
             str: The wrapped command.
         """
+        if is_fork and not self.applies_to_forks:
+            return pipeline_assembled_command
+
         if self.wrapper:
             wrapped_command = self.wrapper(
-                pipeline_assembled_command, runtime_configuration
+                pipeline_assembled_command, runtime_configuration, is_fork
             )
-            return wrapped_command
-        wrapped_command = f"{self.command} {pipeline_assembled_command}"
+        else:
+            wrapped_command = f"{self.command} {pipeline_assembled_command}"
+        logger.debug("Wrapped command build step: %s", wrapped_command)
         return wrapped_command
 
 
@@ -94,7 +103,6 @@ class RuntimeConfiguration:
     steam_compatibility_tool: Optional[str] = None
     steam_compatibility_tools_path: Optional[str] = None
     steam_game_exe: Optional[str] = None
-    steam_other_wrapper_commands: Optional[str] = None
     fork_commands: Optional[List[ExecutableCommand]] = None
     winetricks: Optional[List[str]] = None
     prefix_path: Optional[str] = None

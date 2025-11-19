@@ -1,10 +1,7 @@
 import logging
-import os
 import subprocess
 from typing import Optional
 from core.defaults import (
-    GAME_BAT_LAUNCHER_DIR,
-    GAME_BAT_LAUNCHER_FILE_TEMPLATE,
     GENERAL_TOOLS_LOG_FILE,
 )
 from core.runtime_configuration import COMMAND_TRAINER, RuntimeConfiguration
@@ -26,7 +23,10 @@ def run_in_wine_prefix(
     if not wine_prefix:
         raise RuntimeError("WINEPREFIX environment variable is not set.")
 
-    command = f'WINEPREFIX="{wine_prefix}" {exe_command} >> {output_log_file or GENERAL_TOOLS_LOG_FILE} 2>&1'
+    command = (
+        f'WINEPREFIX="{wine_prefix}" {exe_command} >> '
+        f"{output_log_file or GENERAL_TOOLS_LOG_FILE} 2>&1"
+    )
     if runtime_configuration.dry_run:
         logger.info("[DRY RUN] Would execute command in Wine prefix: %s", command)
         return
@@ -45,6 +45,7 @@ def run_with_compatibility_tool(
     logger: logging.Logger,
     *,
     category: str = "main game",
+    is_fork: bool = False,
 ):
     """
     Executes a given command using subprocess.
@@ -61,13 +62,13 @@ def run_with_compatibility_tool(
                 for key, value in (runtime_configuration.environment_variables).items()
             ]
         ).strip()
-    # Takes the pipeline wrappers in reverse order
-    reversed_wrappers = runtime_configuration.pipeline_wrappers or []
-    reversed_wrappers.reverse()
 
     command = exe_command
-    for wrapper in reversed_wrappers:
-        command = wrapper.wrap(command, runtime_configuration)
+    # Takes the pipeline wrappers in reverse order
+    for wrapper in reversed(runtime_configuration.pipeline_wrappers or []):
+        command = wrapper.wrap(
+            command, runtime_configuration, is_fork=is_fork, logger=logger
+        )
 
     command = f"{environment_variables} {command}"
     if runtime_configuration.dry_run:
@@ -103,7 +104,6 @@ def run_game_and_forks_with_compatibility_tool(
             and compatibility tools.
         logger (logging.Logger): The logger instance for logging progress and errors.
     """
-    bat_content = ""
 
     for command in runtime_configuration.fork_commands or []:
         if (
@@ -114,28 +114,27 @@ def run_game_and_forks_with_compatibility_tool(
 
         full_command = f'"{command.command}" {command.args or ""}'.strip()
         logger.info(
-            "Including %s command: '%s' in launcher script.",
-            command.category,
+            "Running %s command: '%s'",
+            command.category or "fork",
             full_command,
         )
-        bat_content += f'start "" {full_command}\n'
+        run_with_compatibility_tool(
+            full_command,
+            runtime_configuration,
+            logger,
+            category=command.category or "fork",
+            is_fork=True,
+        )
+
+    if not runtime_configuration.steam_game_exe:
+        raise RuntimeError("No game executable specified to run.")
 
     logger.info(
-        "Including game command: '%s' in launcher script.",
+        "Running game command: '%s'.",
         runtime_configuration.steam_game_exe,
     )
-    bat_content += f'start "" "{runtime_configuration.steam_game_exe}"\n'
-    # Write the batch file to a temporary location (create directory if it doesn't exist)
-    os.makedirs(GAME_BAT_LAUNCHER_DIR, exist_ok=True)
-    bat_file_path = str.format(
-        GAME_BAT_LAUNCHER_FILE_TEMPLATE, runtime_configuration.steam_game_id
-    )
-    #
-    with open(bat_file_path, "w", encoding="utf-8") as bat_file:
-        bat_file.write(bat_content)
-    # Execute the batch file using the compatibility tool
     run_with_compatibility_tool(
-        bat_file_path,
+        runtime_configuration.steam_game_exe,
         runtime_configuration,
         logger,
     )

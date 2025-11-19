@@ -7,10 +7,10 @@ as well as feature-specific customizations to build a comprehensive runtime envi
 import os
 import re
 
-from typing import List
+from typing import List, Optional
 from .runtime_configuration import RuntimeConfiguration
 from .feature_provider import FeatureProvider
-from .log_storage import logger_factory
+from .log_storage import LogFactory
 
 EMPTY = "(not provided)"
 
@@ -35,33 +35,48 @@ def parse_command(runtime_configuration: RuntimeConfiguration):
     Logs:
         - Logs the identified components or warnings if the pattern does not match.
     """
-    full_pattern = (
-        r"^(?P<othercommands>(\S+\s+)+)?"
-        r"(?P<stlwrapper>\S+steam-launch-wrapper)\s+"
-        r"(?P<reaper>\S+reaper)\s+"
-        r".+?(--)?\s+"
-        r"(?P<sniper>\S+sniper\S+(\s+--\w+=.+)+)\s+"
-        r"--\s+"
+
+    def evaluate_match(input_str: str, pattern: str, group) -> Optional[str]:
+        match = re.search(pattern, input_str)
+        if match:
+            return match.group(group)
+        return None
+
+    wrapper_regexp = r"(?P<stlwrapper>\/\S+\/steam-launch-wrapper)"
+    reaper_regexp = r"(?P<reaper>\/\S+\/reaper\s+SteamLaunch\s+AppId=\d+)"
+    sniper_regexp = r"(?P<sniper>\/\S+\/SteamLinuxRuntime_sniper\/\S+\s+--\w+=\w+)"
+    compatibility_regexp = (
         r"(?P<compatibility>"
-        r"(?P<compatibility_dir>\S+compatibilitytools\.d)/"
+        r"(?P<compatibility_dir>\/\S+compatibilitytools\.d)/"
         r"(?P<compatibility_tool>\S+)/\S+\swaitforexitandrun)\s+"
-        r"(?P<gameexe>.*)$"
     )
+    exe_regexp = r"\s(?P<gameexe>(\/[\w\.\s\-]+\w)+)$"
 
-    match = re.search(full_pattern, " ".join(runtime_configuration.original_command))
-    if not match:
-        raise RuntimeError("Pattern did not match the command line.")
-
-    runtime_configuration.steam_other_wrapper_commands = match.group("othercommands")
-    runtime_configuration.steam_wrapper = match.group("stlwrapper")
-    runtime_configuration.steam_reaper = match.group("reaper")
-    runtime_configuration.steam_sniper = match.group("sniper")
-    runtime_configuration.steam_compatibility_command = match.group("compatibility")
-    runtime_configuration.steam_compatibility_tool = match.group("compatibility_tool")
-    runtime_configuration.steam_compatibility_tools_path = match.group(
+    full_command = " ".join(runtime_configuration.original_command)
+    runtime_configuration.steam_wrapper = evaluate_match(
+        full_command, wrapper_regexp, "stlwrapper"
+    )
+    runtime_configuration.steam_reaper = evaluate_match(
+        full_command, reaper_regexp, "reaper"
+    )
+    runtime_configuration.steam_sniper = evaluate_match(
+        full_command, sniper_regexp, "sniper"
+    )
+    compatibility_match = re.search(compatibility_regexp, full_command)
+    if not compatibility_match:
+        raise RuntimeError("Compatibility tool pattern did not match the command line.")
+    runtime_configuration.steam_compatibility_command = compatibility_match.group(
+        "compatibility"
+    )
+    runtime_configuration.steam_compatibility_tool = compatibility_match.group(
+        "compatibility_tool"
+    )
+    runtime_configuration.steam_compatibility_tools_path = compatibility_match.group(
         "compatibility_dir"
     )
-    runtime_configuration.steam_game_exe = match.group("gameexe")
+    runtime_configuration.steam_game_exe = evaluate_match(
+        full_command, exe_regexp, "gameexe"
+    )
 
 
 class RuntimeProvider:
@@ -84,7 +99,7 @@ class RuntimeProvider:
     def __init__(
         self, game_command: List[str], dry_run: bool, features: List[FeatureProvider]
     ):
-        self.logger = logger_factory.get_logger(self.__class__.__name__)
+        self.logger = LogFactory.singleton().get_logger(self.__class__.__name__)
         self.configuration: dict = {}
         self.features = features
         self.runtime_configuration = RuntimeConfiguration(game_command, dry_run)
@@ -121,10 +136,6 @@ class RuntimeProvider:
             self.logger.warning("Failed to parse the game command line: %s", e)
             return
 
-        self.logger.info(
-            "Steam Other Wrapper Commands: %s",
-            self.runtime_configuration.steam_other_wrapper_commands,
-        )
         self.logger.info(
             "Steam Launch Wrapper: %s", self.runtime_configuration.steam_wrapper
         )

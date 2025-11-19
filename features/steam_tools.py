@@ -55,29 +55,35 @@ class SteamTools(FeatureProvider):
             STEAM_USE_WRAPPER_PROPERTY.get_boolean(configuration)
             and runtime_configuration.steam_wrapper
         ):
+            self.logger.info("Enabling Steam wrapper.")
             runtime_configuration.add_pipeline_wrapper(
-                PipelineWrapper(runtime_configuration.steam_wrapper)
+                PipelineWrapper(
+                    runtime_configuration.steam_wrapper,
+                    applies_to_forks=False,
+                )
             )
         # Apply the Sniper
         if (
             STEAM_USE_SNIPER_PROPERTY.get_boolean(configuration)
             and runtime_configuration.steam_sniper
         ):
+            self.logger.info("Enabling Steam Sniper wrapper.")
             runtime_configuration.add_pipeline_wrapper(
-                PipelineWrapper(runtime_configuration.steam_sniper)
+                PipelineWrapper(
+                    runtime_configuration.steam_sniper,
+                    applies_to_forks=False,
+                )
             )
         # Apply the Reaper
         if (
             STEAM_USE_REAPER_PROPERTY.get_boolean(configuration)
             and runtime_configuration.steam_reaper
         ):
+            self.logger.info("Enabling Steam Reaper wrapper.")
             runtime_configuration.add_pipeline_wrapper(
                 PipelineWrapper(
-                    wrapper=lambda cmd, runtime_configuration: (
-                        f"{runtime_configuration.steam_reaper}"
-                        f" SteamLaunch AppId={runtime_configuration.steam_app_id}"
-                        f" -- {cmd}"
-                    ),
+                    f"{runtime_configuration.steam_reaper} --",
+                    applies_to_forks=False,
                 )
             )
         return runtime_configuration
