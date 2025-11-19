@@ -4,7 +4,11 @@ from typing import Optional
 from core.defaults import (
     GENERAL_TOOLS_LOG_FILE,
 )
-from core.runtime_configuration import COMMAND_TRAINER, RuntimeConfiguration
+from core.runtime_configuration import (
+    COMMAND_TRAINER,
+    ExecutableCommand,
+    RuntimeConfiguration,
+)
 
 
 def run_in_wine_prefix(
@@ -112,14 +116,13 @@ def run_game_and_forks_with_compatibility_tool(
         ):
             continue  # Skip trainer commands if trainers are disabled
 
-        full_command = f'"{command.command}" {command.args or ""}'.strip()
         logger.info(
             "Running %s command: '%s'",
             command.category or "fork",
-            full_command,
+            command.get_full_command(),
         )
         run_with_compatibility_tool(
-            full_command,
+            command.get_full_command(),
             runtime_configuration,
             logger,
             category=command.category or "fork",
@@ -129,12 +132,13 @@ def run_game_and_forks_with_compatibility_tool(
     if not runtime_configuration.steam_game_exe:
         raise RuntimeError("No game executable specified to run.")
 
+    game_command = ExecutableCommand(runtime_configuration.steam_game_exe, "")
     logger.info(
         "Running game command: '%s'.",
-        runtime_configuration.steam_game_exe,
+        game_command.get_full_command(),
     )
     run_with_compatibility_tool(
-        runtime_configuration.steam_game_exe,
+        game_command.get_full_command(),
         runtime_configuration,
         logger,
     )

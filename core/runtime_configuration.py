@@ -27,6 +27,18 @@ class ExecutableCommand:
     args: Optional[str]
     category: Optional[str] = None
 
+    def get_full_command(self) -> str:
+        """
+        Constructs the full command string by combining the command and its arguments.
+
+        Returns:
+            str: The full command string.
+        """
+        quoted_command = f'"{self.command}"' if " " in self.command else self.command
+        if self.args:
+            return f"{quoted_command} {self.args}".strip()
+        return quoted_command.strip()
+
 
 @dataclass()
 class PipelineWrapper:
