@@ -9,13 +9,13 @@ from core.config_storage import ConfigStorage
 LINK_STEAM_USER_FOLDER_PROPERTY = ConfigurationProperty(
     "LINK_STEAM_USER_FOLDER",
     "If provided links the steam user folder to the given location",
-    None,
+    False,
 )
 
 LINK_PUBLIC_USER_FOLDER_PROPERTY = ConfigurationProperty(
     "LINK_PUBLIC_USER_FOLDER",
     "If provided links the public user folder to the given location",
-    None,
+    False,
 )
 
 

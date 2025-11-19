@@ -126,3 +126,11 @@ _=/usr/bin/python
 
 Application Parameters:
 main.py
+
+
+
+/home/diegoortizmatajira/.local/share/Steam/ubuntu12_32/reaper SteamLaunch AppId=201810 -- /home/diegoortizmatajira/.local/share/Steam/compatibilitytools.d/SteamTinkerLaunch/steamtinkerlaunch waitforexitandrun /home/diegoortizmatajira/.local/share/Steam/steamapps/common/Wolfenstein.The.New.Order/WolfNewOrder_x64.exe
+
+python3 /home/diegoortizmatajira/.local/share/Steam/compatibilitytools.d/GE-Proton10-18/proton waitforexitandrun /home/diegoortizmatajira/.local/share/Steam/steamapps/common/Wolfenstein.The.New.Order/WolfNewOrder_x64.exe
+
+python3 /home/diegoortizmatajira/.local/share/Steam/compatibilitytools.d/GE-Proton10-18/proton run /Games/Trainers/Wolfenstein The New Order V1.0.0.2 Trainer +6 MrAntiFun.exe

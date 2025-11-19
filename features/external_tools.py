@@ -12,14 +12,14 @@ from core.runtime_configuration import PipelineWrapper, RuntimeConfiguration
 GAMEMODERUN_ENABLED_PROPERTY = ConfigurationProperty(
     "GAMEMODERUN_ENABLED",
     "Enables GameModeRun when set to '1'.",
-    default="0",
+    default=False,
     type=BINARY_PROPERTY,
 )
 
 GAMESCOPE_ENABLED_PROPERTY = ConfigurationProperty(
     "GAMESCOPE_ENABLED",
     "Enables Gamescope when set to '1'.",
-    default="0",
+    default=False,
     type=BINARY_PROPERTY,
 )
 GAMESCOPE_ARGS_PROPERTY = ConfigurationProperty(

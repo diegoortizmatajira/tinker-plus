@@ -12,6 +12,7 @@ from core.defaults import WINETRICKS_LOG_FILE
 WINETRICKS_PROPERTY = ConfigurationProperty(
     "WINETRICKS",
     "Specifies a list of winetricks packages to install (comma separated).",
+    default=[],
     type=MULTIVALUELIST_PROPERTY,
 )
 
@@ -28,8 +29,8 @@ class WinetricksInstall(FeatureProvider):
     def apply_configuration(
         self, configuration: dict, runtime_configuration: RuntimeConfiguration
     ) -> RuntimeConfiguration:
-        winetricks = (WINETRICKS_PROPERTY.get(configuration) or "").split(",")
-        if winetricks == [""]:
+        winetricks = WINETRICKS_PROPERTY.get_string_list(configuration) or []
+        if len(winetricks) == 0 or winetricks == [""]:
             self.logger.info("No standalone winetricks packages are required")
             winetricks = []
             return runtime_configuration

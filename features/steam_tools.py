@@ -8,21 +8,21 @@ from core.runtime_configuration import RuntimeConfiguration, PipelineWrapper
 STEAM_USE_WRAPPER_PROPERTY = ConfigurationProperty(
     "STEAM_USE_WRAPPER",
     "Enables the use of Steam wrapper for Steam games when set to '1'.",
-    default="0",
+    default=False,
     type=BINARY_PROPERTY,
 )
 
 STEAM_USE_SNIPER_PROPERTY = ConfigurationProperty(
     "STEAM_USE_SNIPER",
     "Enables the use of Sniper for Steam games when set to '1'.",
-    default="1",
+    default=True,
     type=BINARY_PROPERTY,
 )
 
 STEAM_USE_REAPER_PROPERTY = ConfigurationProperty(
     "STEAM_USE_REAPER",
     "Enables the use of Reaper for Steam games when set to '1'.",
-    default="1",
+    default=True,
     type=BINARY_PROPERTY,
 )
 
@@ -52,7 +52,7 @@ class SteamTools(FeatureProvider):
     ) -> RuntimeConfiguration:
         # Apply the Steam wrapper
         if (
-            STEAM_USE_WRAPPER_PROPERTY.get(configuration) == "1"
+            STEAM_USE_WRAPPER_PROPERTY.get_boolean(configuration)
             and runtime_configuration.steam_wrapper
         ):
             runtime_configuration.add_pipeline_wrapper(
@@ -60,7 +60,7 @@ class SteamTools(FeatureProvider):
             )
         # Apply the Sniper
         if (
-            STEAM_USE_SNIPER_PROPERTY.get(configuration) == "1"
+            STEAM_USE_SNIPER_PROPERTY.get_boolean(configuration)
             and runtime_configuration.steam_sniper
         ):
             runtime_configuration.add_pipeline_wrapper(
@@ -68,7 +68,7 @@ class SteamTools(FeatureProvider):
             )
         # Apply the Reaper
         if (
-            STEAM_USE_REAPER_PROPERTY.get(configuration) == "1"
+            STEAM_USE_REAPER_PROPERTY.get_boolean(configuration)
             and runtime_configuration.steam_reaper
         ):
             runtime_configuration.add_pipeline_wrapper(

@@ -13,7 +13,7 @@ TRAINER_ARGS_PROPERTY = ConfigurationProperty(
 )
 
 WEMOD_ENABLED_PROPERTY = ConfigurationProperty(
-    "WEMOD_ENABLED", "Enables WeMod integration for trainer launching."
+    "WEMOD_ENABLED", "Enables WeMod integration for trainer launching.", False
 )
 
 WEMOD_EXE_PROPERTY = ConfigurationProperty(
@@ -23,7 +23,7 @@ WEMOD_EXE_PROPERTY = ConfigurationProperty(
 WEMOD_WINETRICKS_REQUIREMENTS = ConfigurationProperty(
     "WEMOD_WINETRICKS_REQUIREMENTS",
     "Specifies the Winetricks requirements for WeMod integration.",
-    "dotnet48",
+    ["dotnet48"],
 )
 
 
@@ -49,9 +49,9 @@ class TrainerLaunchSettings(FeatureProvider):
     ) -> RuntimeConfiguration:
         execute_trainer = False
         # Check for custom trainer configuration
-        custom_trainer = TRAINER_EXE_PROPERTY.get(configuration)
+        custom_trainer = TRAINER_EXE_PROPERTY.get_string(configuration)
         if custom_trainer:
-            custom_trainer_args = TRAINER_ARGS_PROPERTY.get(configuration)
+            custom_trainer_args = TRAINER_ARGS_PROPERTY.get_string(configuration)
             runtime_configuration.add_fork_command(
                 ExecutableCommand(
                     custom_trainer,
@@ -65,8 +65,8 @@ class TrainerLaunchSettings(FeatureProvider):
 
         # Check for WeMod integration
         wemod_path = (
-            WEMOD_ENABLED_PROPERTY.get(configuration) == "1"
-            and WEMOD_EXE_PROPERTY.get(configuration)
+            WEMOD_ENABLED_PROPERTY.get_boolean(configuration)
+            and WEMOD_EXE_PROPERTY.get_string(configuration)
             or None
         )
         if wemod_path:
@@ -74,8 +74,8 @@ class TrainerLaunchSettings(FeatureProvider):
                 ExecutableCommand(wemod_path, None, COMMAND_TRAINER)
             )
             wemod_winetricks = (
-                WEMOD_WINETRICKS_REQUIREMENTS.get(configuration) or ""
-            ).split(",")
+                WEMOD_WINETRICKS_REQUIREMENTS.get_string_list(configuration) or []
+            )
             runtime_configuration.add_winetricks(wemod_winetricks)
             execute_trainer = True
             self.logger.info("WeMod trainer: %s", wemod_path)

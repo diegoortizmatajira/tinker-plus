@@ -3,9 +3,13 @@ This module defines a ConfigurationProperty class
 """
 
 from dataclasses import dataclass
-from typing import Callable, List, Literal, Optional
+from typing import Callable, List, Literal, Optional, Union
+
 
 from core.runtime_configuration import RuntimeConfiguration
+
+# Type alias for the optional value type in the get method
+ConfigurationValueType = Union[str, List[str], bool]
 
 
 @dataclass
@@ -15,7 +19,7 @@ class ListItem:
     """
 
     name: str
-    value: str
+    value: Optional[ConfigurationValueType]
 
 
 BINARY_PROPERTY = "BINARY_PROPERTY"
@@ -33,14 +37,14 @@ class ConfigurationProperty:
 
     name: str
     description: str
-    default: Optional[str] = None
+    default: Optional[ConfigurationValueType] = None
     values_provider: Optional[Callable[[RuntimeConfiguration], List[ListItem]]] = None
     values_cache: Optional[List[ListItem]] = None
     type: Literal[
         "BINARY_PROPERTY", "LIST_PROPERTY", "MULTIVALUELIST_PROPERTY", "TEXT_PROPERTY"
     ] = TEXT_PROPERTY
 
-    def get(self, configuration: dict) -> Optional[str]:
+    def get(self, configuration: dict) -> Optional[ConfigurationValueType]:
         """
         Retrieves the value of the configuration property.
 
@@ -55,7 +59,64 @@ class ConfigurationProperty:
             return configuration[self.name]
         return self.default
 
-    def get_or_fail(self, configuration: dict) -> str:
+    def get_boolean(self, configuration: dict) -> Optional[bool]:
+        """
+        Retrieves the value of the configuration property as a boolean.
+
+        Args:
+            configuration (dict): A dictionary representing the configuration.
+
+        Returns:
+            Optional[bool]: The value of the property as a boolean if it exists,
+                            otherwise the default value.
+
+        Raises:
+            TypeError: If the configuration value is not a boolean.
+        """
+        value = self.get(configuration)
+        if value is None or isinstance(value, bool):
+            return value
+        raise TypeError(f"Configuration value is not a boolean value: {self.name} = {value}")
+
+    def get_string(self, configuration: dict) -> Optional[str]:
+        """
+        Retrieves the value of the configuration property as a string.
+
+        Args:
+            configuration (dict): A dictionary representing the configuration.
+
+        Returns:
+            Optional[str]: The value of the property as a string if it exists,
+                           otherwise the default value.
+
+        Raises:
+            TypeError: If the configuration value is not a string.
+        """
+        value = self.get(configuration)
+        if value is None or isinstance(value, str):
+            return value
+        raise TypeError(f"Configuration value is not a string: {self.name} = {value}")
+
+    def get_string_list(self, configuration: dict) -> Optional[List[str]]:
+        """
+        Retrieves the value of the configuration property as a list of strings.
+
+        Args:
+            configuration (dict): A dictionary representing the configuration.
+
+        Returns:
+            Optional[List[str]]: The value of the property as a list of strings
+                                 if it exists, otherwise None.
+
+        Raises:
+            TypeError: If the configuration value is not a list of strings.
+        """
+        value = self.get(configuration)
+        if value is None or isinstance(value, list):
+            return value
+        raise TypeError(f"Configuration value is not a string list: {self.name} = {value}")
+
+    def get_or_fail(self, configuration: dict) -> ConfigurationValueType:
         """
         Retrieves the value of the configuration property or raises an error if not found.
 

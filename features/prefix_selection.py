@@ -26,7 +26,7 @@ class PrefixSelection(FeatureProvider):
     def apply_configuration(
         self, configuration: dict, runtime_configuration: RuntimeConfiguration
     ) -> RuntimeConfiguration:
-        custom_prefix = CUSTOM_PREFIX_PROPERTY.get(configuration)
+        custom_prefix = CUSTOM_PREFIX_PROPERTY.get_string(configuration)
         if custom_prefix:
             runtime_configuration.prefix_path = custom_prefix
             self.logger.info(

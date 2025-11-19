@@ -30,7 +30,7 @@ PROTON_VERSION_PROPERTY = ConfigurationProperty(
 PROTON_LOG_PROPERTY = ConfigurationProperty(
     "PROTON_LOG",
     "Enables proton logging when set to '1'.",
-    default="0",
+    default=False,
     type=BINARY_PROPERTY,
 )
 
@@ -71,7 +71,7 @@ class ProtonSelection(FeatureProvider):
             runtime_configuration.set_environment_variable("PROTON_LOG", "1")
             self.logger.info("Proton logging enabled.")
         runtime_configuration.steam_compatibility_tool = (
-            PROTON_VERSION_PROPERTY.get(configuration)
+            PROTON_VERSION_PROPERTY.get_string(configuration)
             or runtime_configuration.steam_compatibility_tool
         )
 
@@ -84,5 +84,7 @@ class ProtonSelection(FeatureProvider):
                 ),
             )
         )
-        self.logger.info("Using proton version: %s", runtime_configuration.steam_compatibility_tool)
+        self.logger.info(
+            "Using proton version: %s", runtime_configuration.steam_compatibility_tool
+        )
         return runtime_configuration
