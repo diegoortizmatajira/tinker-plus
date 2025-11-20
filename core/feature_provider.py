@@ -86,6 +86,11 @@ class FeatureProvider(ABC):
             RuntimeError: If an error occurs while applying the configuration.
         """
         try:
+            # Translate properties to environment variables, if the property defines one
+            for prop in self.properties:
+                prop.translate_to_environment_variable(
+                    configuration, runtime_configuration, self.logger
+                )
             return self.apply_configuration(configuration, runtime_configuration)
         except KeyError as e:
             self.logger.error("Missing configuration key: %s", e)

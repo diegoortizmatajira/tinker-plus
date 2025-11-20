@@ -3,6 +3,7 @@ This module defines a ConfigurationProperty class
 """
 
 from dataclasses import dataclass
+import logging
 from typing import Callable, List, Literal, Optional, Union
 
 
@@ -43,6 +44,7 @@ class ConfigurationProperty:
     type: Literal[
         "BINARY_PROPERTY", "LIST_PROPERTY", "MULTIVALUELIST_PROPERTY", "TEXT_PROPERTY"
     ] = TEXT_PROPERTY
+    generated_environment_variable: Optional[str] = None
 
     def get(self, configuration: dict) -> Optional[ConfigurationValueType]:
         """
@@ -76,7 +78,9 @@ class ConfigurationProperty:
         value = self.get(configuration)
         if value is None or isinstance(value, bool):
             return value
-        raise TypeError(f"Configuration value is not a boolean value: {self.name} = {value}")
+        raise TypeError(
+            f"Configuration value is not a boolean value: {self.name} = {value}"
+        )
 
     def get_string(self, configuration: dict) -> Optional[str]:
         """
@@ -114,7 +118,9 @@ class ConfigurationProperty:
         value = self.get(configuration)
         if value is None or isinstance(value, list):
             return value
-        raise TypeError(f"Configuration value is not a string list: {self.name} = {value}")
+        raise TypeError(
+            f"Configuration value is not a string list: {self.name} = {value}"
+        )
 
     def get_or_fail(self, configuration: dict) -> ConfigurationValueType:
         """
@@ -148,6 +154,31 @@ class ConfigurationProperty:
         if not self.values_cache and self.values_provider:
             return self.values_provider(runtime_configuration)
         return self.values_cache
+
+    def translate_to_environment_variable(
+        self,
+        configuration: dict,
+        runtime_configuration: RuntimeConfiguration,
+        logger: logging.Logger,
+    ):
+        """
+        Translates the configuration property to an environment variable in the
+        runtime configuration.
+
+        Args:
+            configuration (dict): A dictionary representing the configuration.
+            runtime_configuration (RuntimeConfiguration): The runtime configuration object.
+        """
+        if self.type != BINARY_PROPERTY or not self.generated_environment_variable:
+            return
+        value = self.get_boolean(configuration)
+        if value is None:
+            return
+
+        runtime_configuration.set_environment_variable(
+            self.generated_environment_variable, "1" if value else "0"
+        )
+        logger.info("%s option set to %s.", self.name, value)
 
     @staticmethod
     def initialize_defaults(

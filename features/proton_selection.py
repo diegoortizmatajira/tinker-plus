@@ -30,8 +30,59 @@ PROTON_VERSION_PROPERTY = ConfigurationProperty(
 PROTON_LOG_PROPERTY = ConfigurationProperty(
     "PROTON_LOG",
     "Enables proton logging when set to '1'.",
-    default=False,
     type=BINARY_PROPERTY,
+    generated_environment_variable="PROTON_LOG",
+)
+
+PROTON_NO_D3D10_PROPERTY = ConfigurationProperty(
+    "PROTON_NO_D3D10",
+    "Disable d3d10.dll and dxgi.dll, for D3D10 games which can fall back to and run"
+    + " better with D3D9",
+    type=BINARY_PROPERTY,
+    generated_environment_variable="PROTON_NO_D3D10",
+)
+PROTON_NO_D3D11_PROPERTY = ConfigurationProperty(
+    "PROTON_NO_D3D11",
+    "Disable d3d11.dll, for D3D11 games which can fall back to and run better with D3D9",
+    type=BINARY_PROPERTY,
+    generated_environment_variable="PROTON_NO_D3D11",
+)
+PROTON_NO_ESYNC_PROPERTY = ConfigurationProperty(
+    "PROTON_NO_ESYNC",
+    "Do not use eventfd-based in-process synchronization primitives",
+    type=BINARY_PROPERTY,
+    generated_environment_variable="PROTON_NO_ESYNC",
+)
+PROTON_NO_FSYNC_PROPERTY = ConfigurationProperty(
+    "PROTON_NO_FSYNC",
+    "Do not use futex-based in-process synchronization primitives",
+    type=BINARY_PROPERTY,
+    generated_environment_variable="PROTON_NO_FSYNC",
+)
+
+PROTON_FORCE_LARGE_ADDRESS_AWARE_PROPERTY = ConfigurationProperty(
+    "PROTON_FORCE_LARGE_ADDRESS_AWARE",
+    "Force Wine to enable the LARGE_ADDRESS_AWARE flag",
+    type=BINARY_PROPERTY,
+    generated_environment_variable="PROTON_FORCE_LARGE_ADDRESS_AWARE",
+)
+PROTON_USE_WINED3D_PROPERTY = ConfigurationProperty(
+    "PROTON_USE_WINED3D",
+    "Use OpenGL-based WineD3D instead of Vulkan-based DXVK for D3D11, D3D10 and D3D9",
+    type=BINARY_PROPERTY,
+    generated_environment_variable="PROTON_USE_WINED3D",
+)
+PROTON_ENABLE_NVAPI_PROPERTY = ConfigurationProperty(
+    "PROTON_ENABLE_NVAPI",
+    "Proton support for Nvidia's NVAPI GPU support library and DLSS",
+    type=BINARY_PROPERTY,
+    generated_environment_variable="PROTON_ENABLE_NVAPI",
+)
+PROTON_HIDE_NVIDIA_GPU_PROPERTY = ConfigurationProperty(
+    "PROTON_HIDE_NVIDIA_GPU",
+    "Proton hide Nvidia GPU",
+    type=BINARY_PROPERTY,
+    generated_environment_variable="PROTON_HIDE_NVIDIA_GPU",
 )
 
 
@@ -45,7 +96,20 @@ class ProtonSelection(FeatureProvider):
     """
 
     def __init__(self):
-        super().__init__([PROTON_VERSION_PROPERTY, PROTON_LOG_PROPERTY])
+        super().__init__(
+            [
+                PROTON_VERSION_PROPERTY,
+                PROTON_LOG_PROPERTY,
+                PROTON_NO_D3D10_PROPERTY,
+                PROTON_NO_D3D11_PROPERTY,
+                PROTON_NO_ESYNC_PROPERTY,
+                PROTON_NO_FSYNC_PROPERTY,
+                PROTON_FORCE_LARGE_ADDRESS_AWARE_PROPERTY,
+                PROTON_USE_WINED3D_PROPERTY,
+                PROTON_ENABLE_NVAPI_PROPERTY,
+                PROTON_HIDE_NVIDIA_GPU_PROPERTY,
+            ]
+        )
 
     @override
     def apply_configuration(
@@ -67,9 +131,7 @@ class ProtonSelection(FeatureProvider):
         Returns:
             RuntimeConfiguration: The updated runtime configuration object.
         """
-        if PROTON_LOG_PROPERTY.get_boolean(configuration):
-            runtime_configuration.set_environment_variable("PROTON_LOG", "1")
-            self.logger.info("Proton logging enabled.")
+
         runtime_configuration.steam_compatibility_tool = (
             PROTON_VERSION_PROPERTY.get_string(configuration)
             or runtime_configuration.steam_compatibility_tool
