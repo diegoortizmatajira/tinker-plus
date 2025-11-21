@@ -49,4 +49,6 @@ class GameRunner(FeatureProvider):
     def execute_in_pipeline(
         self, configuration: dict, runtime_configuration: RuntimeConfiguration
     ):
+        for k, v in (runtime_configuration.environment_variables or {}).items():
+            self.logger.info("Using:  %s=%s", k, v)
         run_game_and_forks_with_compatibility_tool(runtime_configuration, self.logger)

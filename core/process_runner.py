@@ -1,4 +1,5 @@
 import logging
+import os
 import subprocess
 import time
 from typing import Optional
@@ -32,16 +33,21 @@ def run_in_wine_prefix(
     log_file = LogFactory.singleton().get_log_filename(
         output_log_file or GENERAL_TOOLS_LOG_FILE
     )
-    command = (
-        f'WINE="{runtime_configuration.wine}" WINEPREFIX="{wine_prefix}" {exe_command} >> '
-        f"{log_file} 2>&1"
-    )
+    environment_variables = os.environ.copy()
+    environment_variables.update(runtime_configuration.environment_variables or {})
+    environment_variables["WINEPREFIX"] = wine_prefix
+    logger.info("Using  WINEPREFIX=%s", wine_prefix)
+    if runtime_configuration.wine:
+        environment_variables["WINE"] = runtime_configuration.wine
+        logger.info("Using  WINE=%s", runtime_configuration.wine)
+
+    command = f"{exe_command} >> {log_file} 2>&1"
     if runtime_configuration.dry_run:
         logger.info("[DRY RUN] Would execute command in Wine prefix: %s", command)
         return
     try:
         logger.info("Executing command in Wine prefix: %s", command)
-        subprocess.run(command, shell=True, check=True)
+        subprocess.run(command, env=environment_variables, shell=True, check=True)
     except Exception as e:
         logger.error("Error while running command in Wine prefix: %s", e)
         raise RuntimeError(
@@ -64,15 +70,8 @@ def run_with_compatibility_tool(
         command (str): The command to execute.
     """
 
-    environment_variables = ""
-    if runtime_configuration.environment_variables:
-        environment_variables = " ".join(
-            [
-                f"{key}={value if ' ' not in value else f'''{value}'''}"
-                for key, value in (runtime_configuration.environment_variables).items()
-            ]
-        ).strip()
-
+    environment_variables = os.environ.copy()
+    environment_variables.update(runtime_configuration.environment_variables or {})
     command = exe_command
     # Takes the pipeline wrappers in reverse order
     for wrapper in reversed(runtime_configuration.pipeline_wrappers or []):
@@ -80,7 +79,6 @@ def run_with_compatibility_tool(
             command, runtime_configuration, is_fork=is_fork, logger=logger
         )
 
-    command = f"{environment_variables} {command}"
     if runtime_configuration.dry_run:
         logger.info("[DRY RUN] Would execute %s command: %s", category, command)
         return None
@@ -88,6 +86,7 @@ def run_with_compatibility_tool(
         logger.info("Executing %s command: %s", category, command)
         return subprocess.Popen(
             command,
+            env=environment_variables,
             shell=True,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
