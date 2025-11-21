@@ -9,6 +9,7 @@ import argparse
 from core import LogFactory
 from core.config_storage import ConfigStorage
 from core.defaults import TPLUS_BIN_LOCATION
+from core.file_operations import create_symbolic_link
 from core.runtime_provider import RuntimeProvider
 from features.external_tools import ExternalTools
 from features.game_runner import GameRunner
@@ -73,8 +74,12 @@ class MainApp:
         self.handler = command_handlers.get(self.args.command)
 
         debug_mode = getattr(self.args, "debug", False)
+
+        # Set Steam Game ID from environment variable if available
+        game_id = os.getenv("SteamGameId") or "unknown"
+
         factory = LogFactory.initialize(
-            logging.DEBUG if debug_mode else logging.INFO, True
+            game_id, logging.DEBUG if debug_mode else logging.INFO, True
         )
         self.logger = factory.get_logger("TinkerPlus")
 
@@ -148,8 +153,8 @@ class MainApp:
         """
         current_script_directory = os.path.dirname(os.path.abspath(__file__))
         tinker_plus_sh_path = os.path.join(current_script_directory, "tinker-plus.sh")
-        storage = ConfigStorage()
-        storage.create_symbolic_link(tinker_plus_sh_path, TPLUS_BIN_LOCATION)
+
+        create_symbolic_link(tinker_plus_sh_path, TPLUS_BIN_LOCATION, self.logger)
         self.logger.info("Installing as Steam compatibility tool... (not implemented)")
 
 

@@ -8,6 +8,7 @@ import pathlib
 from typing import List, override
 from core import FeatureProvider, ConfigurationProperty, RuntimeConfiguration, ListItem
 from core.configuration_property import BINARY_PROPERTY, LIST_PROPERTY
+from core.log_storage import LogFactory
 from core.runtime_configuration import PipelineWrapper
 
 
@@ -34,7 +35,6 @@ PROTON_LOG_PROPERTY = ConfigurationProperty(
     type=BINARY_PROPERTY,
     generated_environment_variable="PROTON_LOG",
 )
-
 PROTON_NO_D3D10_PROPERTY = ConfigurationProperty(
     "PROTON_NO_D3D10",
     "Disable d3d10.dll and dxgi.dll, for D3D10 games which can fall back to and run"
@@ -60,7 +60,6 @@ PROTON_NO_FSYNC_PROPERTY = ConfigurationProperty(
     type=BINARY_PROPERTY,
     generated_environment_variable="PROTON_NO_FSYNC",
 )
-
 PROTON_FORCE_LARGE_ADDRESS_AWARE_PROPERTY = ConfigurationProperty(
     "PROTON_FORCE_LARGE_ADDRESS_AWARE",
     "Force Wine to enable the LARGE_ADDRESS_AWARE flag",
@@ -73,11 +72,17 @@ PROTON_USE_WINED3D_PROPERTY = ConfigurationProperty(
     type=BINARY_PROPERTY,
     generated_environment_variable="PROTON_USE_WINED3D",
 )
-PROTON_ENABLE_NVAPI_PROPERTY = ConfigurationProperty(
-    "PROTON_ENABLE_NVAPI",
-    "Proton support for Nvidia's NVAPI GPU support library and DLSS",
+PROTON_DXVK_D3D8_PROPERTY = ConfigurationProperty(
+    "PROTON_DXVK_D3D8",
+    "Enable DXVK's D3D8 support",
     type=BINARY_PROPERTY,
-    generated_environment_variable="PROTON_ENABLE_NVAPI",
+    generated_environment_variable="PROTON_DXVK_D3D8",
+)
+PROTON_DISABLE_NVAPI_PROPERTY = ConfigurationProperty(
+    "PROTON_DISABLE_NVAPI",
+    "Disable Proton support for Nvidia's NVAPI GPU and DLSS",
+    type=BINARY_PROPERTY,
+    generated_environment_variable="PROTON_DISABLE_NVAPI",
 )
 PROTON_HIDE_NVIDIA_GPU_PROPERTY = ConfigurationProperty(
     "PROTON_HIDE_NVIDIA_GPU",
@@ -107,8 +112,9 @@ class ProtonSelection(FeatureProvider):
                 PROTON_NO_FSYNC_PROPERTY,
                 PROTON_FORCE_LARGE_ADDRESS_AWARE_PROPERTY,
                 PROTON_USE_WINED3D_PROPERTY,
-                PROTON_ENABLE_NVAPI_PROPERTY,
+                PROTON_DISABLE_NVAPI_PROPERTY,
                 PROTON_HIDE_NVIDIA_GPU_PROPERTY,
+                PROTON_DXVK_D3D8_PROPERTY,
             ]
         )
 
@@ -167,6 +173,12 @@ class ProtonSelection(FeatureProvider):
         if not runtime_configuration.steam_compatibility_tool:
             self.logger.error("No steam compatibility tool (proton) version selected.")
             raise RuntimeError("There is no proton version selected.")
+
+        proton_logs_enabled = PROTON_LOG_PROPERTY.get_boolean(configuration)
+        if proton_logs_enabled:
+            log_dir = LogFactory.singleton().get_log_folder()
+            self.logger.info('Enabling proton logs output to directory: "%s"', log_dir)
+            runtime_configuration.set_environment_variable("PROTON_LOG_DIR", log_dir)
 
         # Get the Wine executable path corresponding to the selected proton version
         runtime_configuration.wine = self.__get_wine(runtime_configuration)

@@ -5,6 +5,7 @@ from typing import Optional
 from core.defaults import (
     GENERAL_TOOLS_LOG_FILE,
 )
+from core.log_storage import LogFactory
 from core.runtime_configuration import (
     COMMAND_TRAINER,
     ExecutableCommand,
@@ -28,9 +29,12 @@ def run_in_wine_prefix(
     if not wine_prefix:
         raise RuntimeError("WINEPREFIX environment variable is not set.")
 
+    log_file = LogFactory.singleton().get_log_filename(
+        output_log_file or GENERAL_TOOLS_LOG_FILE
+    )
     command = (
         f'WINE="{runtime_configuration.wine}" WINEPREFIX="{wine_prefix}" {exe_command} >> '
-        f"{output_log_file or GENERAL_TOOLS_LOG_FILE} 2>&1"
+        f"{log_file} 2>&1"
     )
     if runtime_configuration.dry_run:
         logger.info("[DRY RUN] Would execute command in Wine prefix: %s", command)

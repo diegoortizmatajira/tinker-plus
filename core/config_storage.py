@@ -141,27 +141,3 @@ class ConfigStorage:
                 diff[key] = value
         return diff
 
-    def create_symbolic_link(self, target: str, link_name: str):
-        """
-        Creates a symbolic link pointing to target named link_name.
-
-        Args:
-            target (str): The path the symbolic link points to.
-            link_name (str): The path of the symbolic link to be created.
-            logger (logging.Logger): The logger instance for logging progress and errors.
-        """
-        try:
-            if os.path.exists(link_name):
-                self.logger.info(
-                    "Symbolic link %s already exists. Skipping creation.", link_name
-                )
-                return
-            os.symlink(target, link_name)
-            self.logger.info("Created symbolic link %s -> %s", link_name, target)
-        except Exception as e:
-            self.logger.error(
-                "Error creating symbolic link %s -> %s: %s", link_name, target, e
-            )
-            raise RuntimeError(
-                f"Error creating symbolic link {link_name} -> {target}"
-            ) from e

@@ -1,3 +1,5 @@
+"""Module for Winetricks package installation feature."""
+
 from typing import override
 from core import (
     FeatureProvider,
@@ -18,6 +20,8 @@ WINETRICKS_PROPERTY = ConfigurationProperty(
 
 
 class WinetricksInstall(FeatureProvider):
+    """Feature to install standalone Winetricks packages."""
+
     def __init__(self):
         super().__init__(
             [

@@ -2,9 +2,10 @@
 
 import logging
 import os
+from pathlib import Path
 from typing import Optional
 
-from core.defaults import APP_LOG_FILE
+from core.defaults import APP_LAST_RUN_LOG_FILE, GAME_LOGS_DIR_TEMPLATE
 
 
 class LogFactory:
@@ -14,23 +15,45 @@ class LogFactory:
 
     _instance: Optional["LogFactory"] = None
 
-    def __init__(self, level=logging.DEBUG, file_output: bool = False):
+    def __init__(self, game_id: str, level=logging.DEBUG, file_output: bool = False):
         logging.basicConfig(
             level=level, format="%(levelname)s - [%(name)s] - %(message)s"
         )
-
+        self.game_id = game_id
+        self.logs_folder: Optional[str] = None
         self.file_handler: Optional[logging.FileHandler] = None
         if file_output:
-            if os.path.exists(APP_LOG_FILE):
-                os.remove(APP_LOG_FILE)
-            # Log to file
-            self.file_handler = logging.FileHandler(APP_LOG_FILE)
+            self.logs_folder = LogFactory.prepare_logs_folder(game_id)
+            log_filename = self.get_log_filename(APP_LAST_RUN_LOG_FILE)
+            self.file_handler = logging.FileHandler(log_filename)
             self.file_handler.setFormatter(
                 logging.Formatter(
                     "%(asctime)s - %(levelname)s - [%(name)s] - %(message)s"
                 )
             )
             self.file_handler.setLevel(level)
+
+    def get_log_filename(self, file_name: str) -> str:
+        """
+        Generates the full path for a log file if the logs folder is configured.
+
+        :param file_name: Name of the log file.
+        :return: Full path of the log file, or None if logs folder is not set.
+        """
+        if self.logs_folder:
+            return os.path.join(self.logs_folder, file_name)
+        raise ValueError(f"Cannot determine log file path for {file_name}.")
+
+    def get_log_folder(self) -> str:
+        """
+        Generates the full path for a log file if the logs folder is configured.
+
+        :param file_name: Name of the log file.
+        :return: Full path of the log file, or None if logs folder is not set.
+        """
+        if self.logs_folder:
+            return self.logs_folder
+        raise ValueError("Cannot determine log folder path.")
 
     def get_logger(self, name: str) -> logging.Logger:
         """
@@ -46,14 +69,16 @@ class LogFactory:
         return logger
 
     @classmethod
-    def initialize(cls, level=logging.DEBUG, file_output: bool = False) -> "LogFactory":
+    def initialize(
+        cls, game_id: str, level=logging.DEBUG, file_output: bool = False
+    ) -> "LogFactory":
         """
         Initializes and returns a singleton instance of LogFactory.
 
         :param level: Logging level.
         :return: Singleton LogFactory instance.
         """
-        cls._instance = LogFactory(level, file_output)
+        cls._instance = LogFactory(game_id, level, file_output)
         return cls._instance
 
     @classmethod
@@ -64,4 +89,20 @@ class LogFactory:
 
         :return: Singleton LogFactory instance.
         """
-        return cls._instance or cls.initialize()
+        return cls._instance or cls.initialize("test")
+
+    @staticmethod
+    def prepare_logs_folder(game_id: str) -> str:
+        """
+        Prepares the logging directory for a game, ensuring the appropriate
+        structure and file management for new and existing logs.
+
+        :param game_id: Unique identifier for the game.
+        """
+        log_folder = Path(GAME_LOGS_DIR_TEMPLATE.format(game_id))
+        log_folder.mkdir(parents=True, exist_ok=True)
+
+        for log_file in log_folder.glob("*.log"):
+            old_log_file = log_file.with_suffix(".old")
+            log_file.replace(old_log_file)
+        return str(log_folder)

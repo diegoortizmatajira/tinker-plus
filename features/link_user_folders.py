@@ -2,9 +2,15 @@
 Feature to link user folders to specified locations to manage saved games and settings.
 """
 
+import os
+from os.path import islink
+from pathlib import Path
+
 from typing import override
 from core import ConfigurationProperty, FeatureProvider, RuntimeConfiguration
 from core.config_storage import ConfigStorage
+from core.defaults import PUBLIC_USER_FOLDER_NAME, STEAM_USER_FOLDER_NAME
+from core.file_operations import create_symbolic_link
 
 LINK_STEAM_USER_FOLDER_PROPERTY = ConfigurationProperty(
     "LINK_STEAM_USER_FOLDER",
@@ -42,6 +48,16 @@ class LinkUserFolders(FeatureProvider):
         user_folder = LINK_STEAM_USER_FOLDER_PROPERTY.get_string(configuration)
         if user_folder:
             self.logger.info("Linking user folder to: %s", user_folder)
+            create_symbolic_link(
+                user_folder,
+                f"{runtime_configuration.prefix_path}/{STEAM_USER_FOLDER_NAME}",
+                self.logger,
+            )
         public_user_folder = LINK_PUBLIC_USER_FOLDER_PROPERTY.get_string(configuration)
         if public_user_folder:
             self.logger.info("Linking public folder to: %s", public_user_folder)
+            create_symbolic_link(
+                public_user_folder,
+                f"{runtime_configuration.prefix_path}/{PUBLIC_USER_FOLDER_NAME}",
+                self.logger,
+            )
