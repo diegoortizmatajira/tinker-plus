@@ -70,7 +70,7 @@ class SteamTools(FeatureProvider):
             self.logger.info("Enabling Steam Sniper wrapper.")
             runtime_configuration.add_pipeline_wrapper(
                 PipelineWrapper(
-                    runtime_configuration.steam_sniper,
+                    runtime_configuration.steam_sniper.replace("waitforexitandrun", "run"),
                     applies_to_forks=False,
                 )
             )

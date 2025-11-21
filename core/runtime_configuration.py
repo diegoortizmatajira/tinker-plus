@@ -122,6 +122,16 @@ class RuntimeConfiguration:
     environment_variables: Optional[dict[str, str]] = None
     pipeline_wrappers: Optional[List[PipelineWrapper]] = None
 
+    def reset(self) -> None:
+        """
+        Resets the runtime configuration to its default state.
+        """
+        self.fork_commands = None
+        self.winetricks = None
+        self.execute_trainers = True
+        self.environment_variables = None
+        self.pipeline_wrappers = None
+
     @property
     def has_trainers(self) -> bool:
         """

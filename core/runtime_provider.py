@@ -249,6 +249,7 @@ class RuntimeProvider:
             run_with_trainers (bool): A flag indicating whether trainers should be
                 executed as part of the runtime environment. Defaults to True.
         """
+        self.runtime_configuration.reset()
         # Apply configurations to runtime
         for feature in self.features:
             feature.try_apply_configuration(

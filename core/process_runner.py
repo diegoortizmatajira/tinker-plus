@@ -36,6 +36,7 @@ def run_in_wine_prefix(
         logger.info("[DRY RUN] Would execute command in Wine prefix: %s", command)
         return
     try:
+        logger.info("Executing command in Wine prefix: %s", command)
         subprocess.run(command, shell=True, check=True)
     except Exception as e:
         logger.error("Error while running command in Wine prefix: %s", e)

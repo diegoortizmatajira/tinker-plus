@@ -1,3 +1,5 @@
+"""Main Form with Tabs GUI Module"""
+
 import tkinter as tk
 from tkinter import ttk
 from tkinter.ttk import Progressbar
@@ -47,14 +49,14 @@ class MainForm:
         # Binding
         self.runtime_provider = runtime_provider
 
-        temp_has_trainers = runtime_provider.runtime_configuration.has_trainers
-        self.just_play_button.configure(
-            default=temp_has_trainers and tk.NORMAL or tk.ACTIVE
-        )
-        self.play_with_trainer_button.configure(
-            state=temp_has_trainers and tk.NORMAL or tk.DISABLED,
-            default=temp_has_trainers and tk.ACTIVE or tk.NORMAL,
-        )
+        # temp_has_trainers = runtime_provider.runtime_configuration.has_trainers
+        # self.just_play_button.configure(
+        #     default=temp_has_trainers and tk.NORMAL or tk.ACTIVE
+        # )
+        # self.play_with_trainer_button.configure(
+        #     state=temp_has_trainers and tk.NORMAL or tk.DISABLED,
+        #     default=temp_has_trainers and tk.ACTIVE or tk.NORMAL,
+        # )
 
     def on_play_with_trainer_click(self):
         # Default handler for Play with Trainer button
