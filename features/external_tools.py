@@ -7,7 +7,11 @@ from core.configuration_property import (
     ConfigurationProperty,
 )
 from core.feature_provider import FeatureProvider
-from core.runtime_configuration import PipelineWrapper, RuntimeConfiguration
+from core.runtime_configuration import (
+    ExecutableCommand,
+    PipelineWrapper,
+    RuntimeConfiguration,
+)
 
 GAMEMODERUN_ENABLED_PROPERTY = ConfigurationProperty(
     "GAMEMODERUN_ENABLED",
@@ -56,5 +60,17 @@ class ExternalTools(FeatureProvider):
             self.logger.info("Enabling GameModeRun wrapper.")
             runtime_configuration.add_pipeline_wrapper(
                 PipelineWrapper("gamemoderun", applies_to_forks=False)
+            )
+        if GAMESCOPE_ENABLED_PROPERTY.get_boolean(configuration):
+            gamescope_args = GAMESCOPE_ARGS_PROPERTY.get_string(configuration) or ""
+            self.logger.info(
+                'Enabling Gamescope wrapper with args: "%s"', gamescope_args
+            )
+            command = ExecutableCommand("gamescope", args=gamescope_args)
+            runtime_configuration.add_pipeline_wrapper(
+                PipelineWrapper(
+                    wrapper=lambda cmd, *_: (f"{command.get_full_command()} -- {cmd}"),
+                    applies_to_forks=False,
+                )
             )
         return runtime_configuration

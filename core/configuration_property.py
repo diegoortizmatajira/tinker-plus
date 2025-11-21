@@ -169,16 +169,38 @@ class ConfigurationProperty:
             configuration (dict): A dictionary representing the configuration.
             runtime_configuration (RuntimeConfiguration): The runtime configuration object.
         """
-        if self.type != BINARY_PROPERTY or not self.generated_environment_variable:
+        if not self.generated_environment_variable:
             return
-        value = self.get_boolean(configuration)
-        if value is None:
-            return
+        if self.type == BINARY_PROPERTY:
+            value = self.get_boolean(configuration)
+            if value is None:
+                return
 
-        runtime_configuration.set_environment_variable(
-            self.generated_environment_variable, "1" if value else "0"
-        )
-        logger.info("%s option set to %s.", self.name, value)
+            runtime_configuration.set_environment_variable(
+                self.generated_environment_variable, "1" if value else "0"
+            )
+            logger.info("%s option flag set to %s.", self.name, value)
+            return
+        if self.type in (TEXT_PROPERTY, LIST_PROPERTY):
+            value = self.get_string(configuration)
+            if value is None:
+                return
+
+            runtime_configuration.set_environment_variable(
+                self.generated_environment_variable, value
+            )
+            logger.info('%s parameter set to "%s".', self.name, value)
+            return
+        if self.type == MULTIVALUELIST_PROPERTY:
+            value = self.get_string_list(configuration)
+            if value is None:
+                return
+
+            runtime_configuration.set_environment_variable(
+                self.generated_environment_variable, ",".join(value)
+            )
+            logger.info("%s parameter set to %s.", self.name, value)
+            return
 
     @staticmethod
     def initialize_defaults(

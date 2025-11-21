@@ -1,5 +1,6 @@
 import logging
 import subprocess
+import time
 from typing import Optional
 from core.defaults import (
     GENERAL_TOOLS_LOG_FILE,
@@ -50,7 +51,7 @@ def run_with_compatibility_tool(
     *,
     category: str = "main game",
     is_fork: bool = False,
-):
+) -> Optional[subprocess.Popen]:
     """
     Executes a given command using subprocess.
 
@@ -77,13 +78,17 @@ def run_with_compatibility_tool(
     command = f"{environment_variables} {command}"
     if runtime_configuration.dry_run:
         logger.info("[DRY RUN] Would execute %s command: %s", category, command)
-        return
+        return None
     try:
         logger.info("Executing %s command: %s", category, command)
-        bash_wrapper = f"bash {command}"
-        # subprocess.run(bash_wrapper, shell=True, check=True)
-        with subprocess.Popen(bash_wrapper) as process:
-            process.wait()
+        return subprocess.Popen(
+            command,
+            shell=True,
+            start_new_session=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL,
+        )
     except Exception as e:
         logger.error("Error while running application: %s", e)
         raise RuntimeError(
@@ -128,6 +133,7 @@ def run_game_and_forks_with_compatibility_tool(
             category=command.category or "fork",
             is_fork=True,
         )
+        time.sleep(2)  # Small delay to avoid
 
     if not runtime_configuration.steam_game_exe:
         raise RuntimeError("No game executable specified to run.")

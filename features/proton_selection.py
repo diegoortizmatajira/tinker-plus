@@ -139,11 +139,10 @@ class ProtonSelection(FeatureProvider):
 
         runtime_configuration.add_pipeline_wrapper(
             PipelineWrapper(
-                wrapper=lambda cmd, runtime_configuration, is_fork: (
+                wrapper=lambda cmd, runtime_configuration, _: (
                     f"{runtime_configuration.steam_compatibility_tools_path}/"
                     f"{runtime_configuration.steam_compatibility_tool}/proton"
-                    f" {'run' if is_fork else 'waitforexitandrun'}"
-                    f" {cmd}"
+                    f" run {cmd}"
                 ),
             )
         )

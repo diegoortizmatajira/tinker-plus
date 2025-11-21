@@ -2,7 +2,7 @@
 {
   "compat_tools"
   {
-	"Proton-stl" // Internal name of this tool
+	"Proton-tp" // Internal name of this tool
 	{
 	  "install_path" "."
 	  "display_name" "Tinker Plus"
@@ -12,3 +12,4 @@
 	}
   }
 }
+
