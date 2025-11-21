@@ -216,6 +216,7 @@ class RuntimeProvider:
             f"{self.runtime_configuration.steam_compat_data_path}/pfx"
         )
 
+
     def build_configuration(self):
         """
         Builds the runtime configuration by merging global and game-specific configurations,
@@ -255,7 +256,6 @@ class RuntimeProvider:
             feature.try_apply_configuration(
                 self.configuration, self.runtime_configuration
             )
-
         self.runtime_configuration.execute_trainers = run_with_trainers
 
         for features in self.features:

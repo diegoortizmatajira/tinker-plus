@@ -115,6 +115,7 @@ class RuntimeConfiguration:
     steam_compatibility_tool: Optional[str] = None
     steam_compatibility_tools_path: Optional[str] = None
     steam_game_exe: Optional[str] = None
+    wine: Optional[str] = None
     fork_commands: Optional[List[ExecutableCommand]] = None
     winetricks: Optional[List[str]] = None
     prefix_path: Optional[str] = None

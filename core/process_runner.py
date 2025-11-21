@@ -29,7 +29,7 @@ def run_in_wine_prefix(
         raise RuntimeError("WINEPREFIX environment variable is not set.")
 
     command = (
-        f'WINEPREFIX="{wine_prefix}" {exe_command} >> '
+        f'WINE="{runtime_configuration.wine}" WINEPREFIX="{wine_prefix}" {exe_command} >> '
         f"{output_log_file or GENERAL_TOOLS_LOG_FILE} 2>&1"
     )
     if runtime_configuration.dry_run:
@@ -85,7 +85,6 @@ def run_with_compatibility_tool(
         return subprocess.Popen(
             command,
             shell=True,
-            start_new_session=True,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             stdin=subprocess.DEVNULL,

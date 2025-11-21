@@ -2,6 +2,7 @@
 Module for selecting proton version.
 """
 
+import os
 import pathlib
 
 from typing import List, override
@@ -111,6 +112,33 @@ class ProtonSelection(FeatureProvider):
             ]
         )
 
+    def __get_wine(self, runtime_configuration: RuntimeConfiguration) -> str:
+        """
+        Retrieves the Wine executable path from the runtime configuration.
+
+        Returns:
+            str: The Wine executable path.
+        """
+
+        compat_tool_path = os.path.join(
+            runtime_configuration.steam_compatibility_tools_path or "missing",
+            runtime_configuration.steam_compatibility_tool or "missing",
+        )
+        proton_wine = os.path.join(compat_tool_path, "dist/bin/wine")
+        ge_proton_wine = os.path.join(compat_tool_path, "files/bin/wine")
+        self.logger.debug("Checking for Proton Wine at: %s", proton_wine)
+        if os.path.isfile(proton_wine):
+            self.logger.info("Found Proton Wine at: %s", proton_wine)
+            return proton_wine
+        self.logger.debug("Checking for GE-Proton Wine at: %s", ge_proton_wine)
+        if os.path.isfile(ge_proton_wine):
+            self.logger.info("Found GE-Proton Wine at: %s", ge_proton_wine)
+            return ge_proton_wine
+        self.logger.warning(
+            "Could not find a valid Wine executable in the compatibility tool path."
+        )
+        return ""
+
     @override
     def apply_configuration(
         self, configuration: dict, runtime_configuration: RuntimeConfiguration
@@ -136,7 +164,12 @@ class ProtonSelection(FeatureProvider):
             PROTON_VERSION_PROPERTY.get_string(configuration)
             or runtime_configuration.steam_compatibility_tool
         )
+        if not runtime_configuration.steam_compatibility_tool:
+            self.logger.error("No steam compatibility tool (proton) version selected.")
+            raise RuntimeError("There is no proton version selected.")
 
+        # Get the Wine executable path corresponding to the selected proton version
+        runtime_configuration.wine = self.__get_wine(runtime_configuration)
         runtime_configuration.add_pipeline_wrapper(
             PipelineWrapper(
                 wrapper=lambda cmd, runtime_configuration, _: (
