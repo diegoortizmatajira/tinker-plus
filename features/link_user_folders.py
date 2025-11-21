@@ -9,13 +9,11 @@ from core.config_storage import ConfigStorage
 LINK_STEAM_USER_FOLDER_PROPERTY = ConfigurationProperty(
     "LINK_STEAM_USER_FOLDER",
     "If provided links the steam user folder to the given location",
-    False,
 )
 
 LINK_PUBLIC_USER_FOLDER_PROPERTY = ConfigurationProperty(
     "LINK_PUBLIC_USER_FOLDER",
     "If provided links the public user folder to the given location",
-    False,
 )
 
 
@@ -41,5 +39,9 @@ class LinkUserFolders(FeatureProvider):
     def execute_in_pipeline(
         self, configuration: dict, runtime_configuration: RuntimeConfiguration
     ):
-        # Link Steam user folder if specified
-        pass
+        user_folder = LINK_STEAM_USER_FOLDER_PROPERTY.get_string(configuration)
+        if user_folder:
+            self.logger.info("Linking user folder to: %s", user_folder)
+        public_user_folder = LINK_PUBLIC_USER_FOLDER_PROPERTY.get_string(configuration)
+        if public_user_folder:
+            self.logger.info("Linking public folder to: %s", public_user_folder)
