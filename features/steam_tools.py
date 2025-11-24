@@ -104,9 +104,7 @@ class SteamTools(FeatureProvider):
             self.logger.info(
                 "Restored last used Steam Sniper command as it was not set by runtime provider."
             )
-        self.logger.info(
-            "Steam Sniper Command: %s", runtime_configuration.steam_sniper
-        )
+        self.logger.info("Steam Sniper Command: %s", runtime_configuration.steam_sniper)
         if not runtime_configuration.steam_reaper:
             runtime_configuration.steam_reaper = (
                 STEAM_LAST_REAPER_COMMAND_PROPERTY.get_string(configuration)
@@ -114,9 +112,7 @@ class SteamTools(FeatureProvider):
             self.logger.info(
                 "Restored last used Steam Reaper command as it was not set by runtime provider."
             )
-        self.logger.info(
-            "Steam Reaper Command: %s", runtime_configuration.steam_reaper
-        )
+        self.logger.info("Steam Reaper Command: %s", runtime_configuration.steam_reaper)
         # Apply the Steam wrapper
         if (
             STEAM_USE_WRAPPER_PROPERTY.get_boolean(configuration)
@@ -126,7 +122,7 @@ class SteamTools(FeatureProvider):
             runtime_configuration.add_pipeline_wrapper(
                 PipelineWrapper(
                     runtime_configuration.steam_wrapper,
-                    applies_to_forks=False,
+                    is_global_wrapper=True,
                 )
             )
         # Apply the Sniper
@@ -140,7 +136,7 @@ class SteamTools(FeatureProvider):
                     runtime_configuration.steam_sniper.replace(
                         "waitforexitandrun", "run"
                     ),
-                    applies_to_forks=False,
+                    is_global_wrapper=True,
                 )
             )
         # Apply the Reaper
@@ -152,7 +148,7 @@ class SteamTools(FeatureProvider):
             runtime_configuration.add_pipeline_wrapper(
                 PipelineWrapper(
                     f"{runtime_configuration.steam_reaper} --",
-                    applies_to_forks=False,
+                    is_global_wrapper=True,
                 )
             )
         return runtime_configuration

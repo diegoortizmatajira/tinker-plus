@@ -1,9 +1,11 @@
+"""Module for running processes with compatibility tools and handling execution pipelines."""
+
 import logging
 import os
 import subprocess
-import time
 from typing import Optional
 from core.defaults import (
+    GAME_SCRIPT_TEMPLATE,
     GENERAL_TOOLS_LOG_FILE,
 )
 from core.log_storage import LogFactory
@@ -55,13 +57,27 @@ def run_in_wine_prefix(
         ) from e
 
 
-def run_with_compatibility_tool(
+def __assemble_command_str(
+    exe_command: str,
+    runtime_configuration: RuntimeConfiguration,
+    is_global: bool = True,
+) -> str:
+    command = exe_command
+    # Takes the pipeline wrappers in reverse order
+    for wrapper in reversed(runtime_configuration.pipeline_wrappers or []):
+        command = wrapper.wrap(
+            command,
+            runtime_configuration,
+            is_global=is_global,
+            logger=logging.getLogger(),
+        )
+    return command
+
+
+def run_with_pipeline(
     exe_command: str,
     runtime_configuration: RuntimeConfiguration,
     logger: logging.Logger,
-    *,
-    category: str = "main game",
-    is_fork: bool = False,
 ) -> Optional[subprocess.Popen]:
     """
     Executes a given command using subprocess.
@@ -72,30 +88,24 @@ def run_with_compatibility_tool(
 
     environment_variables = os.environ.copy()
     environment_variables.update(runtime_configuration.environment_variables or {})
-    command = exe_command
-    # Takes the pipeline wrappers in reverse order
-    for wrapper in reversed(runtime_configuration.pipeline_wrappers or []):
-        command = wrapper.wrap(
-            command, runtime_configuration, is_fork=is_fork, logger=logger
-        )
-
+    command = __assemble_command_str(exe_command, runtime_configuration, is_global=True)
     if runtime_configuration.dry_run:
-        logger.info("[DRY RUN] Would execute %s command: %s", category, command)
+        logger.info("[DRY RUN] Would execute command: %s", command)
         return None
     try:
-        logger.info("Executing %s command: %s", category, command)
+        logger.info("Executing command: %s", command)
         return subprocess.Popen(
             command,
             env=environment_variables,
             shell=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             stdin=subprocess.DEVNULL,
         )
     except Exception as e:
         logger.error("Error while running application: %s", e)
         raise RuntimeError(
-            f"Error executing {category} command: '{exe_command}' with compatibility tool."
+            f"Error executing command: '{exe_command}' with execution pipeline."
         ) from e
 
 
@@ -116,38 +126,59 @@ def run_game_and_forks_with_compatibility_tool(
             and compatibility tools.
         logger (logging.Logger): The logger instance for logging progress and errors.
     """
-
-    for command in runtime_configuration.fork_commands or []:
-        if (
-            command.category == COMMAND_TRAINER
-            and not runtime_configuration.execute_trainers
-        ):
-            continue  # Skip trainer commands if trainers are disabled
-
-        logger.info(
-            "Running %s command: '%s'",
-            command.category or "fork",
-            command.get_full_command(),
-        )
-        run_with_compatibility_tool(
-            command.get_full_command(),
-            runtime_configuration,
-            logger,
-            category=command.category or "fork",
-            is_fork=True,
-        )
-        time.sleep(2)  # Small delay to avoid
-
     if not runtime_configuration.steam_game_exe:
         raise RuntimeError("No game executable specified to run.")
 
+    launcher_script_content = "#!/bin/bash\n"
+    if (
+        runtime_configuration.fork_commands
+        and len(runtime_configuration.fork_commands) > 0
+    ):
+        for command in runtime_configuration.fork_commands or []:
+            if (
+                command.category == COMMAND_TRAINER
+                and not runtime_configuration.execute_trainers
+            ):
+                continue  # Skip trainer commands if trainers are disabled
+            command_category = command.category or "fork"
+            logger.info(
+                "Including %s command in launcher script: '%s'",
+                command_category,
+                command.get_full_command(),
+            )
+            launcher_script_content += f"# {command_category} command\n"
+            assembled_command_str = __assemble_command_str(
+                command.get_full_command(),
+                runtime_configuration,
+                is_global=False,
+            )
+            launcher_script_content += f"{assembled_command_str} &\n"
+
     game_command = ExecutableCommand(runtime_configuration.steam_game_exe, "")
     logger.info(
-        "Running game command: '%s'.",
+        "Including game command in launcher script: '%s'.",
         game_command.get_full_command(),
     )
-    run_with_compatibility_tool(
+    launcher_script_content += "# main game command\n"
+
+    assembled_command_str = __assemble_command_str(
         game_command.get_full_command(),
+        runtime_configuration,
+        is_global=False,
+    )
+    launcher_script_content += f"{assembled_command_str}\n"
+    script_filename = GAME_SCRIPT_TEMPLATE.format(runtime_configuration.steam_game_id)
+    # Write the launcher script to a file
+    with open(script_filename, "w", encoding="utf-8") as script_file:
+        script_file.write(launcher_script_content)
+    os.chmod(script_filename, 0o755)  # Make the script executable
+    game_process = run_with_pipeline(
+        script_filename,
         runtime_configuration,
         logger,
     )
+    if game_process:
+        with game_process:
+            logger.info("Launched game with PID: %s", game_process.pid)
+            result = game_process.wait()
+            logger.info("Game process exited with return code: %s", result)

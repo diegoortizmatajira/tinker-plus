@@ -58,9 +58,7 @@ class ExternalTools(FeatureProvider):
     ) -> RuntimeConfiguration:
         if GAMEMODERUN_ENABLED_PROPERTY.get_boolean(configuration):
             self.logger.info("Enabling GameModeRun wrapper.")
-            runtime_configuration.add_pipeline_wrapper(
-                PipelineWrapper("gamemoderun", applies_to_forks=False)
-            )
+            runtime_configuration.add_pipeline_wrapper(PipelineWrapper("gamemoderun"))
         if GAMESCOPE_ENABLED_PROPERTY.get_boolean(configuration):
             gamescope_args = GAMESCOPE_ARGS_PROPERTY.get_string(configuration) or ""
             self.logger.info(
@@ -69,8 +67,7 @@ class ExternalTools(FeatureProvider):
             command = ExecutableCommand("gamescope", args=gamescope_args)
             runtime_configuration.add_pipeline_wrapper(
                 PipelineWrapper(
-                    wrapper=lambda cmd, *_: (f"{command.get_full_command()} -- {cmd}"),
-                    applies_to_forks=False,
+                    wrapper=lambda cmd, _: (f"{command.get_full_command()} -- {cmd}"),
                 )
             )
         return runtime_configuration

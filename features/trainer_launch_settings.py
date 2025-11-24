@@ -76,7 +76,7 @@ class TrainerLaunchSettings(FeatureProvider):
         if wemod_path:
             game_id = WEMOD_GAMEID_PROPERTY.get_string(configuration)
             wemod_args = (
-                f"wemod://play?titleId={game_id}&gameId={game_id}" if game_id else None
+                f'"wemod://play?titleId={game_id}&gameId={game_id}"' if game_id else None
             )
             runtime_configuration.add_fork_command(
                 ExecutableCommand(

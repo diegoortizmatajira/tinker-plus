@@ -50,15 +50,15 @@ class PipelineWrapper:
     """
 
     command: Optional[str] = None
-    wrapper: Optional[Callable[[str, "RuntimeConfiguration", bool], str]] = None
-    applies_to_forks: bool = True
+    wrapper: Optional[Callable[[str, "RuntimeConfiguration"], str]] = None
+    is_global_wrapper: bool = True
 
     def wrap(
         self,
         pipeline_assembled_command: str,
         runtime_configuration: "RuntimeConfiguration",
         *,
-        is_fork: bool = False,
+        is_global: bool = True,
         logger: logging.Logger,
     ) -> str:
         """
@@ -74,12 +74,12 @@ class PipelineWrapper:
         Returns:
             str: The wrapped command.
         """
-        if is_fork and not self.applies_to_forks:
+        if is_global != self.is_global_wrapper:
             return pipeline_assembled_command
 
         if self.wrapper:
             wrapped_command = self.wrapper(
-                pipeline_assembled_command, runtime_configuration, is_fork
+                pipeline_assembled_command, runtime_configuration
             )
         else:
             wrapped_command = f"{self.command} {pipeline_assembled_command}"
