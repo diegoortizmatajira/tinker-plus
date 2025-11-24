@@ -2,7 +2,6 @@
 Module for reading and building configuration from default or config files.
 """
 
-from subprocess import run
 from typing import override
 from core import FeatureProvider
 from core.config_storage import ConfigStorage

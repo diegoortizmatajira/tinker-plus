@@ -56,7 +56,6 @@ class ConfigurationProperty:
         """
         configuration[self.name] = value
 
-
     def get(self, configuration: dict) -> Optional[ConfigurationValueType]:
         """
         Retrieves the value of the configuration property.
@@ -166,6 +165,7 @@ class ConfigurationProperty:
             return self.values_provider(runtime_configuration)
         return self.values_cache
 
+    # pylint: disable=too-many-return-statements
     def translate_to_environment_variable(
         self,
         configuration: dict,

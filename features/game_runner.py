@@ -46,10 +46,10 @@ class GameRunner(FeatureProvider):
     def apply_configuration(
         self, configuration: dict, runtime_configuration: RuntimeConfiguration
     ) -> RuntimeConfiguration:
-        runtime_configuration.forks_only = (
+        runtime_configuration.execute_forks_only = (
             GAME_RUN_FORKS_ONLY_PROPERTY.get_boolean(configuration) or False
         )
-        if runtime_configuration.forks_only:
+        if runtime_configuration.execute_forks_only:
             self.logger.info(
                 "Configured to run only forked commands, skipping main game."
             )

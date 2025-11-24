@@ -2,10 +2,6 @@
 Feature to link user folders to specified locations to manage saved games and settings.
 """
 
-import os
-from os.path import islink
-from pathlib import Path
-
 from typing import override
 from core import ConfigurationProperty, FeatureProvider, RuntimeConfiguration
 from core.config_storage import ConfigStorage

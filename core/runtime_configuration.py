@@ -87,6 +87,7 @@ class PipelineWrapper:
         return wrapped_command
 
 
+# pylint: disable=too-many-instance-attributes
 @dataclass
 class RuntimeConfiguration:
     """
@@ -118,11 +119,11 @@ class RuntimeConfiguration:
     steam_game_args: Optional[str] = None
     wine: Optional[str] = None
     fork_commands: Optional[List[ExecutableCommand]] = None
-    forks_only: bool = False
     install_winetricks: bool = True
     winetricks: Optional[List[str]] = None
     prefix_path: Optional[str] = None
     execute_trainers: bool = True
+    execute_forks_only: bool = False
     environment_variables: Optional[dict[str, str]] = None
     pipeline_wrappers: Optional[List[PipelineWrapper]] = None
 

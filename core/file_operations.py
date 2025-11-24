@@ -1,3 +1,5 @@
+"""Module for file operations such as creating symbolic links."""
+
 import logging
 import os
 from os.path import islink

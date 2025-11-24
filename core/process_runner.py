@@ -151,18 +151,18 @@ def run_game_and_forks_with_compatibility_tool(
             # Determine if we need to add '&' to run in background
             suffix = (
                 "&"
-                if (index < last_index) or not runtime_configuration.forks_only
+                if (index < last_index) or not runtime_configuration.execute_forks_only
                 else ""
             )
             launcher_script_content += f"{assembled_command_str} {suffix}\n"
             added_forks += 1
-    if added_forks == 0 and runtime_configuration.forks_only:
+    if added_forks == 0 and runtime_configuration.execute_forks_only:
         logger.warning(
             "No fork commands were added, and 'forks only' mode is enabled. "
             "The launcher script will not execute any commands."
         )
         raise RuntimeError("No fork commands to execute in 'forks only' mode.")
-    if not runtime_configuration.forks_only:
+    if not runtime_configuration.execute_forks_only:
         if not runtime_configuration.steam_game_exe:
             logger.error("No game executable specified to run.")
             raise RuntimeError("No game executable specified to run.")

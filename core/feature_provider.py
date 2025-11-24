@@ -4,9 +4,10 @@ Feature Provider Base Class
 
 from abc import ABC
 from typing import List
-from .runtime_configuration import RuntimeConfiguration
+
 from .configuration_property import ConfigurationProperty
 from .log_storage import LogFactory
+from .runtime_configuration import RuntimeConfiguration
 
 
 class FeatureProvider(ABC):
@@ -22,7 +23,7 @@ class FeatureProvider(ABC):
         self.logger = LogFactory.singleton().get_logger(self.__class__.__name__)
 
     def build_configuration(
-        self, sourced_configuration: dict, runtime_configuration: RuntimeConfiguration
+        self, sourced_configuration: dict, _runtime_configuration: RuntimeConfiguration
     ) -> dict:
         """
         Builds and returns the updated configuration dictionary with default
@@ -40,7 +41,7 @@ class FeatureProvider(ABC):
         return sourced_configuration
 
     def apply_configuration(
-        self, configuration: dict, runtime_configuration: RuntimeConfiguration
+        self, _configuration: dict, runtime_configuration: RuntimeConfiguration
     ) -> RuntimeConfiguration:
         """
         Abstract method to apply configuration settings to the runtime configuration.
@@ -56,7 +57,7 @@ class FeatureProvider(ABC):
         return runtime_configuration
 
     def execute_in_pipeline(
-        self, configuration: dict, runtime_configuration: RuntimeConfiguration
+        self, _configuration: dict, _runtime_configuration: RuntimeConfiguration
     ):
         """
         Abstract method to execute the feature provider in the runtime pipeline.

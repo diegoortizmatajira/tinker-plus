@@ -209,7 +209,8 @@ class ProtonSelection(FeatureProvider):
                 PROTON_LAST_COMPATIBILITY_TOOL_PATH_PROPERTY.get_string(configuration)
             )
             self.logger.info(
-                "Restored last used steam compatibility tools path as it was not set by runtime provider."
+                "Restored last used steam compatibility tools path as "
+                "it was not set by runtime provider."
             )
         self.logger.info(
             "Using Steam Compatibility Tool: %s",
