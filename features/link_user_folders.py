@@ -48,16 +48,36 @@ class LinkUserFolders(FeatureProvider):
         user_folder = LINK_STEAM_USER_FOLDER_PROPERTY.get_string(configuration)
         if user_folder:
             self.logger.info("Linking user folder to: %s", user_folder)
-            create_symbolic_link(
-                user_folder,
-                f"{runtime_configuration.prefix_path}/{STEAM_USER_FOLDER_NAME}",
-                self.logger,
+            prefix_user_folder = (
+                f"{runtime_configuration.prefix_path}/{STEAM_USER_FOLDER_NAME}"
             )
+            if runtime_configuration.dry_run:
+                self.logger.info(
+                    "[DRY RUN] Ensure user folder link at: %s to: %s",
+                    prefix_user_folder,
+                    user_folder,
+                )
+            else:
+                create_symbolic_link(
+                    user_folder,
+                    prefix_user_folder,
+                    self.logger,
+                )
         public_user_folder = LINK_PUBLIC_USER_FOLDER_PROPERTY.get_string(configuration)
         if public_user_folder:
             self.logger.info("Linking public folder to: %s", public_user_folder)
-            create_symbolic_link(
-                public_user_folder,
-                f"{runtime_configuration.prefix_path}/{PUBLIC_USER_FOLDER_NAME}",
-                self.logger,
+            prefix_public_user_folder = (
+                f"{runtime_configuration.prefix_path}/{PUBLIC_USER_FOLDER_NAME}"
             )
+            if runtime_configuration.dry_run:
+                self.logger.info(
+                    "[DRY RUN] Ensure public folder link at: %s to: %s",
+                    prefix_public_user_folder,
+                    public_user_folder,
+                )
+            else:
+                create_symbolic_link(
+                    public_user_folder,
+                    prefix_public_user_folder,
+                    self.logger,
+                )

@@ -1,0 +1,11 @@
+export
+SteamAppId=367520
+SteamGameId=367520
+STEAM_COMPAT_INSTALL_PATH="/home/diegoortizmatajira/.local/share/Steam/steamapps/common/Hollow Knight"
+STEAM_COMPAT_DATA_PATH=/home/diegoortizmatajira/.local/share/Steam/steamapps/compatdata/367520
+STEAM_COMPAT_CLIENT_INSTALL_PATH=/home/diegoortizmatajira/.local/share/Steam
+
+test:
+	tplus --debug run --cli --dry gamemoderun /home/diegoortizmatajira/.local/share/Steam/ubuntu12_32/steam-launch-wrapper /home/diegoortizmatajira/.local/share/Steam/ubuntu12_32/reaper SteamLaunch AppId=367520 -- /home/diegoortizmatajira/.local/share/Steam/steamapps/common/SteamLinuxRuntime_sniper/_v2-entry-point --verb=waitforexitandrun -- /home/diegoortizmatajira/.local/share/Steam/compatibilitytools.d/GE-Proton10-25/proton waitforexitandrun /home/diegoortizmatajira/.local/share/Steam/steamapps/common/Hollow Knight/hollow_knight.exe
+test-run:
+	tplus --debug run --cli gamemoderun /home/diegoortizmatajira/.local/share/Steam/ubuntu12_32/steam-launch-wrapper /home/diegoortizmatajira/.local/share/Steam/ubuntu12_32/reaper SteamLaunch AppId=367520 -- /home/diegoortizmatajira/.local/share/Steam/steamapps/common/SteamLinuxRuntime_sniper/_v2-entry-point --verb=waitforexitandrun -- /home/diegoortizmatajira/.local/share/Steam/compatibilitytools.d/GE-Proton10-25/proton waitforexitandrun /home/diegoortizmatajira/.local/share/Steam/steamapps/common/Hollow Knight/hollow_knight.exe

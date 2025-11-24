@@ -5,13 +5,14 @@ from tkinter import ttk
 from tkinter.ttk import Progressbar
 
 from core import RuntimeProvider
+from gui.generator import Generator
 
 
 class MainForm:
     def __init__(self, runtime_provider: RuntimeProvider):
         if not runtime_provider.runtime_configuration:
             raise ValueError("Runtime configuration is required")
-
+        self.generator = Generator(runtime_provider)
         self.form = tk.Tk()
         self.form.title("Main Form with Tabs")
         self.form.geometry("500x500")
@@ -20,31 +21,35 @@ class MainForm:
         self.notebook.pack(fill="both", expand=True, padx=10, pady=10)
 
         # Create the first tab
-        self.tab1 = ttk.Frame(self.notebook)
-        self.notebook.add(self.tab1, text="Main Tab")
+        self.main_tab = ttk.Frame(self.notebook)
+        self.notebook.add(self.main_tab, text="Main Tab")
 
         # Add an image placeholder to the tab
         self.image_label = tk.Label(
-            self.tab1, text="[Image Placeholder]", width=40, height=20, bg="grey"
+            self.main_tab, text="[Image Placeholder]", width=40, height=20, bg="grey"
         )
         self.image_label.pack(pady=10)
 
         # Add a progress bar
         self.progress_bar = Progressbar(
-            self.tab1, orient="horizontal", length=300, mode="determinate"
+            self.main_tab, orient="horizontal", length=300, mode="determinate"
         )
         self.progress_bar.pack(pady=10)
 
         # Add Play buttons
         self.play_with_trainer_button = tk.Button(
-            self.tab1, text="Play with Trainer", command=self.on_play_with_trainer_click
+            self.main_tab,
+            text="Play with Trainer",
+            command=self.on_play_with_trainer_click,
         )
         self.play_with_trainer_button.pack(side="left", padx=5, pady=10)
 
         self.just_play_button = tk.Button(
-            self.tab1, text="Just Play", command=self.on_just_play_click
+            self.main_tab, text="Just Play", command=self.on_just_play_click
         )
         self.just_play_button.pack(side="right", padx=5, pady=10)
+
+        self.generator.generate(self.notebook)
 
         # Binding
         self.runtime_provider = runtime_provider
