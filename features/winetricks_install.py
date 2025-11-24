@@ -7,9 +7,16 @@ from core import (
     RuntimeConfiguration,
     process_runner,
 )
-from core.configuration_property import MULTIVALUELIST_PROPERTY
+from core.configuration_property import BINARY_PROPERTY, MULTIVALUELIST_PROPERTY
 from core.defaults import WINETRICKS_LOG_FILE
 
+
+WINETRICKS_RUN_PROPERTY = ConfigurationProperty(
+    "WINETRICKS_RUN",
+    "Specifies if winetricks should be run (true/false).",
+    default=True,
+    type=BINARY_PROPERTY,
+)
 
 WINETRICKS_PROPERTY = ConfigurationProperty(
     "WINETRICKS",
@@ -25,6 +32,7 @@ class WinetricksInstall(FeatureProvider):
     def __init__(self):
         super().__init__(
             [
+                WINETRICKS_RUN_PROPERTY,
                 WINETRICKS_PROPERTY,
             ]
         )
@@ -33,14 +41,24 @@ class WinetricksInstall(FeatureProvider):
     def apply_configuration(
         self, configuration: dict, runtime_configuration: RuntimeConfiguration
     ) -> RuntimeConfiguration:
+        should_run_winetricks = WINETRICKS_RUN_PROPERTY.get_boolean(configuration)
+        runtime_configuration.install_winetricks = (
+            True if should_run_winetricks is None else should_run_winetricks
+        )
+        if runtime_configuration.install_winetricks:
+            self.logger.info("Winetricks installation will run automatically.")
+        else:
+            self.logger.info(
+                "Winetricks installation is not going to run automatically."
+            )
         winetricks = WINETRICKS_PROPERTY.get_string_list(configuration) or []
         if len(winetricks) == 0 or winetricks == [""]:
-            self.logger.info("No standalone winetricks packages are required")
+            self.logger.info("No standalone winetricks packages are requested.")
             winetricks = []
             return runtime_configuration
         runtime_configuration.add_winetricks(winetricks)
         self.logger.info(
-            "Required standalone winetricks packages: %s", ",".join(winetricks)
+            "Requested standalone winetricks packages: %s", ",".join(winetricks)
         )
 
         return runtime_configuration
@@ -49,11 +67,14 @@ class WinetricksInstall(FeatureProvider):
     def execute_in_pipeline(
         self, configuration: dict, runtime_configuration: RuntimeConfiguration
     ):
+        if not runtime_configuration.install_winetricks:
+            self.logger.info("Winetricks installation is not running automatically.")
+            return
         if (
             not runtime_configuration.winetricks
             or len(runtime_configuration.winetricks) == 0
         ):
-            self.logger.info("No Winetricks packages to install.")
+            self.logger.info("No Winetricks packages required to be installed.")
             return
 
         self.logger.info(

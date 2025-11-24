@@ -22,7 +22,7 @@ class FeatureProvider(ABC):
         self.logger = LogFactory.singleton().get_logger(self.__class__.__name__)
 
     def build_configuration(
-        self, sourced_configuration: dict, game_id: str, app_id: str
+        self, sourced_configuration: dict, runtime_configuration: RuntimeConfiguration
     ) -> dict:
         """
         Builds and returns the updated configuration dictionary with default

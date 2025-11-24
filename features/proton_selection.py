@@ -23,6 +23,16 @@ def get_proton_versions_list(configuration: RuntimeConfiguration) -> List[ListIt
     return [ListItem(folder.name, folder.name) for folder in folders if folder.is_dir()]
 
 
+PROTON_LAST_COMPATIBILITY_TOOL_PATH_PROPERTY = ConfigurationProperty(
+    "PROTON_LAST_COMPATIBILITY_TOOL_PATH",
+    "The last used steam compatibility tools path.",
+)
+
+PROTON_LAST_COMPATIBILITY_TOOL_PROPERTY = ConfigurationProperty(
+    "PROTON_LAST_COMPATIBILITY_TOOL",
+    "The last used steam compatibility tool.",
+)
+
 PROTON_VERSION_PROPERTY = ConfigurationProperty(
     "PROTON_VERSION",
     "Defines which proton version to use.",
@@ -146,6 +156,25 @@ class ProtonSelection(FeatureProvider):
         return ""
 
     @override
+    def build_configuration(
+        self, sourced_configuration: dict, runtime_configuration: RuntimeConfiguration
+    ) -> dict:
+        sourced_configuration = super().build_configuration(
+            sourced_configuration, runtime_configuration
+        )
+        if runtime_configuration.steam_compatibility_tools_path:
+            PROTON_LAST_COMPATIBILITY_TOOL_PATH_PROPERTY.set(
+                sourced_configuration,
+                runtime_configuration.steam_compatibility_tools_path,
+            )
+        if runtime_configuration.steam_compatibility_tool:
+            PROTON_LAST_COMPATIBILITY_TOOL_PROPERTY.set(
+                sourced_configuration,
+                runtime_configuration.steam_compatibility_tool,
+            )
+        return sourced_configuration
+
+    @override
     def apply_configuration(
         self, configuration: dict, runtime_configuration: RuntimeConfiguration
     ) -> RuntimeConfiguration:
@@ -169,10 +198,27 @@ class ProtonSelection(FeatureProvider):
         runtime_configuration.steam_compatibility_tool = (
             PROTON_VERSION_PROPERTY.get_string(configuration)
             or runtime_configuration.steam_compatibility_tool
+            or PROTON_LAST_COMPATIBILITY_TOOL_PROPERTY.get_string(configuration)
         )
         if not runtime_configuration.steam_compatibility_tool:
             self.logger.error("No steam compatibility tool (proton) version selected.")
             raise RuntimeError("There is no proton version selected.")
+
+        if not runtime_configuration.steam_compatibility_tools_path:
+            runtime_configuration.steam_compatibility_tools_path = (
+                PROTON_LAST_COMPATIBILITY_TOOL_PATH_PROPERTY.get_string(configuration)
+            )
+            self.logger.info(
+                "Restored last used steam compatibility tools path as it was not set by runtime provider."
+            )
+        self.logger.info(
+            "Using Steam Compatibility Tool: %s",
+            runtime_configuration.steam_compatibility_tool,
+        )
+        self.logger.info(
+            "Using Steam Compatibility Tools path: %s",
+            runtime_configuration.steam_compatibility_tools_path,
+        )
 
         proton_logs_enabled = PROTON_LOG_PROPERTY.get_boolean(configuration)
         if proton_logs_enabled:
@@ -190,8 +236,5 @@ class ProtonSelection(FeatureProvider):
                     f" run {cmd}"
                 ),
             )
-        )
-        self.logger.info(
-            "Using proton version: %s", runtime_configuration.steam_compatibility_tool
         )
         return runtime_configuration

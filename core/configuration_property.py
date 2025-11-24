@@ -46,6 +46,17 @@ class ConfigurationProperty:
     ] = TEXT_PROPERTY
     generated_environment_variable: Optional[str] = None
 
+    def set(self, configuration: dict, value: Optional[ConfigurationValueType]):
+        """
+        Sets the value of the configuration property in the given configuration dictionary.
+
+        Args:
+            configuration (dict): A dictionary representing the configuration.
+            value (ConfigurationValueType): The value to set for the property.
+        """
+        configuration[self.name] = value
+
+
     def get(self, configuration: dict) -> Optional[ConfigurationValueType]:
         """
         Retrieves the value of the configuration property.

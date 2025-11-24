@@ -2,9 +2,11 @@
 Module for reading and building configuration from default or config files.
 """
 
+from subprocess import run
 from typing import override
 from core import FeatureProvider
 from core.config_storage import ConfigStorage
+from core.runtime_configuration import RuntimeConfiguration
 
 
 class ReadConfig(FeatureProvider):
@@ -24,10 +26,10 @@ class ReadConfig(FeatureProvider):
 
     @override
     def build_configuration(
-        self, sourced_configuration: dict, game_id: str, app_id: str
+        self, sourced_configuration: dict, runtime_configuration: RuntimeConfiguration
     ) -> dict:
         sourced_configuration = super().build_configuration(
-            sourced_configuration, game_id, app_id
+            sourced_configuration, runtime_configuration
         )
         # At this point, sourced_configuration contains all default configurations
 
@@ -40,11 +42,16 @@ class ReadConfig(FeatureProvider):
 
         self.logger.info("Global configuration loaded and applied.")
 
+        game_id = (
+            runtime_configuration.steam_game_id
+            or runtime_configuration.steam_app_id
+            or "unknown"
+        )
         # Check for game-specific configuration file
-        game_config = self.config_storage.get_game_config(game_id or app_id)
+        game_config = self.config_storage.get_game_config(game_id)
         if game_config is None:
             # Create game-specific configuration file if it doesn't exist with empty config
-            self.config_storage.save_game_config({}, game_id or app_id)
+            self.config_storage.save_game_config({}, game_id)
         sourced_configuration.update(game_config or {})
         self.logger.info("Game-specific configuration loaded and applied.")
         return sourced_configuration

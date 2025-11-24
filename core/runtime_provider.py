@@ -137,28 +137,15 @@ class RuntimeProvider:
             return
 
         self.logger.info(
-            "Steam Launch Wrapper: %s", self.runtime_configuration.steam_wrapper
-        )
-        self.logger.info(
-            "Steam Reaper Command: %s", self.runtime_configuration.steam_reaper
-        )
-        self.logger.info(
-            "Steam Sniper Command: %s", self.runtime_configuration.steam_sniper
-        )
-        self.logger.info(
-            "Steam Compatibility Tool Command: %s",
-            self.runtime_configuration.steam_compatibility_command,
-        )
-        self.logger.info(
-            "Steam Compatibility Tool: %s",
+            "Steam Original Compatibility Tool: %s",
             self.runtime_configuration.steam_compatibility_tool,
         )
         self.logger.info(
-            "Steam Compatibility Tools path: %s",
+            "Steam Original Compatibility Tools path: %s",
             self.runtime_configuration.steam_compatibility_tools_path,
         )
         self.logger.info(
-            "Steam Game Executable: %s", self.runtime_configuration.steam_game_exe
+            "Steam Original Game Executable: %s", self.runtime_configuration.steam_game_exe
         )
 
     def read_steam_environment(self):
@@ -216,7 +203,6 @@ class RuntimeProvider:
             f"{self.runtime_configuration.steam_compat_data_path}/pfx"
         )
 
-
     def build_configuration(self):
         """
         Builds the runtime configuration by merging global and game-specific configurations,
@@ -234,8 +220,7 @@ class RuntimeProvider:
         for feature in self.features:
             self.configuration = feature.build_configuration(
                 self.configuration,
-                self.runtime_configuration.steam_game_id or "unknown",
-                self.runtime_configuration.steam_app_id or "unknown",
+                self.runtime_configuration,
             )
 
     def run(self, run_with_trainers: bool = True):

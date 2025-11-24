@@ -26,6 +26,21 @@ STEAM_USE_REAPER_PROPERTY = ConfigurationProperty(
     type=BINARY_PROPERTY,
 )
 
+STEAM_LAST_WRAPPER_COMMAND_PROPERTY = ConfigurationProperty(
+    "STEAM_LAST_WRAPPER_COMMAND",
+    "Stores the last wrapper command used for Steam games.",
+)
+
+STEAM_LAST_REAPER_COMMAND_PROPERTY = ConfigurationProperty(
+    "STEAM_LAST_REAPER_COMMAND",
+    "Stores the last Reaper command used for Steam games.",
+)
+
+STEAM_LAST_SNIPER_COMMAND_PROPERTY = ConfigurationProperty(
+    "STEAM_LAST_SNIPER_COMMAND",
+    "Stores the last Sniper command used for Steam games.",
+)
+
 
 class SteamTools(FeatureProvider):
     """
@@ -47,9 +62,61 @@ class SteamTools(FeatureProvider):
         )
 
     @override
+    def build_configuration(
+        self,
+        sourced_configuration: dict,
+        runtime_configuration: RuntimeConfiguration,
+    ) -> dict:
+        super().build_configuration(sourced_configuration, runtime_configuration)
+        if runtime_configuration.steam_reaper:
+            STEAM_LAST_WRAPPER_COMMAND_PROPERTY.set(
+                sourced_configuration, runtime_configuration.steam_wrapper
+            )
+        if runtime_configuration.steam_sniper:
+            STEAM_LAST_SNIPER_COMMAND_PROPERTY.set(
+                sourced_configuration, runtime_configuration.steam_sniper
+            )
+        if runtime_configuration.steam_reaper:
+            STEAM_LAST_REAPER_COMMAND_PROPERTY.set(
+                sourced_configuration, runtime_configuration.steam_reaper
+            )
+        return sourced_configuration
+
+    @override
     def apply_configuration(
         self, configuration: dict, runtime_configuration: RuntimeConfiguration
     ) -> RuntimeConfiguration:
+        # Load last used commands if not already set
+        if not runtime_configuration.steam_wrapper:
+            runtime_configuration.steam_wrapper = (
+                STEAM_LAST_WRAPPER_COMMAND_PROPERTY.get_string(configuration)
+            )
+            self.logger.info(
+                "Restored last used Steam wrapper command as it was not set by runtime provider."
+            )
+        self.logger.info(
+            "Steam Launch Wrapper: %s", runtime_configuration.steam_wrapper
+        )
+        if not runtime_configuration.steam_sniper:
+            runtime_configuration.steam_sniper = (
+                STEAM_LAST_SNIPER_COMMAND_PROPERTY.get_string(configuration)
+            )
+            self.logger.info(
+                "Restored last used Steam Sniper command as it was not set by runtime provider."
+            )
+        self.logger.info(
+            "Steam Sniper Command: %s", runtime_configuration.steam_sniper
+        )
+        if not runtime_configuration.steam_reaper:
+            runtime_configuration.steam_reaper = (
+                STEAM_LAST_REAPER_COMMAND_PROPERTY.get_string(configuration)
+            )
+            self.logger.info(
+                "Restored last used Steam Reaper command as it was not set by runtime provider."
+            )
+        self.logger.info(
+            "Steam Reaper Command: %s", runtime_configuration.steam_reaper
+        )
         # Apply the Steam wrapper
         if (
             STEAM_USE_WRAPPER_PROPERTY.get_boolean(configuration)
@@ -70,7 +137,9 @@ class SteamTools(FeatureProvider):
             self.logger.info("Enabling Steam Sniper wrapper.")
             runtime_configuration.add_pipeline_wrapper(
                 PipelineWrapper(
-                    runtime_configuration.steam_sniper.replace("waitforexitandrun", "run"),
+                    runtime_configuration.steam_sniper.replace(
+                        "waitforexitandrun", "run"
+                    ),
                     applies_to_forks=False,
                 )
             )

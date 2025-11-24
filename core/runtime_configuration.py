@@ -117,6 +117,7 @@ class RuntimeConfiguration:
     steam_game_exe: Optional[str] = None
     wine: Optional[str] = None
     fork_commands: Optional[List[ExecutableCommand]] = None
+    install_winetricks: bool = True
     winetricks: Optional[List[str]] = None
     prefix_path: Optional[str] = None
     execute_trainers: bool = True
