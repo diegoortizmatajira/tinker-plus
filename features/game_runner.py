@@ -38,6 +38,7 @@ class GameRunner(FeatureProvider):
             [
                 GAME_CUSTOM_EXE_PROPERTY,
                 GAME_CUSTOM_ARGS_PROPERTY,
+                GAME_RUN_FORKS_ONLY_PROPERTY,
             ]
         )
 

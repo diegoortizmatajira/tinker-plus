@@ -43,7 +43,7 @@ def parse_command(runtime_configuration: RuntimeConfiguration):
         return None
 
     wrapper_regexp = r"(?P<stlwrapper>\/\S+\/steam-launch-wrapper)"
-    reaper_regexp = r"(?P<reaper>\/\S+\/reaper\s+SteamLaunch\s+AppId=\d+)"
+    reaper_regexp = r"(?P<reaper>\/\S+\/reaper)"
     sniper_regexp = r"(?P<sniper>\/\S+\/SteamLinuxRuntime_sniper\/\S+\s+--\w+=\w+)"
     compatibility_regexp = (
         r"(?P<compatibility>"

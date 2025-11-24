@@ -56,11 +56,11 @@ class SteamTools(FeatureProvider):
         super().__init__(
             [
                 STEAM_USE_WRAPPER_PROPERTY,
-                STEAM_USE_SNIPER_PROPERTY,
                 STEAM_USE_REAPER_PROPERTY,
+                STEAM_USE_SNIPER_PROPERTY,
                 STEAM_LAST_WRAPPER_COMMAND_PROPERTY,
-                STEAM_LAST_SNIPER_COMMAND_PROPERTY,
                 STEAM_LAST_REAPER_COMMAND_PROPERTY,
+                STEAM_LAST_SNIPER_COMMAND_PROPERTY,
             ]
         )
 
@@ -124,11 +124,31 @@ class SteamTools(FeatureProvider):
             self.logger.info("Enabling Steam wrapper.")
             runtime_configuration.add_pipeline_wrapper(
                 PipelineWrapper(
-                    runtime_configuration.steam_wrapper,
+                    f"{runtime_configuration.steam_wrapper} --",
                     is_global_wrapper=True,
                 )
             )
-        # Apply the Sniper
+        # Apply the Reaper (After Wrapper)
+        if (
+            STEAM_USE_REAPER_PROPERTY.get_boolean(configuration)
+            and runtime_configuration.steam_reaper
+        ):
+            self.logger.info("Enabling Steam Reaper wrapper.")
+
+            def reaper_wrapper(cmd: str, rtm_cfg: RuntimeConfiguration) -> str:
+                args = "--"
+                if rtm_cfg.steam_game_id:
+                    args = f"SteamLaunch AppId={rtm_cfg.steam_game_id} --"
+                return f"{rtm_cfg.steam_reaper} {args} {cmd}"
+
+            runtime_configuration.add_pipeline_wrapper(
+                PipelineWrapper(
+                    wrapper=reaper_wrapper,
+                    is_global_wrapper=True,
+                )
+            )
+
+        # Apply the Sniper (After Reaper)
         if (
             STEAM_USE_SNIPER_PROPERTY.get_boolean(configuration)
             and runtime_configuration.steam_sniper
@@ -136,21 +156,7 @@ class SteamTools(FeatureProvider):
             self.logger.info("Enabling Steam Sniper wrapper.")
             runtime_configuration.add_pipeline_wrapper(
                 PipelineWrapper(
-                    runtime_configuration.steam_sniper.replace(
-                        "waitforexitandrun", "run"
-                    ),
-                    is_global_wrapper=True,
-                )
-            )
-        # Apply the Reaper
-        if (
-            STEAM_USE_REAPER_PROPERTY.get_boolean(configuration)
-            and runtime_configuration.steam_reaper
-        ):
-            self.logger.info("Enabling Steam Reaper wrapper.")
-            runtime_configuration.add_pipeline_wrapper(
-                PipelineWrapper(
-                    f"{runtime_configuration.steam_reaper} --",
+                    runtime_configuration.steam_sniper,
                     is_global_wrapper=True,
                 )
             )
