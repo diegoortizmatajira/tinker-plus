@@ -145,7 +145,8 @@ class RuntimeProvider:
             self.runtime_configuration.steam_compatibility_tools_path,
         )
         self.logger.info(
-            "Steam Original Game Executable: %s", self.runtime_configuration.steam_game_exe
+            "Steam Original Game Executable: %s",
+            self.runtime_configuration.steam_game_exe,
         )
 
     def read_steam_environment(self):
@@ -199,9 +200,10 @@ class RuntimeProvider:
             "Steam Compat Data Path: %s",
             self.runtime_configuration.steam_compat_data_path or EMPTY,
         )
-        self.runtime_configuration.prefix_path = (
-            f"{self.runtime_configuration.steam_compat_data_path}/pfx"
-        )
+        if self.runtime_configuration.steam_compat_data_path:
+            self.runtime_configuration.prefix_path = (
+                f"{self.runtime_configuration.steam_compat_data_path}/pfx"
+            )
 
     def build_configuration(self):
         """

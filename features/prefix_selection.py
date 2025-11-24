@@ -33,6 +33,10 @@ class PrefixSelection(FeatureProvider):
                 "Using custom prefix: %s", runtime_configuration.prefix_path
             )
         else:
+            if not runtime_configuration.prefix_path:
+                raise RuntimeError(
+                    "No default or custom prefix path set in runtime configuration."
+                )
             self.logger.info(
                 "Using default prefix: %s", runtime_configuration.prefix_path
             )

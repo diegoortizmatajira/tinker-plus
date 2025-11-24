@@ -45,6 +45,11 @@ class LinkUserFolders(FeatureProvider):
     def execute_in_pipeline(
         self, configuration: dict, runtime_configuration: RuntimeConfiguration
     ):
+        if not runtime_configuration.prefix_path:
+            self.logger.warning(
+                "No prefix path set in runtime configuration, skipping user folder linking."
+            )
+            return
         user_folder = LINK_STEAM_USER_FOLDER_PROPERTY.get_string(configuration)
         if user_folder:
             self.logger.info("Linking user folder to: %s", user_folder)
