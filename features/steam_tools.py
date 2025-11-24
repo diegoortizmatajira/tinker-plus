@@ -58,6 +58,9 @@ class SteamTools(FeatureProvider):
                 STEAM_USE_WRAPPER_PROPERTY,
                 STEAM_USE_SNIPER_PROPERTY,
                 STEAM_USE_REAPER_PROPERTY,
+                STEAM_LAST_WRAPPER_COMMAND_PROPERTY,
+                STEAM_LAST_SNIPER_COMMAND_PROPERTY,
+                STEAM_LAST_REAPER_COMMAND_PROPERTY,
             ]
         )
 

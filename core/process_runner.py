@@ -126,15 +126,11 @@ def run_game_and_forks_with_compatibility_tool(
             and compatibility tools.
         logger (logging.Logger): The logger instance for logging progress and errors.
     """
-    if not runtime_configuration.steam_game_exe:
-        raise RuntimeError("No game executable specified to run.")
-
     launcher_script_content = "#!/bin/bash\n"
-    if (
-        runtime_configuration.fork_commands
-        and len(runtime_configuration.fork_commands) > 0
-    ):
-        for command in runtime_configuration.fork_commands or []:
+    added_forks = 0
+    if runtime_configuration.fork_commands:
+        last_index = len(runtime_configuration.fork_commands) - 1
+        for index, command in enumerate(runtime_configuration.fork_commands):
             if (
                 command.category == COMMAND_TRAINER
                 and not runtime_configuration.execute_trainers
@@ -152,21 +148,41 @@ def run_game_and_forks_with_compatibility_tool(
                 runtime_configuration,
                 is_global=False,
             )
-            launcher_script_content += f"{assembled_command_str} &\n"
+            # Determine if we need to add '&' to run in background
+            suffix = (
+                "&"
+                if (index < last_index) or not runtime_configuration.forks_only
+                else ""
+            )
+            launcher_script_content += f"{assembled_command_str} {suffix}\n"
+            added_forks += 1
+    if added_forks == 0 and runtime_configuration.forks_only:
+        logger.warning(
+            "No fork commands were added, and 'forks only' mode is enabled. "
+            "The launcher script will not execute any commands."
+        )
+        raise RuntimeError("No fork commands to execute in 'forks only' mode.")
+    if not runtime_configuration.forks_only:
+        if not runtime_configuration.steam_game_exe:
+            logger.error("No game executable specified to run.")
+            raise RuntimeError("No game executable specified to run.")
 
-    game_command = ExecutableCommand(runtime_configuration.steam_game_exe, "")
-    logger.info(
-        "Including game command in launcher script: '%s'.",
-        game_command.get_full_command(),
-    )
-    launcher_script_content += "# main game command\n"
+        game_command = ExecutableCommand(
+            runtime_configuration.steam_game_exe,
+            runtime_configuration.steam_game_args,
+        )
+        logger.info(
+            "Including game command in launcher script: '%s'.",
+            game_command.get_full_command(),
+        )
+        launcher_script_content += "# main game command\n"
 
-    assembled_command_str = __assemble_command_str(
-        game_command.get_full_command(),
-        runtime_configuration,
-        is_global=False,
-    )
-    launcher_script_content += f"{assembled_command_str}\n"
+        assembled_command_str = __assemble_command_str(
+            game_command.get_full_command(),
+            runtime_configuration,
+            is_global=False,
+        )
+        launcher_script_content += f"{assembled_command_str}\n"
     script_filename = GAME_SCRIPT_TEMPLATE.format(runtime_configuration.steam_game_id)
     # Write the launcher script to a file
     with open(script_filename, "w", encoding="utf-8") as script_file:
