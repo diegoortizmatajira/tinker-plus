@@ -50,7 +50,7 @@ def parse_command(runtime_configuration: RuntimeConfiguration):
         r"(?P<compatibility_dir>\/\S+compatibilitytools\.d)/"
         r"(?P<compatibility_tool>\S+)/\S+\swaitforexitandrun)\s+"
     )
-    exe_regexp = r"\s(?P<gameexe>(\/[\w\.\s\-]+\w)+)$"
+    exe_regexp = r"\s(?P<gameexe>(\/[\w\.\s\-]+\w)+\.exe)\s?(?P<gameargs>.*)$"
 
     full_command = " ".join(runtime_configuration.original_command)
     runtime_configuration.steam_wrapper = evaluate_match(
@@ -74,9 +74,11 @@ def parse_command(runtime_configuration: RuntimeConfiguration):
     runtime_configuration.steam_compatibility_tools_path = compatibility_match.group(
         "compatibility_dir"
     )
-    runtime_configuration.steam_game_exe = evaluate_match(
-        full_command, exe_regexp, "gameexe"
-    )
+    exe_match = re.search(exe_regexp, full_command)
+    if not exe_match:
+        raise RuntimeError("Game executable pattern did not match the command line.")
+    runtime_configuration.steam_game_exe = exe_match.group("gameexe")
+    runtime_configuration.steam_game_args = exe_match.group("gameargs")
 
 
 class RuntimeProvider:
