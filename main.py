@@ -13,6 +13,7 @@ from core.file_operations import create_symbolic_link
 from core.runtime_provider import RuntimeProvider
 from features.external_tools import ExternalTools
 from features.game_runner import GameRunner
+from features.human_readable_links import HumanReadableLinks
 from features.link_user_folders import LinkUserFolders
 from features.prefix_selection import PrefixSelection
 from features.proton_selection import ProtonSelection
@@ -124,6 +125,7 @@ class MainApp:
                     LinkUserFolders(storage),
                     TrainerLaunchSettings(),
                     WinetricksInstall(),
+                    HumanReadableLinks(),
                     GameRunner(),
                     # ReadConfig has to be the last to ensure default
                     # configs are read first, then overridden by user configs

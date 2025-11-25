@@ -20,6 +20,8 @@ LOGS_DIR = f"{CONFIG_LOCATION}/logs"
 SCRIPTS_DIR = f"{CONFIG_LOCATION}/scripts"
 GAME_LOGS_DIR_TEMPLATE = f"{LOGS_DIR}/{{}}"
 GAME_SCRIPT_TEMPLATE = f"{SCRIPTS_DIR}/{{}}.sh"
+HUMAN_READABLE_LINKS_DIR = f"{CONFIG_LOCATION}/games"
+HUMAN_READABLE_LINKS_DIR_TEMPLATE = f"{HUMAN_READABLE_LINKS_DIR}/{{}}"
 
 # Log files
 APP_LAST_RUN_LOG_FILE = "lastrun.log"
@@ -35,3 +37,4 @@ PUBLIC_USER_FOLDER_NAME = f"{USERS_DIR_NAME}/Public"
 os.makedirs(GAME_CONFIG_DIR, exist_ok=True)
 os.makedirs(LOGS_DIR, exist_ok=True)
 os.makedirs(SCRIPTS_DIR, exist_ok=True)
+os.makedirs(HUMAN_READABLE_LINKS_DIR, exist_ok=True)
