@@ -157,7 +157,7 @@ class SteamTools(FeatureProvider):
             runtime_configuration.add_pipeline_wrapper(
                 PipelineWrapper(
                     runtime_configuration.steam_sniper,
-                    is_global_wrapper=True,
+                    is_global_wrapper=False,
                 )
             )
         return runtime_configuration

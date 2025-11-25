@@ -82,12 +82,17 @@ class WinetricksInstall(FeatureProvider):
             ", ".join(runtime_configuration.winetricks or []),
         )
         try:
-            process_runner.run_in_wine_prefix(
+            succeed = process_runner.run_in_wine_prefix(
                 f'winetricks --unattended "{" ".join(runtime_configuration.winetricks)}"',
                 runtime_configuration,
                 self.logger,
                 WINETRICKS_LOG_FILE,
             )
+            if succeed:
+                self.logger.info("Winetricks packages installed successfully.")
+            else:
+                self.logger.error("Winetricks packages installation failed.")
+                raise RuntimeError("Winetricks installation failed")
         except RuntimeError:
             self.logger.error("Failed to install Winetricks packages")
             raise

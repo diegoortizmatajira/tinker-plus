@@ -4,6 +4,9 @@ from typing import override
 from core import FeatureProvider, ConfigurationProperty, RuntimeConfiguration
 from core.runtime_configuration import COMMAND_TRAINER, ExecutableCommand
 
+TRAINER_ENABLED_PROPERTY = ConfigurationProperty(
+    "TRAINER_ENABLED", "Enables custom trainer launching.", True
+)
 TRAINER_EXE_PROPERTY = ConfigurationProperty(
     "TRAINER_EXE", "Allows selection of a specific trainer excecutable program."
 )
@@ -38,6 +41,7 @@ class TrainerLaunchSettings(FeatureProvider):
     def __init__(self):
         super().__init__(
             [
+                TRAINER_ENABLED_PROPERTY,
                 TRAINER_EXE_PROPERTY,
                 TRAINER_ARGS_PROPERTY,
                 WEMOD_ENABLED_PROPERTY,
@@ -52,8 +56,13 @@ class TrainerLaunchSettings(FeatureProvider):
         self, configuration: dict, runtime_configuration: RuntimeConfiguration
     ) -> RuntimeConfiguration:
         execute_trainer = False
+
         # Check for custom trainer configuration
-        custom_trainer = TRAINER_EXE_PROPERTY.get_string(configuration)
+        custom_trainer = (
+            TRAINER_ENABLED_PROPERTY.get_boolean(configuration)
+            and TRAINER_EXE_PROPERTY.get_string(configuration)
+            or None
+        )
         if custom_trainer:
             custom_trainer_args = TRAINER_ARGS_PROPERTY.get_string(configuration)
             runtime_configuration.add_fork_command(
@@ -76,7 +85,9 @@ class TrainerLaunchSettings(FeatureProvider):
         if wemod_path:
             game_id = WEMOD_GAMEID_PROPERTY.get_string(configuration)
             wemod_args = (
-                f'"wemod://play?titleId={game_id}&gameId={game_id}"' if game_id else None
+                f'"wemod://play?titleId={game_id}&gameId={game_id}"'
+                if game_id
+                else None
             )
             runtime_configuration.add_fork_command(
                 ExecutableCommand(

@@ -52,6 +52,7 @@ class PipelineWrapper:
     command: Optional[str] = None
     wrapper: Optional[Callable[[str, "RuntimeConfiguration"], str]] = None
     is_global_wrapper: bool = True
+    is_fork_wrapper: bool = False
 
     def wrap(
         self,
@@ -59,6 +60,7 @@ class PipelineWrapper:
         runtime_configuration: "RuntimeConfiguration",
         *,
         is_global: bool = True,
+        is_fork: bool = False,
         logger: logging.Logger,
     ) -> str:
         """
@@ -75,6 +77,8 @@ class PipelineWrapper:
             str: The wrapped command.
         """
         if is_global != self.is_global_wrapper:
+            return pipeline_assembled_command
+        if is_fork and not self.is_fork_wrapper:
             return pipeline_assembled_command
 
         if self.wrapper:

@@ -21,7 +21,7 @@ def run_in_wine_prefix(
     runtime_configuration: RuntimeConfiguration,
     logger: logging.Logger,
     output_log_file: Optional[str] = None,
-):
+) -> bool:
     """
     Executes a given command within a specified Wine prefix using subprocess.
 
@@ -46,10 +46,25 @@ def run_in_wine_prefix(
     command = f"{exe_command} >> {log_file} 2>&1"
     if runtime_configuration.dry_run:
         logger.info("[DRY RUN] Would execute command in Wine prefix: %s", command)
-        return
+        return True
     try:
         logger.info("Executing command in Wine prefix: %s", command)
-        subprocess.run(command, env=environment_variables, shell=True, check=True)
+        result = subprocess.run(
+            command, env=environment_variables, shell=True, check=True
+        )
+        if result.returncode != 0:
+            logger.error(
+                "Command '%s' exited with non-zero return code: %s",
+                command,
+                result.returncode,
+            )
+        else:
+            logger.debug(
+                "Command '%s' executed successfully with return code: %s",
+                command,
+                result.returncode,
+            )
+        return result.returncode == 0
     except Exception as e:
         logger.error("Error while running command in Wine prefix: %s", e)
         raise RuntimeError(
@@ -61,6 +76,7 @@ def __assemble_command_str(
     exe_command: str,
     runtime_configuration: RuntimeConfiguration,
     is_global: bool = True,
+    is_fork: bool = False,
 ) -> str:
     command = exe_command
     # Takes the pipeline wrappers in reverse order
@@ -69,6 +85,7 @@ def __assemble_command_str(
             command,
             runtime_configuration,
             is_global=is_global,
+            is_fork=is_fork,
             logger=logging.getLogger(),
         )
     return command
@@ -147,6 +164,7 @@ def run_game_and_forks_with_compatibility_tool(
                 command.get_full_command(),
                 runtime_configuration,
                 is_global=False,
+                is_fork=True,
             )
             # Determine if we need to add '&' to run in background
             suffix = (

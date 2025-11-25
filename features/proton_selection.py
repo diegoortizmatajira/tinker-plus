@@ -237,6 +237,7 @@ class ProtonSelection(FeatureProvider):
                     f" run {cmd}"
                 ),
                 is_global_wrapper=False,
+                is_fork_wrapper=True,
             )
         )
         return runtime_configuration
