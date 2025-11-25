@@ -4,6 +4,8 @@ from dataclasses import dataclass
 import logging
 from typing import Callable, List, Optional
 
+from core.game_info import GameInfo
+
 
 COMMAND_TRAINER = "trainer"
 COMMAND_GAME = "game"
@@ -108,9 +110,11 @@ class RuntimeConfiguration:
     """
 
     original_command: List[str]
+    game_info: GameInfo
     dry_run: bool = False
     steam_app_id: Optional[str] = None
     steam_game_id: Optional[str] = None
+    steam_base_folder: Optional[str] = None
     steam_compat_install_path: Optional[str] = None
     steam_compat_data_path: Optional[str] = None
     steam_wrapper: Optional[str] = None

@@ -5,9 +5,13 @@ as well as feature-specific customizations to build a comprehensive runtime envi
 """
 
 import os
+from pathlib import Path
 import re
 
 from typing import List, Optional
+
+from core.defaults import STEAM_MANIFESTS_TEMPLATE
+from core.game_info import GameInfo
 from .runtime_configuration import RuntimeConfiguration
 from .feature_provider import FeatureProvider
 from .log_storage import LogFactory
@@ -104,9 +108,12 @@ class RuntimeProvider:
         self.logger = LogFactory.singleton().get_logger(self.__class__.__name__)
         self.configuration: dict = {}
         self.features = features
-        self.runtime_configuration = RuntimeConfiguration(game_command, dry_run)
+        self.runtime_configuration = RuntimeConfiguration(
+            game_command, GameInfo.empty(), dry_run
+        )
         self.read_steam_environment()
         self.parse_command()
+        self.runtime_configuration.game_info = self.get_game_info()
 
     def parse_command(self):
         """
@@ -186,6 +193,14 @@ class RuntimeProvider:
         self.logger.info(
             "Steam Game ID: %s", self.runtime_configuration.steam_game_id or EMPTY
         )
+        self.runtime_configuration.steam_base_folder = (
+            os.getenv("STEAM_BASE_FOLDER")
+            or self.runtime_configuration.steam_base_folder
+        )
+        self.logger.info(
+            "Steam Base Folder: %s",
+            self.runtime_configuration.steam_base_folder or EMPTY,
+        )
         self.runtime_configuration.steam_compat_install_path = (
             os.getenv("STEAM_COMPAT_INSTALL_PATH")
             or self.runtime_configuration.steam_compat_install_path
@@ -206,6 +221,58 @@ class RuntimeProvider:
             self.runtime_configuration.prefix_path = (
                 f"{self.runtime_configuration.steam_compat_data_path}/pfx"
             )
+
+    def get_game_info(self) -> GameInfo:
+        """
+        Determines the name of the game based on the Steam manifest file or the executable name.
+
+        Args:
+            runtime_configuration (RuntimeConfiguration): The runtime configuration providing the
+            Steam base folder and game ID.
+
+        Returns:
+            str: The name of the game as extracted from the Steam manifest file,
+            or the executable name as a fallback.
+        """
+        game_id = (
+            self.runtime_configuration.steam_game_id
+            or self.runtime_configuration.steam_app_id
+            or "unknown"
+        )
+        self.logger.debug("Getting game info for Game ID: %s", game_id)
+        game_info = GameInfo.from_cache(game_id, self.logger)
+        if game_info:
+            self.logger.debug("Found game info in cache: %s", game_info)
+            return game_info
+
+        manifest_path = STEAM_MANIFESTS_TEMPLATE.format(
+            self.runtime_configuration.steam_base_folder,
+            self.runtime_configuration.steam_game_id,
+        )
+        game_info = GameInfo(
+            game_id=game_id,
+            name=Path(self.runtime_configuration.steam_game_exe or "unknown").stem,
+        )
+        self.logger.debug("Looking for Steam manifest at: %s", manifest_path)
+        if os.path.exists(manifest_path):
+            try:
+                with open(manifest_path, "r", encoding="utf-8") as manifest_file:
+                    for line in manifest_file:
+                        if '"name"' in line:
+                            # Extract the game name from the line
+                            name = line.split('"')[3]
+                            game_info.name = name
+            except Exception as e:
+                self.logger.warning(
+                    "An error occurred while reading the Steam manifest file: %s", e
+                )
+        else:
+            self.logger.warning(
+                "Steam manifest file does not exist at: %s", manifest_path
+            )
+        game_info.put_in_cache(self.logger)
+        # Fallback to using the executable name if manifest reading fails
+        return game_info
 
     def build_configuration(self):
         """

@@ -1,8 +1,8 @@
 """Module providing human-readable links feature."""
 
 import os
-from pathlib import Path
 from typing import override
+
 from core.defaults import (
     GAME_CONFIG_FILE_TEMPLATE,
     GAME_LOGS_DIR_TEMPLATE,
@@ -15,6 +15,11 @@ from core.runtime_configuration import RuntimeConfiguration
 
 
 class HumanReadableLinks(FeatureProvider):
+    """
+    Feature provider that creates human-readable symbolic links for game configurations,
+    logs, scripts, and game files based on the game's name extracted from the Steam manifest.
+    """
+
     def __init__(self):
         super().__init__([])
 
@@ -25,9 +30,10 @@ class HumanReadableLinks(FeatureProvider):
         if not runtime_configuration.steam_game_exe:
             return
         try:
-            exe = Path(runtime_configuration.steam_game_exe)
-            game_name = exe.stem
-            game_links_dir = HUMAN_READABLE_LINKS_DIR_TEMPLATE.format(game_name)
+            self.logger.info("Current game info: %s", runtime_configuration.game_info)
+            game_links_dir = HUMAN_READABLE_LINKS_DIR_TEMPLATE.format(
+                runtime_configuration.game_info.name
+            )
             os.makedirs(game_links_dir, exist_ok=True)
             # Create symbolic link to the game configuration file
             config_file = GAME_CONFIG_FILE_TEMPLATE.format(

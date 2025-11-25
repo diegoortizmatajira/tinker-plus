@@ -1,6 +1,7 @@
 export
 SteamAppId=367520
 SteamGameId=367520
+STEAM_BASE_FOLDER=/home/diegoortizmatajira/.local/share/Steam
 STEAM_COMPAT_INSTALL_PATH="/home/diegoortizmatajira/.local/share/Steam/steamapps/common/Hollow Knight"
 STEAM_COMPAT_DATA_PATH=/home/diegoortizmatajira/.local/share/Steam/steamapps/compatdata/367520
 STEAM_COMPAT_CLIENT_INSTALL_PATH=/home/diegoortizmatajira/.local/share/Steam
