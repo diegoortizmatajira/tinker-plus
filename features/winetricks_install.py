@@ -83,7 +83,7 @@ class WinetricksInstall(FeatureProvider):
         )
         try:
             succeed = process_runner.run_in_wine_prefix(
-                f'winetricks --unattended "{" ".join(runtime_configuration.winetricks)}"',
+                f'winetricks --unattended {" ".join(runtime_configuration.winetricks)}',
                 runtime_configuration,
                 self.logger,
                 WINETRICKS_LOG_FILE,
