@@ -18,6 +18,12 @@ LINK_PUBLIC_USER_FOLDER_PROPERTY = ConfigurationProperty(
     "If provided links the public user folder to the given location",
 )
 
+LINK_SHOULD_BACKUP_FOLDERS_PROPERTY = ConfigurationProperty(
+    "LINK_SHOULD_BACKUP_FOLDERS",
+    "If true, backups the user folders before linking them",
+    True,
+)
+
 
 class LinkUserFolders(FeatureProvider):
     """
@@ -33,6 +39,7 @@ class LinkUserFolders(FeatureProvider):
             [
                 LINK_STEAM_USER_FOLDER_PROPERTY,
                 LINK_PUBLIC_USER_FOLDER_PROPERTY,
+                LINK_SHOULD_BACKUP_FOLDERS_PROPERTY,
             ]
         )
         self.config_storage = config_storage
@@ -46,6 +53,9 @@ class LinkUserFolders(FeatureProvider):
                 "No prefix path set in runtime configuration, skipping user folder linking."
             )
             return
+        should_backup = LINK_SHOULD_BACKUP_FOLDERS_PROPERTY.get_boolean(
+            configuration, True
+        )
         user_folder = LINK_STEAM_USER_FOLDER_PROPERTY.get_string(configuration)
         if user_folder:
             self.logger.info("Linking user folder to: %s", user_folder)
@@ -63,6 +73,7 @@ class LinkUserFolders(FeatureProvider):
                     user_folder,
                     prefix_user_folder,
                     self.logger,
+                    should_backup=should_backup,
                 )
         public_user_folder = LINK_PUBLIC_USER_FOLDER_PROPERTY.get_string(configuration)
         if public_user_folder:

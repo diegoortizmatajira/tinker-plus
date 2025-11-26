@@ -15,7 +15,9 @@ from core.defaults import (
 from core.game_info import GameInfo
 
 
-def create_symbolic_link(target: str, link_name: str, logger: logging.Logger):
+def create_symbolic_link(
+    target: str, link_name: str, logger: logging.Logger, *, should_backup: bool = True
+):
     """
     Creates a symbolic link pointing to target named link_name.
 
@@ -29,13 +31,16 @@ def create_symbolic_link(target: str, link_name: str, logger: logging.Logger):
 
         if location.exists():
             if location.is_dir(follow_symlinks=False):
-                backup_location = location.parent / (location.name + "_backup")
-                os.rename(location, backup_location)
-                logger.info(
-                    "Backed up existing %s folder to '%s'",
-                    location.name,
-                    backup_location,
-                )
+                if should_backup:
+                    backup_location = location.parent / (location.name + "_backup")
+                    os.rename(location, backup_location)
+                    logger.info(
+                        "Backed up existing %s folder to '%s'",
+                        location.name,
+                        backup_location,
+                    )
+                else:
+                    shutil.rmtree(location)
             elif islink(location):
                 # check if the existing link points to the correct target
                 existing_target = os.readlink(location)
@@ -46,11 +51,16 @@ def create_symbolic_link(target: str, link_name: str, logger: logging.Logger):
                     return
                 location.unlink()
             elif location.is_file(follow_symlinks=False):
-                backup_location = location.parent / (location.name + ".backup")
-                os.rename(location, backup_location)
-                logger.info(
-                    "Backed up existing %s file to '%s'", location.name, backup_location
-                )
+                if should_backup:
+                    backup_location = location.parent / (location.name + ".backup")
+                    os.rename(location, backup_location)
+                    logger.info(
+                        "Backed up existing %s file to '%s'",
+                        location.name,
+                        backup_location,
+                    )
+                else:
+                    location.unlink()
         target_path = Path(target)
         os.symlink(target_path, location)
         logger.info("Created symbolic link %s -> %s", location, target_path)
