@@ -49,9 +49,7 @@ class MainApp:
         subparsers.add_parser("install", help="Install as Steam compatibility tool")
 
         run_parser = subparsers.add_parser("run", help="Run a game using Tinker-Plus")
-        run_parser.add_argument(
-            "--cli", action="store_true", help="Run in CLI-only mode"
-        )
+        run_parser.add_argument("--gui", action="store_true", help="Run in GUI mode")
         run_parser.add_argument(
             "--dry", action="store_true", help="Run in DRY mode (no game launch)"
         )
@@ -104,7 +102,7 @@ class MainApp:
         Args:
             args (argparse.Namespace): Parsed command-line arguments.
         """
-        use_cli = getattr(args, "cli", False)
+        use_gui = getattr(args, "gui", False)
         dry_run = getattr(args, "dry", False)
         execute_trainer = getattr(args, "trainer", True)
         game_command = getattr(args, "game_command", [])
@@ -136,11 +134,11 @@ class MainApp:
             if runtime.runtime_configuration is None:
                 raise RuntimeError("Failed to build runtime configuration.")
             runtime.runtime_configuration.execute_trainers = execute_trainer
-            if use_cli:
-                runtime.run()
-            else:
+            if use_gui:
                 main_form = MainForm(runtime)
                 main_form.show()
+            else:
+                runtime.run()
 
         except RuntimeError as e:
             self.logger.error("An error occurred during runtime execution. %s", e)
