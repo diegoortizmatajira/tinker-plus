@@ -135,6 +135,20 @@ class RuntimeConfiguration:
     environment_variables: Optional[dict[str, str]] = None
     pipeline_wrappers: Optional[List[PipelineWrapper]] = None
 
+    @staticmethod
+    def empty() -> "RuntimeConfiguration":
+        """
+        Creates an empty RuntimeConfiguration instance with default values.
+
+        Returns:
+            RuntimeConfiguration: An instance of RuntimeConfiguration with default values.
+        """
+        return RuntimeConfiguration(
+            original_command=[],
+            game_info=GameInfo.empty(),
+            dry_run=True,
+        )
+
     def reset(self) -> None:
         """
         Resets the runtime configuration to its default state.

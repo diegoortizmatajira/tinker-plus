@@ -7,7 +7,6 @@ from core.configuration_property import (
     ConfigurationProperty,
     ListItem,
 )
-from core.game_info import GameInfo
 from core.runtime_configuration import RuntimeConfiguration
 
 
@@ -102,7 +101,7 @@ class TestConfigurationProperty(unittest.TestCase):
         prop = ConfigurationProperty(
             name="key", description="A key", values_provider=values_provider
         )
-        runtime_configuration = RuntimeConfiguration([], GameInfo.empty(), True)
+        runtime_configuration = RuntimeConfiguration.empty()
         self.assertEqual(prop.get_possible_values(runtime_configuration), values)
 
         # Scenario: values provider is not set
@@ -110,7 +109,7 @@ class TestConfigurationProperty(unittest.TestCase):
         self.assertIsNone(prop_no_provider.get_possible_values(runtime_configuration))
 
     def test_translate_to_environment_variable(self):
-        runtime_configuration = RuntimeConfiguration([], GameInfo.empty(), True)
+        runtime_configuration = RuntimeConfiguration.empty()
         logger = logging.getLogger("test_logger")
 
         # Scenario: Binary property

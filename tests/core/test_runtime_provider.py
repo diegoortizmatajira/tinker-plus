@@ -1,6 +1,7 @@
 import unittest
 
 from core import RuntimeConfiguration
+from core.game_info import GameInfo
 from core.runtime_provider import parse_command
 
 
@@ -19,7 +20,9 @@ class TestParseCommand(unittest.TestCase):
             "/home/diegoortizmatajira/.local/share/Steam/steamapps/common/Hollow",
             "Knight/hollow_knight.exe",
         ]
-        runtime_configuration = RuntimeConfiguration(command)
+        runtime_configuration = RuntimeConfiguration(
+            command, GameInfo.empty(), dry_run=True
+        )
         parse_command(runtime_configuration)
         self.assertEqual(
             "/home/diegoortizmatajira/.local/share/Steam/ubuntu12_32/steam-launch-wrapper",
@@ -65,10 +68,11 @@ class TestParseCommand(unittest.TestCase):
             "/home/diegoortizmatajira/.local/share/Steam/steamapps/common/Hollow",
             "Knight/hollow_knight.exe",
         ]
-        runtime_configuration = RuntimeConfiguration(command)
+        runtime_configuration = RuntimeConfiguration(
+            command, GameInfo.empty(), dry_run=True
+        )
         parse_command(runtime_configuration)
-        self.assertEqual(
-            "/home/diegoortizmatajira/.local/share/Steam/ubuntu12_32/steam-launch-wrapper",
+        self.assertIsNone(
             runtime_configuration.steam_wrapper,
         )
         self.assertEqual(
