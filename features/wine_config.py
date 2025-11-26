@@ -8,7 +8,6 @@ WINE_DLLOVERRIDES_PROPERTY = ConfigurationProperty(
     "Specifies custom DLL overrides for Wine. The value should be"
     " a semicolon-separated list of DLL names and their override"
     " settings (e.g., 'dll1,native;dll2,builtin').",
-    default=False,
     generated_environment_variable="WINEDLLOVERRIDES",
 )
 

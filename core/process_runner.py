@@ -111,7 +111,11 @@ def run_with_pipeline(
         logger.info("[DRY RUN] Would execute command: %s", command)
         return None
     try:
-        cwd=f"{runtime_configuration.prefix_path}/{CWD_DIR_NAME}"
+        # cwd=f"{runtime_configuration.prefix_path}/{CWD_DIR_NAME}"
+        cwd = (
+            runtime_configuration.steam_compat_install_path
+            or f"{runtime_configuration.prefix_path}/{CWD_DIR_NAME}"
+        )
         os.makedirs(cwd, exist_ok=True)
         logger.info("Executing command: %s", command)
         return subprocess.Popen(

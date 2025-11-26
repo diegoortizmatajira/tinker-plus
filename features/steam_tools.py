@@ -156,7 +156,7 @@ class SteamTools(FeatureProvider):
             self.logger.info("Enabling Steam Sniper wrapper.")
             runtime_configuration.add_pipeline_wrapper(
                 PipelineWrapper(
-                    runtime_configuration.steam_sniper,
+                    f"{runtime_configuration.steam_sniper} --",
                     is_global_wrapper=False,
                 )
             )
