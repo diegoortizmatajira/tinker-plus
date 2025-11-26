@@ -9,16 +9,19 @@ from core.defaults import PUBLIC_USER_FOLDER_NAME, STEAM_USER_FOLDER_NAME
 from core.file_operations import create_symbolic_link
 
 LINK_STEAM_USER_FOLDER_PROPERTY = ConfigurationProperty(
+    str,
     "LINK_STEAM_USER_FOLDER",
     "If provided links the steam user folder to the given location",
 )
 
 LINK_PUBLIC_USER_FOLDER_PROPERTY = ConfigurationProperty(
+    str,
     "LINK_PUBLIC_USER_FOLDER",
     "If provided links the public user folder to the given location",
 )
 
 LINK_SHOULD_BACKUP_FOLDERS_PROPERTY = ConfigurationProperty(
+    bool,
     "LINK_SHOULD_BACKUP_FOLDERS",
     "If true, backups the user folders before linking them",
     True,
@@ -53,10 +56,8 @@ class LinkUserFolders(FeatureProvider):
                 "No prefix path set in runtime configuration, skipping user folder linking."
             )
             return
-        should_backup = LINK_SHOULD_BACKUP_FOLDERS_PROPERTY.get_boolean(
-            configuration, True
-        )
-        user_folder = LINK_STEAM_USER_FOLDER_PROPERTY.get_string(configuration)
+        should_backup = LINK_SHOULD_BACKUP_FOLDERS_PROPERTY.get(configuration, True)
+        user_folder = LINK_STEAM_USER_FOLDER_PROPERTY.get(configuration)
         if user_folder:
             self.logger.info("Linking user folder to: %s", user_folder)
             prefix_user_folder = (
@@ -75,7 +76,7 @@ class LinkUserFolders(FeatureProvider):
                     self.logger,
                     should_backup=should_backup,
                 )
-        public_user_folder = LINK_PUBLIC_USER_FOLDER_PROPERTY.get_string(configuration)
+        public_user_folder = LINK_PUBLIC_USER_FOLDER_PROPERTY.get(configuration)
         if public_user_folder:
             self.logger.info("Linking public folder to: %s", public_user_folder)
             prefix_public_user_folder = (

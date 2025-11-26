@@ -7,7 +7,6 @@ import pathlib
 
 from typing import List, override
 from core import FeatureProvider, ConfigurationProperty, RuntimeConfiguration, ListItem
-from core.configuration_property import BINARY_PROPERTY, LIST_PROPERTY
 from core.log_storage import LogFactory
 from core.runtime_configuration import PipelineWrapper
 
@@ -24,80 +23,82 @@ def get_proton_versions_list(configuration: RuntimeConfiguration) -> List[ListIt
 
 
 PROTON_LAST_COMPATIBILITY_TOOL_PATH_PROPERTY = ConfigurationProperty(
+    str,
     "PROTON_LAST_COMPATIBILITY_TOOL_PATH",
     "The last used steam compatibility tools path.",
 )
 
 PROTON_LAST_COMPATIBILITY_TOOL_PROPERTY = ConfigurationProperty(
+    str,
     "PROTON_LAST_COMPATIBILITY_TOOL",
     "The last used steam compatibility tool.",
 )
 
 PROTON_VERSION_PROPERTY = ConfigurationProperty(
+    str,
     "PROTON_VERSION",
     "Defines which proton version to use.",
     values_provider=get_proton_versions_list,
-    type=LIST_PROPERTY,
 )
 PROTON_LOG_PROPERTY = ConfigurationProperty(
+    bool,
     "PROTON_LOG",
     "Enables proton logging when set to '1'.",
-    type=BINARY_PROPERTY,
     generated_environment_variable="PROTON_LOG",
 )
 PROTON_NO_D3D10_PROPERTY = ConfigurationProperty(
+    bool,
     "PROTON_NO_D3D10",
     "Disable d3d10.dll and dxgi.dll, for D3D10 games which can fall back to and run"
     + " better with D3D9",
-    type=BINARY_PROPERTY,
     generated_environment_variable="PROTON_NO_D3D10",
 )
 PROTON_NO_D3D11_PROPERTY = ConfigurationProperty(
+    bool,
     "PROTON_NO_D3D11",
     "Disable d3d11.dll, for D3D11 games which can fall back to and run better with D3D9",
-    type=BINARY_PROPERTY,
     generated_environment_variable="PROTON_NO_D3D11",
 )
 PROTON_NO_ESYNC_PROPERTY = ConfigurationProperty(
+    bool,
     "PROTON_NO_ESYNC",
     "Do not use eventfd-based in-process synchronization primitives",
-    type=BINARY_PROPERTY,
     generated_environment_variable="PROTON_NO_ESYNC",
 )
 PROTON_NO_FSYNC_PROPERTY = ConfigurationProperty(
+    bool,
     "PROTON_NO_FSYNC",
     "Do not use futex-based in-process synchronization primitives",
-    type=BINARY_PROPERTY,
     generated_environment_variable="PROTON_NO_FSYNC",
 )
 PROTON_FORCE_LARGE_ADDRESS_AWARE_PROPERTY = ConfigurationProperty(
+    bool,
     "PROTON_FORCE_LARGE_ADDRESS_AWARE",
     "Force Wine to enable the LARGE_ADDRESS_AWARE flag",
-    type=BINARY_PROPERTY,
     generated_environment_variable="PROTON_FORCE_LARGE_ADDRESS_AWARE",
 )
 PROTON_USE_WINED3D_PROPERTY = ConfigurationProperty(
+    bool,
     "PROTON_USE_WINED3D",
     "Use OpenGL-based WineD3D instead of Vulkan-based DXVK for D3D11, D3D10 and D3D9",
-    type=BINARY_PROPERTY,
     generated_environment_variable="PROTON_USE_WINED3D",
 )
 PROTON_DXVK_D3D8_PROPERTY = ConfigurationProperty(
+    bool,
     "PROTON_DXVK_D3D8",
     "Enable DXVK's D3D8 support",
-    type=BINARY_PROPERTY,
     generated_environment_variable="PROTON_DXVK_D3D8",
 )
 PROTON_DISABLE_NVAPI_PROPERTY = ConfigurationProperty(
+    bool,
     "PROTON_DISABLE_NVAPI",
     "Disable Proton support for Nvidia's NVAPI GPU and DLSS",
-    type=BINARY_PROPERTY,
     generated_environment_variable="PROTON_DISABLE_NVAPI",
 )
 PROTON_HIDE_NVIDIA_GPU_PROPERTY = ConfigurationProperty(
+    bool,
     "PROTON_HIDE_NVIDIA_GPU",
     "Proton hide Nvidia GPU",
-    type=BINARY_PROPERTY,
     generated_environment_variable="PROTON_HIDE_NVIDIA_GPU",
 )
 
@@ -196,9 +197,9 @@ class ProtonSelection(FeatureProvider):
         """
 
         runtime_configuration.steam_compatibility_tool = (
-            PROTON_VERSION_PROPERTY.get_string(configuration)
+            PROTON_VERSION_PROPERTY.get(configuration)
             or runtime_configuration.steam_compatibility_tool
-            or PROTON_LAST_COMPATIBILITY_TOOL_PROPERTY.get_string(configuration)
+            or PROTON_LAST_COMPATIBILITY_TOOL_PROPERTY.get(configuration)
         )
         if not runtime_configuration.steam_compatibility_tool:
             self.logger.error("No steam compatibility tool (proton) version selected.")
@@ -206,7 +207,7 @@ class ProtonSelection(FeatureProvider):
 
         if not runtime_configuration.steam_compatibility_tools_path:
             runtime_configuration.steam_compatibility_tools_path = (
-                PROTON_LAST_COMPATIBILITY_TOOL_PATH_PROPERTY.get_string(configuration)
+                PROTON_LAST_COMPATIBILITY_TOOL_PATH_PROPERTY.get(configuration)
             )
             self.logger.info(
                 "Restored last used steam compatibility tools path as "
@@ -221,7 +222,7 @@ class ProtonSelection(FeatureProvider):
             runtime_configuration.steam_compatibility_tools_path,
         )
 
-        proton_logs_enabled = PROTON_LOG_PROPERTY.get_boolean(configuration)
+        proton_logs_enabled = PROTON_LOG_PROPERTY.get(configuration)
         if proton_logs_enabled:
             log_dir = LogFactory.singleton().get_log_folder()
             self.logger.info('Enabling proton logs output to directory: "%s"', log_dir)

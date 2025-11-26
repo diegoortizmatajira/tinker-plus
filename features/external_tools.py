@@ -1,11 +1,7 @@
 """Module to manage external tools being used when running the game."""
 
 from typing import override
-from core.configuration_property import (
-    BINARY_PROPERTY,
-    TEXT_PROPERTY,
-    ConfigurationProperty,
-)
+from core.configuration_property import ConfigurationProperty
 from core.feature_provider import FeatureProvider
 from core.runtime_configuration import (
     ExecutableCommand,
@@ -14,22 +10,22 @@ from core.runtime_configuration import (
 )
 
 GAMEMODERUN_ENABLED_PROPERTY = ConfigurationProperty(
+    bool,
     "GAMEMODERUN_ENABLED",
     "Enables GameModeRun when set to '1'.",
     default=False,
-    type=BINARY_PROPERTY,
 )
 
 GAMESCOPE_ENABLED_PROPERTY = ConfigurationProperty(
+    bool,
     "GAMESCOPE_ENABLED",
     "Enables Gamescope when set to '1'.",
     default=False,
-    type=BINARY_PROPERTY,
 )
 GAMESCOPE_ARGS_PROPERTY = ConfigurationProperty(
+    str,
     "GAMESCOPE_ARGS",
     "Additional arguments to pass to Gamescope.",
-    type=TEXT_PROPERTY,
 )
 
 
@@ -56,11 +52,11 @@ class ExternalTools(FeatureProvider):
     def apply_configuration(
         self, configuration: dict, runtime_configuration: RuntimeConfiguration
     ) -> RuntimeConfiguration:
-        if GAMEMODERUN_ENABLED_PROPERTY.get_boolean(configuration):
+        if GAMEMODERUN_ENABLED_PROPERTY.get(configuration):
             self.logger.info("Enabling GameModeRun wrapper.")
             runtime_configuration.add_pipeline_wrapper(PipelineWrapper("gamemoderun"))
-        if GAMESCOPE_ENABLED_PROPERTY.get_boolean(configuration):
-            gamescope_args = GAMESCOPE_ARGS_PROPERTY.get_string(configuration) or ""
+        if GAMESCOPE_ENABLED_PROPERTY.get(configuration):
+            gamescope_args = GAMESCOPE_ARGS_PROPERTY.get(configuration) or ""
             self.logger.info(
                 'Enabling Gamescope wrapper with args: "%s"', gamescope_args
             )

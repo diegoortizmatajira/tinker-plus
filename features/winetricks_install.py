@@ -7,22 +7,21 @@ from core import (
     RuntimeConfiguration,
     process_runner,
 )
-from core.configuration_property import BINARY_PROPERTY, MULTIVALUELIST_PROPERTY
 from core.defaults import WINETRICKS_LOG_FILE
 
 
 WINETRICKS_RUN_PROPERTY = ConfigurationProperty(
+    bool,
     "WINETRICKS_RUN",
     "Specifies if winetricks should be run (true/false).",
     default=True,
-    type=BINARY_PROPERTY,
 )
 
 WINETRICKS_PROPERTY = ConfigurationProperty(
+    list,
     "WINETRICKS",
     "Specifies a list of winetricks packages to install (comma separated).",
     default=[],
-    type=MULTIVALUELIST_PROPERTY,
 )
 
 
@@ -41,7 +40,7 @@ class WinetricksInstall(FeatureProvider):
     def apply_configuration(
         self, configuration: dict, runtime_configuration: RuntimeConfiguration
     ) -> RuntimeConfiguration:
-        should_run_winetricks = WINETRICKS_RUN_PROPERTY.get_boolean(configuration)
+        should_run_winetricks = WINETRICKS_RUN_PROPERTY.get(configuration)
         runtime_configuration.install_winetricks = (
             True if should_run_winetricks is None else should_run_winetricks
         )
@@ -51,7 +50,7 @@ class WinetricksInstall(FeatureProvider):
             self.logger.info(
                 "Winetricks installation is not going to run automatically."
             )
-        winetricks = WINETRICKS_PROPERTY.get_string_list(configuration) or []
+        winetricks = WINETRICKS_PROPERTY.get(configuration, [])
         if len(winetricks) == 0 or winetricks == [""]:
             self.logger.info("No standalone winetricks packages are requested.")
             winetricks = []

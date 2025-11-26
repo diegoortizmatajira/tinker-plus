@@ -6,7 +6,7 @@ from typing import override
 from core import FeatureProvider, ConfigurationProperty, RuntimeConfiguration
 
 CUSTOM_PREFIX_PROPERTY = ConfigurationProperty(
-    "CUSTOM_PREFIX", "Allows selection of a specific prefix."
+    str, "CUSTOM_PREFIX", "Allows selection of a specific prefix."
 )
 
 
@@ -26,7 +26,7 @@ class PrefixSelection(FeatureProvider):
     def apply_configuration(
         self, configuration: dict, runtime_configuration: RuntimeConfiguration
     ) -> RuntimeConfiguration:
-        custom_prefix = CUSTOM_PREFIX_PROPERTY.get_string(configuration)
+        custom_prefix = CUSTOM_PREFIX_PROPERTY.get(configuration)
         if custom_prefix:
             runtime_configuration.prefix_path = custom_prefix
             self.logger.info(

@@ -4,7 +4,7 @@ This module defines a ConfigurationProperty class
 
 from dataclasses import dataclass
 import logging
-from typing import Callable, List, Literal, Optional, Union, overload
+from typing import Callable, List, Optional, Type, Union, cast, overload
 
 
 from core.runtime_configuration import RuntimeConfiguration
@@ -14,39 +14,33 @@ ConfigurationValueType = Union[str, List[str], bool]
 
 
 @dataclass
-class ListItem:
+class ListItem[T]:
     """
     Represents an item in a list with a name and value.
     """
 
     name: str
-    value: Optional[ConfigurationValueType]
-
-
-BINARY_PROPERTY = "BINARY_PROPERTY"
-LIST_PROPERTY = "LIST_PROPERTY"
-MULTIVALUELIST_PROPERTY = "MULTIVALUELIST_PROPERTY"
-TEXT_PROPERTY = "TEXT_PROPERTY"
+    value: Optional[T]
 
 
 @dataclass
-class ConfigurationProperty:
+class ConfigurationProperty[T]:
     """
     The ConfigurationProperty class represents a property in a configuration
     with an associated name, description, and an optional default value.
     """
 
+    type_ref: Type[T]
     name: str
     description: str
-    default: Optional[ConfigurationValueType] = None
-    values_provider: Optional[Callable[[RuntimeConfiguration], List[ListItem]]] = None
-    values_cache: Optional[List[ListItem]] = None
-    type: Literal[
-        "BINARY_PROPERTY", "LIST_PROPERTY", "MULTIVALUELIST_PROPERTY", "TEXT_PROPERTY"
-    ] = TEXT_PROPERTY
+    default: Optional[T] = None
+    values_provider: Optional[Callable[[RuntimeConfiguration], List[ListItem[T]]]] = (
+        None
+    )
+    values_cache: Optional[List[ListItem[T]]] = None
     generated_environment_variable: Optional[str] = None
 
-    def set(self, configuration: dict, value: Optional[ConfigurationValueType]):
+    def set(self, configuration: dict, value: Optional[T]):
         """
         Sets the value of the configuration property in the given configuration dictionary.
 
@@ -57,18 +51,14 @@ class ConfigurationProperty:
         configuration[self.name] = value
 
     @overload
-    def get(self, configuration: dict) -> Optional[ConfigurationValueType]:
+    def get(self, configuration: dict) -> Optional[T]:
         pass
 
     @overload
-    def get(
-        self, configuration: dict, default: ConfigurationValueType
-    ) -> ConfigurationValueType:
+    def get(self, configuration: dict, default: T) -> T:
         pass
 
-    def get(
-        self, configuration: dict, default: Optional[ConfigurationValueType] = None
-    ) -> Optional[ConfigurationValueType]:
+    def get(self, configuration: dict, default: Optional[T] = None) -> Optional[T]:
         """
         Retrieves the value of the configuration property.
 
@@ -79,148 +69,17 @@ class ConfigurationProperty:
             Optional[str]: The value of the property from the configuration if it exists,
                            otherwise the default value.
         """
-        return configuration.get(self.name, self.default) or default
-
-    @overload
-    def get_boolean(self, configuration: dict) -> Optional[bool]:
-        """
-        Retrieves the value of the configuration property as a boolean.
-
-        Args:
-            configuration (dict): A dictionary representing the configuration.
-
-        Returns:
-            Optional[bool]: The value of the property as a boolean if it exists,
-                            otherwise the default value.
-
-        Raises:
-            TypeError: If the configuration value is not a boolean.
-        """
-
-    @overload
-    def get_boolean(self, configuration: dict, default: bool) -> bool:
-        """
-        Retrieves the value of the configuration property as a boolean, or
-        returns the specified default if the property is not found.
-
-        Args:
-            configuration (dict): A dictionary representing the configuration.
-            default (bool): The default value to return if the property is not found.
-
-        Returns:
-            bool: The value of the property as a boolean, or the specified default value.
-        """
-
-    def get_boolean(
-        self, configuration: dict, default: Optional[bool] = None
-    ) -> Optional[bool]:
-        """
-        Retrieves the value of the configuration property as a boolean.
-
-        Args:
-            configuration (dict): A dictionary representing the configuration.
-
-        Returns:
-            Optional[bool]: The value of the property as a boolean if it exists,
-                            otherwise the default value.
-
-        Raises:
-            TypeError: If the configuration value is not a boolean.
-        """
-        value = self.get(configuration)
-        if value is None or isinstance(value, bool):
+        value = configuration.get(self.name, self.default)
+        # Validate if value is of type T or None
+        if value is None:
             return value or default
+        if isinstance(value, self.type_ref):
+            return value
         raise TypeError(
-            f"Configuration value is not a boolean value: {self.name} = {value}"
+            f"Configuration value is not a {T} value: {self.name} = {value}"
         )
 
-    @overload
-    def get_string(self, configuration: dict, default: str) -> str:
-        """
-        Retrieves the value of the configuration property as a string, or
-        returns the specified default if the property is not found.
-
-        Args:
-            configuration (dict): A dictionary representing the configuration.
-            default (str): The default value to return if the property is not found.
-
-        Returns:
-            str: The value of the property as a string if it exists,
-                 otherwise the specified default value.
-
-        Raises:
-            TypeError: If the configuration value is not a string.
-        """
-
-    @overload
-    def get_string(self, configuration: dict) -> Optional[str]:
-        """
-        Retrieves the value of the configuration property as a string.
-
-        Args:
-            configuration (dict): A dictionary representing the configuration.
-
-        Returns:
-            Optional[str]: The value of the property as a string if it exists,
-                           otherwise the default value.
-
-        Raises:
-            TypeError: If the configuration value is not a string.
-        """
-
-    def get_string(
-        self, configuration: dict, default: Optional[str] = None
-    ) -> Optional[str]:
-        """
-        Retrieves the value of the configuration property as a string.
-
-        Args:
-            configuration (dict): A dictionary representing the configuration.
-
-        Returns:
-            Optional[str]: The value of the property as a string if it exists,
-                           otherwise the default value.
-
-        Raises:
-            TypeError: If the configuration value is not a string.
-        """
-        value = self.get(configuration)
-        if value is None or isinstance(value, str):
-            return value or default
-        raise TypeError(f"Configuration value is not a string: {self.name} = {value}")
-
-    @overload
-    def get_string_list(self, configuration: dict) -> Optional[List[str]]:
-        pass
-
-    @overload
-    def get_string_list(self, configuration: dict, default: List[str]) -> List[str]:
-        pass
-
-    def get_string_list(
-        self, configuration: dict, default: Optional[List[str]] = None
-    ) -> Optional[List[str]]:
-        """
-        Retrieves the value of the configuration property as a list of strings.
-
-        Args:
-            configuration (dict): A dictionary representing the configuration.
-
-        Returns:
-            Optional[List[str]]: The value of the property as a list of strings
-                                 if it exists, otherwise None.
-
-        Raises:
-            TypeError: If the configuration value is not a list of strings.
-        """
-        value = self.get(configuration)
-        if value is None or isinstance(value, list):
-            return value or default
-        raise TypeError(
-            f"Configuration value is not a string list: {self.name} = {value}"
-        )
-
-    def get_or_fail(self, configuration: dict) -> ConfigurationValueType:
+    def get_or_fail(self, configuration: dict) -> T:
         """
         Retrieves the value of the configuration property or raises an error if not found.
 
@@ -231,10 +90,10 @@ class ConfigurationProperty:
         Raises:
             KeyError: If the property is not found in the configuration and has no default.
         """
-        if self.name in configuration:
-            return configuration[self.name]
-        if self.default is not None:
-            return self.default
+        value = self.get(configuration)
+        if value is not None:
+            return value
+
         raise KeyError(
             f"Configuration property '{self.name}' ({self.description})"
             " is required and has no default."
@@ -242,7 +101,7 @@ class ConfigurationProperty:
 
     def get_possible_values(
         self, runtime_configuration: RuntimeConfiguration
-    ) -> Optional[List[ListItem]]:
+    ) -> Optional[List[ListItem[T]]]:
         """
         Retrieves the possible values for the configuration property if a values provider is set.
 
@@ -270,8 +129,8 @@ class ConfigurationProperty:
         """
         if not self.generated_environment_variable:
             return
-        if self.type == BINARY_PROPERTY:
-            value = self.get_boolean(configuration)
+        if self.type_ref is bool:
+            value = self.get(configuration)
             if value is None:
                 return
 
@@ -280,10 +139,11 @@ class ConfigurationProperty:
             )
             logger.info("%s option flag set to %s.", self.name, value)
             return
-        if self.type in (TEXT_PROPERTY, LIST_PROPERTY):
-            value = self.get_string(configuration)
+        if self.type_ref is str:
+            value = self.get(configuration)
             if value is None:
                 return
+            value = str(value)
             # Quote the value if it contains spaces or equal signs
             if " " in value or "=" in value:
                 value = f'"{value}"'
@@ -293,16 +153,23 @@ class ConfigurationProperty:
             )
             logger.info('%s parameter set to "%s".', self.name, value)
             return
-        if self.type == MULTIVALUELIST_PROPERTY:
-            value = self.get_string_list(configuration)
+        if self.type_ref is list:
+            value = self.get(configuration)
             if value is None:
                 return
-
+            value = [str(item) for item in cast(list, value)]
             runtime_configuration.set_environment_variable(
                 self.generated_environment_variable, ",".join(value)
             )
             logger.info("%s parameter set to %s.", self.name, value)
             return
+        value = self.get(configuration)
+        if value is None:
+            return
+        runtime_configuration.set_environment_variable(
+            self.generated_environment_variable, str(value)
+        )
+        logger.info("%s parameter set to %s.", self.name, value)
 
     @staticmethod
     def initialize_defaults(

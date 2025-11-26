@@ -26,8 +26,9 @@ class TestProtonSelection(unittest.TestCase):
         when provided with a valid value.
         """
         # Mock input configuration and runtime configuration
-        configuration = {"USE_PROTON": "PROTON7-21"}
-        runtime_configuration = MagicMock(spec=RuntimeConfiguration)
+        configuration = {"PROTON_VERSION": "PROTON7-21"}
+        runtime_configuration = RuntimeConfiguration.empty()
+        runtime_configuration.steam_compatibility_tool = "DEFAULT_PROTON"
 
         # Apply configuration
         updated_runtime_config = self.proton_selection.apply_configuration(
@@ -35,7 +36,7 @@ class TestProtonSelection(unittest.TestCase):
         )
 
         # Verify the USE_PROTON value was applied
-        self.assertEqual(updated_runtime_config.use_proton, "PROTON7-21")
+        self.assertEqual(updated_runtime_config.steam_compatibility_tool, "PROTON7-21")
 
     def test_apply_configuration_with_missing_value(self):
         """
@@ -44,14 +45,15 @@ class TestProtonSelection(unittest.TestCase):
         """
         # Mock input configuration and runtime configuration
         configuration = {}  # USE_PROTON not included
-        runtime_configuration = MagicMock(spec=RuntimeConfiguration)
-        # Set a default value for steam_compatibility_tool to avoid AttributeError
+        runtime_configuration = RuntimeConfiguration.empty()
         runtime_configuration.steam_compatibility_tool = "DEFAULT_PROTON"
 
         # Apply configuration
         self.proton_selection.apply_configuration(configuration, runtime_configuration)
         # Verify the USE_PROTON is set to the default steam_compatibility_tool
-        self.assertEqual(runtime_configuration.use_proton, "DEFAULT_PROTON")
+        self.assertEqual(
+            runtime_configuration.steam_compatibility_tool, "DEFAULT_PROTON"
+        )
 
     def test_apply_configuration_with_empty_string(self):
         """
@@ -60,8 +62,7 @@ class TestProtonSelection(unittest.TestCase):
         """
         # Mock input configuration and runtime configuration
         configuration = {"USE_PROTON": ""}
-        runtime_configuration = MagicMock(spec=RuntimeConfiguration)
-        # Set a default value for steam_compatibility_tool to avoid AttributeError
+        runtime_configuration = RuntimeConfiguration.empty()
         runtime_configuration.steam_compatibility_tool = "DEFAULT_PROTON"
 
         # Apply configuration
@@ -70,7 +71,9 @@ class TestProtonSelection(unittest.TestCase):
         )
 
         # Verify the USE_PROTON is set to an empty string
-        self.assertEqual(updated_runtime_config.use_proton, "DEFAULT_PROTON")
+        self.assertEqual(
+            updated_runtime_config.steam_compatibility_tool, "DEFAULT_PROTON"
+        )
 
     @patch("pathlib.Path")
     def test_get_proton_versions_list(self, mock_pathlib):
@@ -95,7 +98,7 @@ class TestProtonSelection(unittest.TestCase):
         result = get_proton_versions_list(self.mock_runtime_config)
 
         # Assert
-        self.assertEqual(result, ["proton-1", "proton-2"])
+        self.assertEqual([item.value for item in result], ["proton-1", "proton-2"])
         mock_pathlib.assert_called_with("/mock/path")
 
 

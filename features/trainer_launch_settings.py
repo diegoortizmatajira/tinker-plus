@@ -5,28 +5,29 @@ from core import FeatureProvider, ConfigurationProperty, RuntimeConfiguration
 from core.runtime_configuration import COMMAND_TRAINER, ExecutableCommand
 
 TRAINER_ENABLED_PROPERTY = ConfigurationProperty(
-    "TRAINER_ENABLED", "Enables custom trainer launching.", True
+    bool, "TRAINER_ENABLED", "Enables custom trainer launching.", True
 )
 TRAINER_EXE_PROPERTY = ConfigurationProperty(
-    "TRAINER_EXE", "Allows selection of a specific trainer excecutable program."
+    str, "TRAINER_EXE", "Allows selection of a specific trainer excecutable program."
 )
 
 TRAINER_ARGS_PROPERTY = ConfigurationProperty(
-    "TRAINER_ARGS", "Allows providing custom args to the trainer program."
+    str, "TRAINER_ARGS", "Allows providing custom args to the trainer program."
 )
 
 WEMOD_ENABLED_PROPERTY = ConfigurationProperty(
-    "WEMOD_ENABLED", "Enables WeMod integration for trainer launching.", False
+    bool, "WEMOD_ENABLED", "Enables WeMod integration for trainer launching.", False
 )
 
 WEMOD_EXE_PROPERTY = ConfigurationProperty(
-    "WEMOD_EXE", "Specifies the path to the WeMod executable."
+    str, "WEMOD_EXE", "Specifies the path to the WeMod executable."
 )
 
 WEMOD_GAMEID_PROPERTY = ConfigurationProperty(
-    "WEMOD_GAMEID", "Specifies the WeMod game ID for the target game."
+    str, "WEMOD_GAMEID", "Specifies the WeMod game ID for the target game."
 )
 WEMOD_WINETRICKS_REQUIREMENTS = ConfigurationProperty(
+    list,
     "WEMOD_WINETRICKS_REQUIREMENTS",
     "Specifies the Winetricks requirements for WeMod integration.",
     ["dotnet48"],
@@ -59,12 +60,12 @@ class TrainerLaunchSettings(FeatureProvider):
 
         # Check for custom trainer configuration
         custom_trainer = (
-            TRAINER_ENABLED_PROPERTY.get_boolean(configuration)
-            and TRAINER_EXE_PROPERTY.get_string(configuration)
+            TRAINER_ENABLED_PROPERTY.get(configuration)
+            and TRAINER_EXE_PROPERTY.get(configuration)
             or None
         )
         if custom_trainer:
-            custom_trainer_args = TRAINER_ARGS_PROPERTY.get_string(configuration)
+            custom_trainer_args = TRAINER_ARGS_PROPERTY.get(configuration)
             runtime_configuration.add_fork_command(
                 ExecutableCommand(
                     custom_trainer,
@@ -78,12 +79,12 @@ class TrainerLaunchSettings(FeatureProvider):
 
         # Check for WeMod integration
         wemod_path = (
-            WEMOD_ENABLED_PROPERTY.get_boolean(configuration)
-            and WEMOD_EXE_PROPERTY.get_string(configuration)
+            WEMOD_ENABLED_PROPERTY.get(configuration)
+            and WEMOD_EXE_PROPERTY.get(configuration)
             or None
         )
         if wemod_path:
-            game_id = WEMOD_GAMEID_PROPERTY.get_string(configuration)
+            game_id = WEMOD_GAMEID_PROPERTY.get(configuration)
             wemod_args = (
                 f'"wemod://play?titleId={game_id}&gameId={game_id}"'
                 if game_id
@@ -96,9 +97,7 @@ class TrainerLaunchSettings(FeatureProvider):
                     COMMAND_TRAINER,
                 )
             )
-            wemod_winetricks = (
-                WEMOD_WINETRICKS_REQUIREMENTS.get_string_list(configuration) or []
-            )
+            wemod_winetricks = WEMOD_WINETRICKS_REQUIREMENTS.get(configuration, [])
             runtime_configuration.add_winetricks(wemod_winetricks)
             execute_trainer = True
             self.logger.info("WeMod trainer: %s", wemod_path)

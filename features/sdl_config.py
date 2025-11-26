@@ -1,16 +1,15 @@
 """Module providing SDL configuration features."""
 
 from core.configuration_property import (
-    LIST_PROPERTY,
     ConfigurationProperty,
     ListItem,
 )
 from core.feature_provider import FeatureProvider
 
 SDL_VIDEODRIVER_PROPERTY = ConfigurationProperty(
+    str,
     "SDL_VIDEODRIVER",
     "Simple DirectMedia Layer (SDL) video driver to use.",
-    type=LIST_PROPERTY,
     generated_environment_variable="SDL_VIDEODRIVER",
     values_provider=lambda _: [
         ListItem("wayland", "wayland"),

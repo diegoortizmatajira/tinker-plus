@@ -1,9 +1,8 @@
 import logging
+from typing import List
 import unittest
 
 from core.configuration_property import (
-    BINARY_PROPERTY,
-    MULTIVALUELIST_PROPERTY,
     ConfigurationProperty,
     ListItem,
 )
@@ -12,84 +11,58 @@ from core.runtime_configuration import RuntimeConfiguration
 
 class TestConfigurationProperty(unittest.TestCase):
     def test_get(self):
-        # Scenario: property exists in the configuration
-        prop = ConfigurationProperty(
-            name="key", description="A key", default="default_value"
-        )
-        configuration = {"key": "value"}
-        self.assertEqual(prop.get(configuration), "value")
+        properties: List[ConfigurationProperty] = [
+            ConfigurationProperty(str, "STRING_PROPERTY", "A string property"),
+            ConfigurationProperty(int, "INT_PROPERTY", "An integer property"),
+            ConfigurationProperty(bool, "BOOL_PROPERTY", "A boolean property"),
+            ConfigurationProperty(list, "LIST_PROPERTY", "A list property"),
+        ]
+        configuration = {
+            "STRING_PROPERTY": "test_string",
+            "INT_PROPERTY": 42,
+            "BOOL_PROPERTY": True,
+            "LIST_PROPERTY": ["item1", "item2", "item3"],
+        }
+        for prop in properties:
+            value = prop.get(configuration)
+            self.assertIsInstance(value, prop.type_ref)  # type: ignore
+            self.assertEqual(value, configuration[prop.name])
 
-        # Scenario: property does not exist, default is returned
+    def test_get_defaults(self):
+        properties: List[ConfigurationProperty] = [
+            # Properties without defaults should return None
+            ConfigurationProperty(str, "STRING_PROPERTY", "A string property"),
+            ConfigurationProperty(int, "INT_PROPERTY", "An integer property"),
+            ConfigurationProperty(bool, "BOOL_PROPERTY", "A boolean property"),
+            ConfigurationProperty(list, "LIST_PROPERTY", "A list property"),
+            # Properties with defaults should return the default value
+            ConfigurationProperty(
+                str, "STRING_PROPERTY", "A string property", "default"
+            ),
+            ConfigurationProperty(int, "INT_PROPERTY", "An integer property", 999),
+            ConfigurationProperty(bool, "BOOL_PROPERTY", "A boolean property", False),
+            ConfigurationProperty(list, "LIST_PROPERTY", "A list property", []),
+        ]
         configuration = {}
-        self.assertEqual(prop.get(configuration), "default_value")
-
-        # Scenario: property does not exist, no default set
-        prop_no_default = ConfigurationProperty(name="key", description="A key")
-        self.assertIsNone(prop_no_default.get(configuration))
+        for prop in properties:
+            value = prop.get(configuration)
+            if prop.default is None:
+                self.assertIsNone(value)
+            else:
+                self.assertIsInstance(value, prop.type_ref)
+            self.assertEqual(value, prop.default)
 
     def test_get_or_fail(self):
-        # Scenario: property exists in the configuration
-        prop = ConfigurationProperty(name="key", description="A key")
-        configuration = {"key": "value"}
-        self.assertEqual(prop.get_or_fail(configuration), "value")
-
-        # Scenario: property does not exist, but default is set
-        prop_with_default = ConfigurationProperty(
-            name="key", description="A key", default="default_value"
-        )
+        properties: List[ConfigurationProperty] = [
+            ConfigurationProperty(str, "STRING_PROPERTY", "A string property"),
+            ConfigurationProperty(int, "INT_PROPERTY", "An integer property"),
+            ConfigurationProperty(bool, "BOOL_PROPERTY", "A boolean property"),
+            ConfigurationProperty(list, "LIST_PROPERTY", "A list property"),
+        ]
         configuration = {}
-        self.assertEqual(prop_with_default.get_or_fail(configuration), "default_value")
-
-        # Scenario: property does not exist and no default is set
-        prop_no_default = ConfigurationProperty(name="key", description="A key")
-        configuration = {}
-        with self.assertRaises(KeyError):
-            prop_no_default.get_or_fail(configuration)
-
-    def test_get_boolean(self):
-        # Scenario: valid boolean value
-        prop = ConfigurationProperty(name="key", description="A key")
-        configuration = {"key": True}
-        self.assertTrue(prop.get_boolean(configuration))
-
-        # Scenario: value does not exist
-        configuration = {}
-        self.assertIsNone(prop.get_boolean(configuration))
-
-        # Scenario: invalid type for boolean
-        configuration = {"key": "not_a_boolean"}
-        with self.assertRaises(TypeError):
-            prop.get_boolean(configuration)
-
-    def test_get_string(self):
-        # Scenario: valid string value
-        prop = ConfigurationProperty(name="key", description="A key")
-        configuration = {"key": "string_value"}
-        self.assertEqual(prop.get_string(configuration), "string_value")
-
-        # Scenario: value does not exist
-        configuration = {}
-        self.assertIsNone(prop.get_string(configuration))
-
-        # Scenario: invalid type for string
-        configuration = {"key": 12345}
-        with self.assertRaises(TypeError):
-            prop.get_string(configuration)
-
-    def test_get_string_list(self):
-        # Scenario: valid string list
-        prop = ConfigurationProperty(name="key", description="A key")
-        configuration = {"key": ["item1", "item2"]}
-        self.assertEqual(prop.get_string_list(configuration), ["item1", "item2"])
-
-        # Scenario: value does not exist
-        configuration = {}
-        self.assertIsNone(prop.get_string_list(configuration))
-
-        # Scenario: invalid type for string list
-        configuration = {"key": "not_a_list"}
-        with self.assertRaises(TypeError):
-            prop.get_string_list(configuration)
+        for prop in properties:
+            with self.assertRaises(KeyError):
+                prop.get_or_fail(configuration)
 
     def test_get_possible_values(self):
         # Scenario: values provider is set and returns values
@@ -99,13 +72,13 @@ class TestConfigurationProperty(unittest.TestCase):
             return values
 
         prop = ConfigurationProperty(
-            name="key", description="A key", values_provider=values_provider
+            str, name="key", description="A key", values_provider=values_provider
         )
         runtime_configuration = RuntimeConfiguration.empty()
         self.assertEqual(prop.get_possible_values(runtime_configuration), values)
 
         # Scenario: values provider is not set
-        prop_no_provider = ConfigurationProperty(name="key", description="A key")
+        prop_no_provider = ConfigurationProperty(str, name="key", description="A key")
         self.assertIsNone(prop_no_provider.get_possible_values(runtime_configuration))
 
     def test_translate_to_environment_variable(self):
@@ -114,9 +87,9 @@ class TestConfigurationProperty(unittest.TestCase):
 
         # Scenario: Binary property
         prop = ConfigurationProperty(
+            bool,
             name="binary_key",
             description="Test binary key",
-            type=BINARY_PROPERTY,
             generated_environment_variable="TEST_BINARY",
         )
         configuration = {"binary_key": True}
@@ -131,9 +104,9 @@ class TestConfigurationProperty(unittest.TestCase):
 
         # Scenario: Multivalue list property
         prop = ConfigurationProperty(
+            list,
             name="list_key",
             description="Testing multi-value list key",
-            type=MULTIVALUELIST_PROPERTY,
             generated_environment_variable="TEST_LIST",
         )
         configuration = {"list_key": ["value1", "value2"]}
@@ -150,10 +123,10 @@ class TestConfigurationProperty(unittest.TestCase):
     def test_initialize_defaults(self):
         # Scenario: properties with defaults initialize the configuration
         prop1 = ConfigurationProperty(
-            name="key1", description="A key", default="value1"
+            str, name="key1", description="A key", default="value1"
         )
         prop2 = ConfigurationProperty(
-            name="key2", description="Another key", default="value2"
+            str, name="key2", description="Another key", default="value2"
         )
         configuration = {}
         updated_config = ConfigurationProperty.initialize_defaults(
