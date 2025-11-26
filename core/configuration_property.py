@@ -196,6 +196,9 @@ class ConfigurationProperty:
             value = self.get_string(configuration)
             if value is None:
                 return
+            # Quote the value if it contains spaces or equal signs
+            if " " in value or "=" in value:
+                value = f'"{value}"'
 
             runtime_configuration.set_environment_variable(
                 self.generated_environment_variable, value
