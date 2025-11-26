@@ -5,99 +5,120 @@ from core.game_info import GameInfo
 from core.runtime_provider import parse_command
 
 
+PART_WRAPPER = "wrapper"
+PART_REAPER = "reaper"
+PART_SNIPER = "sniper"
+PART_COMPATIBILITY_COMMAND = "compatibility_command"
+PART_GAME_EXE = "game_exe"
+PART_GAME_ARGS = "game_args"
+
+EXAMPLE_COMMAND = {
+    PART_WRAPPER: "/home/steamuser/.local/share/Steam/ubuntu12_32/steam-launch-wrapper",
+    PART_REAPER: "/home/steamuser/.local/share/Steam/ubuntu12_32/reaper",
+    PART_SNIPER: "/home/steamuser/.local/share/Steam/steamapps/common"
+    + "/SteamLinuxRuntime_sniper/_v2-entry-point --verb=waitforexitandrun",
+    PART_COMPATIBILITY_COMMAND: "/home/steamuser/.local/share/Steam"
+    + "/compatibilitytools.d/GE-Proton10-25/proton waitforexitandrun",
+    PART_GAME_EXE: "/home/steamuser/.local/share/Steam/steamapps"
+    + "/common/Hollow Knight/hollow_knight.exe",
+    PART_GAME_ARGS: "-arg1",
+}
+
+
 class TestParseCommand(unittest.TestCase):
-    def test_parse_command_basic(self):
-        command = [
-            "/home/diegoortizmatajira/.local/share/Steam/ubuntu12_32/steam-launch-wrapper",
-            "/home/diegoortizmatajira/.local/share/Steam/ubuntu12_32/reaper",
-            "SteamLaunch",
-            "AppId=367520",
-            "/home/diegoortizmatajira/.local/share/Steam/steamapps/common/SteamLinuxRuntime_sniper/_v2-entry-point",
-            "--verb=waitforexitandrun",
-            "--",
-            "/home/diegoortizmatajira/.local/share/Steam/compatibilitytools.d/GE-Proton10-25/proton",
-            "waitforexitandrun",
-            "/home/diegoortizmatajira/.local/share/Steam/steamapps/common/Hollow",
-            "Knight/hollow_knight.exe",
+    def build_command(self, parts: dict[str, str]) -> list[str]:
+        order = [
+            PART_WRAPPER,
+            PART_REAPER,
+            PART_SNIPER,
+            PART_COMPATIBILITY_COMMAND,
+            PART_GAME_EXE,
+            PART_GAME_ARGS,
         ]
+        return " ".join([parts[part] for part in order if part in parts]).split(" ")
+
+    def parse_command_basic(self, command_dict: dict[str, str]):
+        command_dict = EXAMPLE_COMMAND
+        command = self.build_command(command_dict)
         runtime_configuration = RuntimeConfiguration(
             command, GameInfo.empty(), dry_run=True
         )
         parse_command(runtime_configuration)
         self.assertEqual(
-            "/home/diegoortizmatajira/.local/share/Steam/ubuntu12_32/steam-launch-wrapper",
+            command_dict.get(PART_WRAPPER),
             runtime_configuration.steam_wrapper,
         )
         self.assertEqual(
-            "/home/diegoortizmatajira/.local/share/Steam/ubuntu12_32/reaper",
+            command_dict.get(PART_REAPER),
             runtime_configuration.steam_reaper,
         )
         self.assertEqual(
-            "/home/diegoortizmatajira/.local/share/Steam/steamapps/common/SteamLinuxRuntime_sniper"
-            + "/_v2-entry-point --verb=waitforexitandrun",
+            command_dict.get(PART_SNIPER),
             runtime_configuration.steam_sniper,
         )
         self.assertEqual(
-            "/home/diegoortizmatajira/.local/share/Steam/compatibilitytools.d/GE-Proton10-25/proton waitforexitandrun",
+            command_dict.get(PART_COMPATIBILITY_COMMAND),
             runtime_configuration.steam_compatibility_command,
         )
         self.assertEqual(
-            "/home/diegoortizmatajira/.local/share/Steam/compatibilitytools.d",
-            runtime_configuration.steam_compatibility_tools_path,
-        )
-        self.assertEqual(
-            "GE-Proton10-25",
-            runtime_configuration.steam_compatibility_tool,
-        )
-        self.assertEqual(
-            "/home/diegoortizmatajira/.local/share/Steam/steamapps/common/Hollow Knight"
-            + "/hollow_knight.exe",
+            command_dict.get(PART_GAME_EXE),
             runtime_configuration.steam_game_exe,
         )
 
-    def test_parse_command_no_wrapper(self):
-        command = [
-            "/home/diegoortizmatajira/.local/share/Steam/ubuntu12_32/reaper",
-            "SteamLaunch",
-            "AppId=367520",
-            "/home/diegoortizmatajira/.local/share/Steam/steamapps/common/SteamLinuxRuntime_sniper/_v2-entry-point",
-            "--verb=waitforexitandrun",
-            "--",
-            "/home/diegoortizmatajira/.local/share/Steam/compatibilitytools.d/GE-Proton10-25/proton",
-            "waitforexitandrun",
-            "/home/diegoortizmatajira/.local/share/Steam/steamapps/common/Hollow",
-            "Knight/hollow_knight.exe",
+    def test_parse_command_full(self):
+        self.parse_command_basic(EXAMPLE_COMMAND)
+
+    def test_parse_command_without_parts(self):
+        parts = [
+            PART_WRAPPER,
+            PART_REAPER,
+            PART_SNIPER,
+            PART_COMPATIBILITY_COMMAND,
+            PART_GAME_EXE,
+            PART_GAME_ARGS,
         ]
-        runtime_configuration = RuntimeConfiguration(
-            command, GameInfo.empty(), dry_run=True
-        )
-        parse_command(runtime_configuration)
-        self.assertIsNone(
-            runtime_configuration.steam_wrapper,
-        )
-        self.assertEqual(
-            "/home/diegoortizmatajira/.local/share/Steam/ubuntu12_32/reaper",
-            runtime_configuration.steam_reaper,
-        )
-        self.assertEqual(
-            "/home/diegoortizmatajira/.local/share/Steam/steamapps/common/SteamLinuxRuntime_sniper"
-            + "/_v2-entry-point --verb=waitforexitandrun",
-            runtime_configuration.steam_sniper,
-        )
-        self.assertEqual(
-            "/home/diegoortizmatajira/.local/share/Steam/compatibilitytools.d/GE-Proton10-25/proton waitforexitandrun",
-            runtime_configuration.steam_compatibility_command,
-        )
-        self.assertEqual(
-            "/home/diegoortizmatajira/.local/share/Steam/compatibilitytools.d",
-            runtime_configuration.steam_compatibility_tools_path,
-        )
-        self.assertEqual(
-            "GE-Proton10-25",
-            runtime_configuration.steam_compatibility_tool,
-        )
-        self.assertEqual(
-            "/home/diegoortizmatajira/.local/share/Steam/steamapps/common/Hollow Knight"
-            + "/hollow_knight.exe",
-            runtime_configuration.steam_game_exe,
-        )
+        for part in parts:
+            with self.subTest(part=part):
+                test_command = EXAMPLE_COMMAND.copy()
+                del test_command[part]
+                self.assertNotIn(part, test_command)
+                self.parse_command_basic(test_command)
+
+    def test_parse_executables(self):
+        test_executables = [
+            "/home/steamuser/.local/share/Steam/steamapps/common/Assassin's Creed IV Black Flag/AC4BFSP.exe",
+            "/home/steamuser/.local/share/Steam/steamapps/common/A Plague Tale Requiem/APlagueTaleRequiem_x64.exe",
+            "/home/steamuser/.local/share/Steam/steamapps/common/Baldurs Gate 3/Launcher.exe",
+            "/home/steamuser/.local/share/Steam/steamapps/common/Marvel's Spider-Man 2/Spider-Man2.exe",
+            "/home/steamuser/.local/share/Steam/steamapps/common/Boltgun/Warhammer 40,000 Boltgun.exe",
+        ]
+        for executable in test_executables:
+            with self.subTest(executable=executable):
+                command_dict = EXAMPLE_COMMAND.copy()
+                command_dict[PART_GAME_EXE] = executable
+                command = self.build_command(command_dict)
+                runtime_configuration = RuntimeConfiguration(
+                    command, GameInfo.empty(), dry_run=True
+                )
+                parse_command(runtime_configuration)
+                self.assertEqual(
+                    executable,
+                    runtime_configuration.steam_game_exe,
+                )
+
+    def test_parse_invalid_executables(self):
+        test_executables = [
+            "/home/steamuser/.local/share/Steam/steamapps/common/Invalid/Invalid#1.exe",
+            "/home/steamuser/.local/share/Steam/steamapps/common/Invalid/Invalid$1.exe",
+            "/home/steamuser/.local/share/Steam/steamapps/common/Invalid/Invalid=1.exe",
+        ]
+        for executable in test_executables:
+            with self.subTest(executable=executable):
+                command_dict = EXAMPLE_COMMAND.copy()
+                command_dict[PART_GAME_EXE] = executable
+                command = self.build_command(command_dict)
+                runtime_configuration = RuntimeConfiguration(
+                    command, GameInfo.empty(), dry_run=True
+                )
+                with self.assertRaises(RuntimeError):
+                    parse_command(runtime_configuration)
