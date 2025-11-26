@@ -19,6 +19,25 @@ from .log_storage import LogFactory
 EMPTY = "(not provided)"
 
 
+def unquote(s: Optional[str]) -> Optional[str]:
+    """
+    Removes surrounding quotes from a string, if present.
+
+    Args:
+        s (str): The input string that may have surrounding quotes.
+
+    Returns:
+        str: The string with surrounding quotes removed, or the original string
+        if no surrounding quotes are present.
+    """
+    if s and (
+        (s.startswith('"') and s.endswith('"'))
+        or (s.startswith("'") and s.endswith("'"))
+    ):
+        return s[1:-1]
+    return s
+
+
 def parse_command(runtime_configuration: RuntimeConfiguration):
     """
     Parses the game command line and extracts runtime configuration components.
@@ -182,19 +201,20 @@ class RuntimeProvider:
             - Logs the retrieved or default values for each updated configuration field.
         """
         self.runtime_configuration.steam_app_id = (
-            os.getenv("SteamAppId") or self.runtime_configuration.steam_app_id
+            unquote(os.getenv("SteamAppId")) or self.runtime_configuration.steam_app_id
         )
         self.logger.info(
             "Steam App ID: %s", self.runtime_configuration.steam_app_id or EMPTY
         )
         self.runtime_configuration.steam_game_id = (
-            os.getenv("SteamGameId") or self.runtime_configuration.steam_game_id
+            unquote(os.getenv("SteamGameId"))
+            or self.runtime_configuration.steam_game_id
         )
         self.logger.info(
             "Steam Game ID: %s", self.runtime_configuration.steam_game_id or EMPTY
         )
         self.runtime_configuration.steam_base_folder = (
-            os.getenv("STEAM_BASE_FOLDER")
+            unquote(os.getenv("STEAM_BASE_FOLDER"))
             or self.runtime_configuration.steam_base_folder
         )
         self.logger.info(
@@ -202,7 +222,7 @@ class RuntimeProvider:
             self.runtime_configuration.steam_base_folder or EMPTY,
         )
         self.runtime_configuration.steam_compat_install_path = (
-            os.getenv("STEAM_COMPAT_INSTALL_PATH")
+            unquote(os.getenv("STEAM_COMPAT_INSTALL_PATH"))
             or self.runtime_configuration.steam_compat_install_path
         )
         self.logger.info(
@@ -210,7 +230,7 @@ class RuntimeProvider:
             self.runtime_configuration.steam_compat_install_path or EMPTY,
         )
         self.runtime_configuration.steam_compat_data_path = (
-            os.getenv("STEAM_COMPAT_DATA_PATH")
+            unquote(os.getenv("STEAM_COMPAT_DATA_PATH"))
             or self.runtime_configuration.steam_compat_data_path
         )
         self.logger.info(

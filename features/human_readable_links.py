@@ -3,11 +3,14 @@
 import os
 from typing import override
 
+from core import log_storage
 from core.defaults import (
+    APP_LAST_RUN_LOG_FILE,
     GAME_CONFIG_FILE_TEMPLATE,
     GAME_LOGS_DIR_TEMPLATE,
     GAME_SCRIPT_TEMPLATE,
     HUMAN_READABLE_LINKS_DIR_TEMPLATE,
+    LAST_RUN_LOG_FILE,
 )
 from core.feature_provider import FeatureProvider
 from core.file_operations import create_symbolic_link
@@ -70,5 +73,12 @@ class HumanReadableLinks(FeatureProvider):
                     f"{game_links_dir}/compat_data",
                     self.logger,
                 )
+
+            # Create link to the last run log
+            last_run_log = log_storage.LogFactory.singleton().get_log_filename(
+                APP_LAST_RUN_LOG_FILE
+            )
+            create_symbolic_link(last_run_log, LAST_RUN_LOG_FILE, self.logger)
+
         except RuntimeError as e:
             self.logger.warning("Could not create some human-readable links: %s", e)

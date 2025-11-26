@@ -5,6 +5,7 @@ import os
 import subprocess
 from typing import Optional
 from core.defaults import (
+    CWD_DIR_NAME,
     GAME_SCRIPT_TEMPLATE,
     GENERAL_TOOLS_LOG_FILE,
 )
@@ -110,10 +111,13 @@ def run_with_pipeline(
         logger.info("[DRY RUN] Would execute command: %s", command)
         return None
     try:
+        cwd=f"{runtime_configuration.prefix_path}/{CWD_DIR_NAME}"
+        os.makedirs(cwd, exist_ok=True)
         logger.info("Executing command: %s", command)
         return subprocess.Popen(
             command,
             env=environment_variables,
+            cwd=cwd,
             shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,

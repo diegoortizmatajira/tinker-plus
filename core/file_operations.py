@@ -43,7 +43,7 @@ def create_symbolic_link(target: str, link_name: str, logger: logging.Logger):
                     "Backed up existing %s file to '%s'", location.name, backup_location
                 )
         target_path = Path(target)
-        os.symlink(target_path, location, target_is_directory=target_path.is_dir())
+        os.symlink(target_path, location)
         logger.info("Created symbolic link %s -> %s", location, target_path)
     except Exception as e:
         logger.error("Error creating symbolic link %s -> %s: %s", link_name, target, e)
