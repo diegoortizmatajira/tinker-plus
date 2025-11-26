@@ -65,7 +65,7 @@ class WinetricksInstall(FeatureProvider):
 
     @override
     def execute_in_pipeline(
-        self, configuration: dict, runtime_configuration: RuntimeConfiguration
+        self, _configuration: dict, runtime_configuration: RuntimeConfiguration
     ):
         if not runtime_configuration.install_winetricks:
             self.logger.info("Winetricks installation is not running automatically.")
@@ -83,7 +83,7 @@ class WinetricksInstall(FeatureProvider):
         )
         try:
             succeed = process_runner.run_in_wine_prefix(
-                f'winetricks --unattended {" ".join(runtime_configuration.winetricks)}',
+                f"winetricks --unattended {' '.join(runtime_configuration.winetricks)}",
                 runtime_configuration,
                 self.logger,
                 WINETRICKS_LOG_FILE,

@@ -2,8 +2,17 @@
 
 import logging
 import os
+import shutil
 from os.path import islink
 from pathlib import Path
+
+from core.defaults import (
+    GAME_CONFIG_FILE_TEMPLATE,
+    GAME_LOGS_DIR_TEMPLATE,
+    GAME_SCRIPT_TEMPLATE,
+    HUMAN_READABLE_LINKS_DIR_TEMPLATE,
+)
+from core.game_info import GameInfo
 
 
 def create_symbolic_link(target: str, link_name: str, logger: logging.Logger):
@@ -50,3 +59,37 @@ def create_symbolic_link(target: str, link_name: str, logger: logging.Logger):
         raise RuntimeError(
             f"Error creating symbolic link {link_name} -> {target}"
         ) from e
+
+
+def remove_tplus_game_files(game_id: str, logger: logging.Logger):
+    """
+    Removes specific TPlus files associated with a game.
+
+    Args:
+        game_id (str): The identifier for the game.
+        logger (logging.Logger): The logger instance for logging progress and errors.
+    """
+    delete_queue = [
+        GAME_CONFIG_FILE_TEMPLATE.format(game_id),
+        GAME_LOGS_DIR_TEMPLATE.format(game_id),
+        GAME_SCRIPT_TEMPLATE.format(game_id),
+    ]
+    game_info = GameInfo.from_cache(game_id, logger)
+    if game_info:
+        delete_queue.append(HUMAN_READABLE_LINKS_DIR_TEMPLATE.format(game_info.name))
+
+    for item_path in delete_queue:
+        try:
+            path = Path(item_path)
+            if not path.exists():
+                logger.info("Item does not exist, skipping: %s", item_path)
+                continue
+            if path.is_file():
+                path.unlink()
+                logger.info("Removed file: %s", item_path)
+            elif path.is_dir():
+                shutil.rmtree(path)
+                logger.info("Removed directory: %s", item_path)
+        except Exception as e:
+            logger.error("Error removing TPlus file %s: %s", item_path, e)
+            raise RuntimeError(f"Error removing TPlus file {item_path}") from e
