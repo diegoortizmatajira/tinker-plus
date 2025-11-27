@@ -4,11 +4,13 @@ Main entry point for the Tinker-Plus application.
 
 import logging
 import os
+from pathlib import Path
+import shutil
 import sys
 import argparse
 from core import LogFactory
 from core.config_storage import ConfigStorage
-from core.defaults import TPLUS_BIN_LOCATION
+from core.defaults import TPLUS_BIN_LOCATION, TPLUS_COMPATIBILITY_TOOL_DIR
 from core.file_operations import create_symbolic_link
 from core.runtime_provider import RuntimeProvider
 from features.external_tools import ExternalTools
@@ -153,11 +155,43 @@ class MainApp:
             This is a placeholder for future implementation and currently does not
             contain any logic.
         """
+        self.logger.info(
+            "Creating symbolic link for Tinker-Plus (tplus) in '%s'", TPLUS_BIN_LOCATION
+        )
         current_script_directory = os.path.dirname(os.path.abspath(__file__))
         tinker_plus_sh_path = os.path.join(current_script_directory, "tinker-plus.sh")
 
         create_symbolic_link(tinker_plus_sh_path, TPLUS_BIN_LOCATION, self.logger)
-        self.logger.info("Installing as Steam compatibility tool... (not implemented)")
+        # Check if the compatibility tool directory exists, and remove it if it does.
+        compat_path = Path(TPLUS_COMPATIBILITY_TOOL_DIR)
+        if compat_path.exists() and compat_path.is_dir():
+            self.logger.info(
+                "Removing existing compatibility tool directory at '%s'",
+                TPLUS_COMPATIBILITY_TOOL_DIR,
+            )
+            shutil.rmtree(compat_path)
+
+        self.logger.info(
+            "Installing as Steam compatibility tool at '%s'",
+            compat_path,
+        )
+        compat_path.mkdir(parents=True, exist_ok=True)
+        files_to_copy = {
+            "toolmanifest.vdf": "./resources/toolmanifest.vdf",
+            "compatibilitytool.vdf": "./resources/compatibilitytool.vdf",
+        }
+        for target, source in files_to_copy.items():
+            target_path = compat_path.joinpath(target)
+            # Copy the file
+            shutil.copy(source, target_path)
+        files_to_link = {
+            "tplus": tinker_plus_sh_path,
+        }
+
+        for link_name, target in files_to_link.items():
+            link_path = compat_path.joinpath(link_name)
+            create_symbolic_link(target, str(link_path), self.logger)
+        self.logger.info("Installation as Steam compatibility tool completed.")
 
 
 if __name__ == "__main__":

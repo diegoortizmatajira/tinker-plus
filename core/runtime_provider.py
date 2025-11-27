@@ -73,7 +73,7 @@ def parse_command(runtime_configuration: RuntimeConfiguration):
         r"(?P<compatibility_dir>\/\S+compatibilitytools\.d)/"
         r"(?P<compatibility_tool>\S+)/\S+\swaitforexitandrun)\s+"
     )
-    exe_regexp = r"\s(?P<gameexe>(?:\/[\w\.][\w\s\-\',]+\w)+\.exe)\s?(?P<gameargs>.*)$"
+    exe_regexp = r"[^\s](?P<gameexe>(?:\/[\w\.][\w\s\-\',]+\w)+\.exe)\s?(?P<gameargs>.*)$"
 
     full_command = " ".join(runtime_configuration.original_command)
     runtime_configuration.steam_wrapper = evaluate_match(
@@ -86,17 +86,16 @@ def parse_command(runtime_configuration: RuntimeConfiguration):
         full_command, sniper_regexp, "sniper"
     )
     compatibility_match = re.search(compatibility_regexp, full_command)
-    if not compatibility_match:
-        raise RuntimeError("Compatibility tool pattern did not match the command line.")
-    runtime_configuration.steam_compatibility_command = compatibility_match.group(
-        "compatibility"
-    )
-    runtime_configuration.steam_compatibility_tool = compatibility_match.group(
-        "compatibility_tool"
-    )
-    runtime_configuration.steam_compatibility_tools_path = compatibility_match.group(
-        "compatibility_dir"
-    )
+    if compatibility_match:
+        runtime_configuration.steam_compatibility_command = compatibility_match.group(
+            "compatibility"
+        )
+        runtime_configuration.steam_compatibility_tool = compatibility_match.group(
+            "compatibility_tool"
+        )
+        runtime_configuration.steam_compatibility_tools_path = (
+            compatibility_match.group("compatibility_dir")
+        )
     exe_match = re.search(exe_regexp, full_command)
     if not exe_match:
         raise RuntimeError("Game executable pattern did not match the command line.")

@@ -11,7 +11,13 @@ def timestamped_log(folder: str, base: str) -> str:
     return f"{folder}/{base}-{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.log"
 
 
+DEFAULT_STEAM_FOLDER = os.path.expandvars("$HOME/.local/share/Steam")
+
 TPLUS_BIN_LOCATION = os.path.expandvars("$HOME/.local/bin/tplus")
+TPLUS_COMPATIBILITY_TOOL_DIR = (
+    f"{DEFAULT_STEAM_FOLDER}/compatibilitytools.d/Tinker-Plus"
+)
+
 CONFIG_LOCATION = os.path.expandvars("$HOME/.config/tinker-plus")
 GLOBAL_CONFIG_FILE = f"{CONFIG_LOCATION}/global_config.json"
 LAST_RUN_LOG_FILE = f"{CONFIG_LOCATION}/lastrun.log"
