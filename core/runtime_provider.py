@@ -70,11 +70,11 @@ def parse_command(runtime_configuration: RuntimeConfiguration):
     sniper_regexp = r"(?P<sniper>\/\S+\/SteamLinuxRuntime_sniper\/\S+\s+--\w+=\w+)"
     compatibility_regexp = (
         r"(?P<compatibility>"
-        r"(?P<compatibility_dir>\/\S+compatibilitytools\.d)/"
-        r"(?P<compatibility_tool>\S+)/\S+\swaitforexitandrun)\s+"
+        r"(?P<compatibility_dir>(?:\/[\w\.][\.\w\s\-']+\w)+)\/"
+        r"(?P<compatibility_tool>[\w\.\-\s]+)\/\S+\swaitforexitandrun)\s+"
     )
     exe_regexp = (
-        r"(^|\s)(?P<gameexe>(?:\/[\w\.][\w\s\-\',]+\w)+\.exe)\s?(?P<gameargs>.*)$"
+        r"(^|\s)(?P<gameexe>(?:(?:\/[\w\.][\w\s\.\-\',]+\w)+\.exe))\s?(?P<gameargs>.*)$"
     )
 
     full_command = " ".join(runtime_configuration.original_command)

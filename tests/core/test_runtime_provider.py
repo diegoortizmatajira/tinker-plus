@@ -85,6 +85,7 @@ class TestParseCommand(unittest.TestCase):
                 self.parse_command_basic(test_command)
 
     def test_parse_executables(self):
+        #pylint: disable=line-too-long
         test_executables = [
             "/home/steamuser/.local/share/Steam/steamapps/common/Assassin's Creed IV Black Flag/AC4BFSP.exe",
             "/home/steamuser/.local/share/Steam/steamapps/common/A Plague Tale Requiem/APlagueTaleRequiem_x64.exe",
@@ -122,3 +123,23 @@ class TestParseCommand(unittest.TestCase):
                 )
                 with self.assertRaises(RuntimeError):
                     parse_command(runtime_configuration)
+
+    def test_parse_compatibility_tools(self):
+        #pylint: disable=line-too-long
+        test_compat_tools = [
+            "/home/diegoortizmatajira/.local/share/Steam/steamapps/common/Proton 8.0/proton waitforexitandrun",
+            "/home/diegoortizmatajira/.local/share/Steam/compatibilitytools.d/GE-Proton-10-25/proton waitforexitandrun",
+        ]
+        for compat_tool in test_compat_tools:
+            with self.subTest(executable=compat_tool):
+                command_dict = EXAMPLE_COMMAND.copy()
+                command_dict[PART_COMPATIBILITY_COMMAND] = compat_tool
+                command = self.build_command(command_dict)
+                runtime_configuration = RuntimeConfiguration(
+                    command, GameInfo.empty(), dry_run=True
+                )
+                parse_command(runtime_configuration)
+                self.assertEqual(
+                    compat_tool,
+                    runtime_configuration.steam_compatibility_command,
+                )
