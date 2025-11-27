@@ -25,9 +25,6 @@ class ExecutableCommand:
     command: str
     args: Optional[str]
     category: Optional[str] = None
-    command: str
-    args: Optional[str]
-    category: Optional[str] = None
 
     def get_full_command(self) -> str:
         """
@@ -134,6 +131,7 @@ class RuntimeConfiguration:
     execute_forks_only: bool = False
     environment_variables: Optional[dict[str, str]] = None
     pipeline_wrappers: Optional[List[PipelineWrapper]] = None
+    log_executable_commands: bool = False
 
     @staticmethod
     def empty() -> "RuntimeConfiguration":
