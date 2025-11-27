@@ -43,6 +43,9 @@ STEAM_USER_FOLDER_NAME = f"{USERS_DIR_NAME}/steamuser"
 PUBLIC_USER_FOLDER_NAME = f"{USERS_DIR_NAME}/Public"
 STEAM_MANIFESTS_TEMPLATE = "{}/steamapps/appmanifest_{}.acf"
 
+LOG_STAGE_STARTED = "🟢 STAGE STARTED: {}"
+LOG_DRY_RUN = "ℹ️ DRY RUN: {}"
+LOG_EXECUTING = "▶️ {}"
 # Create directories if they do not exist
 os.makedirs(GAME_CONFIG_DIR, exist_ok=True)
 os.makedirs(LOGS_DIR, exist_ok=True)

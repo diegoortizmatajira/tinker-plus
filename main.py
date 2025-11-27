@@ -16,6 +16,7 @@ from core.file_operations import create_symbolic_link
 from core.runtime_provider import RuntimeProvider
 from features.external_tools import ExternalTools
 from features.game_runner import GameRunner
+from features.general_runtime import GeneralRuntime
 from features.human_readable_links import HumanReadableLinks
 from features.link_user_folders import LinkUserFolders
 from features.prefix_selection import PrefixSelection
@@ -115,6 +116,7 @@ class MainApp:
             # List of feature providers (Order matters as it affects
             # how the command pipeline is built)
             [
+                GeneralRuntime(),
                 ExternalTools(),
                 SteamTools(),
                 ProtonSelection(),

@@ -11,6 +11,7 @@ from core.defaults import (
     GAME_LOGS_DIR_TEMPLATE,
     GAME_SCRIPT_TEMPLATE,
     HUMAN_READABLE_LINKS_DIR_TEMPLATE,
+    LOG_EXECUTING,
 )
 from core.game_info import GameInfo
 
@@ -63,7 +64,11 @@ def create_symbolic_link(
                     location.unlink()
         target_path = Path(target)
         os.symlink(target_path, location)
-        logger.info("Created symbolic link %s -> %s", location, target_path)
+        logger.info(
+            LOG_EXECUTING.format("Created symbolic link %s -> %s"),
+            location,
+            target_path,
+        )
     except Exception as e:
         logger.error("Error creating symbolic link %s -> %s: %s", link_name, target, e)
         raise RuntimeError(

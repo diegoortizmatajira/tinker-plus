@@ -10,7 +10,7 @@ import re
 
 from typing import List, Optional
 
-from core.defaults import STEAM_MANIFESTS_TEMPLATE
+from core.defaults import LOG_STAGE_STARTED, STEAM_MANIFESTS_TEMPLATE
 from core.game_info import GameInfo
 from .runtime_configuration import RuntimeConfiguration
 from .feature_provider import FeatureProvider
@@ -70,10 +70,12 @@ def parse_command(runtime_configuration: RuntimeConfiguration):
     sniper_regexp = r"(?P<sniper>\/\S+\/SteamLinuxRuntime_sniper\/\S+\s+--\w+=\w+)"
     compatibility_regexp = (
         r"(?P<compatibility>"
-        r"(?P<compatibility_dir>\/\S+compatibilitytools\.d)/"
-        r"(?P<compatibility_tool>\S+)/\S+\swaitforexitandrun)\s+"
+        r"(?P<compatibility_dir>(?:\/[\w\.][\.\w\s\-']+\w)+)\/"
+        r"(?P<compatibility_tool>[\w\.\-\s]+)\/\S+\swaitforexitandrun)\s+"
     )
-    exe_regexp = r"(^|\s)(?P<gameexe>(?:\/[\w\.][\w\s\-\',]+\w)+\.exe)\s?(?P<gameargs>.*)$"
+    exe_regexp = (
+        r"(^|\s)(?P<gameexe>(?:(?:\/[\w\.][\w\s\.\-\',]+\w)+\.exe))\s?(?P<gameargs>.*)$"
+    )
 
     full_command = " ".join(runtime_configuration.original_command)
     runtime_configuration.steam_wrapper = evaluate_match(
@@ -306,6 +308,7 @@ class RuntimeProvider:
         Raises:
             RuntimeError: If any critical configuration step fails.
         """
+        self.logger.info(LOG_STAGE_STARTED.format("Build Configuration Stage."))
         # Fills any missing configuration with defaults from features
         for feature in self.features:
             self.configuration = feature.build_configuration(
@@ -326,6 +329,7 @@ class RuntimeProvider:
                 executed as part of the runtime environment. Defaults to True.
         """
         self.runtime_configuration.reset()
+        self.logger.info(LOG_STAGE_STARTED.format("Apply Configuration Stage."))
         # Apply configurations to runtime
         for feature in self.features:
             feature.try_apply_configuration(
@@ -333,5 +337,6 @@ class RuntimeProvider:
             )
         self.runtime_configuration.execute_trainers = run_with_trainers
 
+        self.logger.info(LOG_STAGE_STARTED.format("Pipeline Execution Stage."))
         for features in self.features:
             features.execute_in_pipeline(self.configuration, self.runtime_configuration)
