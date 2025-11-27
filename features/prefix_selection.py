@@ -10,6 +10,7 @@ from core import (
     RuntimeConfiguration,
 )
 from core.process_runner import run_command_with_compatibility_tool
+from core.runtime_configuration import ExecutableCommand
 
 PREFIX_CUSTOM_PATH_PROPERTY = ConfigurationProperty(
     str, "PREFIX_CUSTOM_PATH", "Allows selection of a specific prefix."
@@ -56,5 +57,5 @@ class PrefixSelection(FeatureProvider):
         if not custom_prefix_path.exists():
             self.logger.info("Executing mock command, to force prefix creation.")
             run_command_with_compatibility_tool(
-                "/bin/echo", runtime_configuration, self.logger
+                ExecutableCommand("/bin/echo", None), runtime_configuration, self.logger
             )

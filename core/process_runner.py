@@ -3,11 +3,15 @@
 import logging
 import os
 import subprocess
+from pathlib import Path
 from typing import Optional
+
 from core.defaults import (
     CWD_DIR_NAME,
     GAME_SCRIPT_TEMPLATE,
     GENERAL_TOOLS_LOG_FILE,
+    LOG_DRY_RUN,
+    LOG_EXECUTING,
 )
 from core.log_storage import LogFactory
 from core.runtime_configuration import (
@@ -46,10 +50,14 @@ def run_in_wine_prefix(
 
     command = f"{exe_command} >> {log_file}"
     if runtime_configuration.dry_run:
-        logger.info("[DRY RUN] Would execute command in Wine prefix: %s", command)
+        logger.info(
+            LOG_DRY_RUN.format("Would execute command in Wine prefix: %s"), command
+        )
         return True
     try:
-        logger.info("Executing command in Wine prefix: %s", command)
+        logger.info(
+            LOG_EXECUTING.format("Executing command in Wine prefix: %s"), command
+        )
         result = subprocess.run(
             command, env=environment_variables, shell=True, check=True
         )
@@ -74,12 +82,13 @@ def run_in_wine_prefix(
 
 
 def __assemble_command_str(
-    exe_command: str,
+    exe_command: ExecutableCommand,
     runtime_configuration: RuntimeConfiguration,
     is_global: bool = True,
     is_fork: bool = False,
+    override_log_to_file: Optional[bool] = None,
 ) -> str:
-    command = exe_command
+    command = exe_command.get_full_command()
     # Takes the pipeline wrappers in reverse order
     for wrapper in reversed(runtime_configuration.pipeline_wrappers or []):
         command = wrapper.wrap(
@@ -89,11 +98,17 @@ def __assemble_command_str(
             is_fork=is_fork,
             logger=logging.getLogger(),
         )
+    if runtime_configuration.log_executable_commands and (
+        override_log_to_file is not False
+    ):
+        exe_path = Path(exe_command.command)
+        log_file = LogFactory.singleton().get_log_filename(f"{exe_path.stem}.log")
+        command = f"{command} >> {log_file} 2>&1"
     return command
 
 
 def run_command_with_compatibility_tool(
-    exe_command: str,
+    exe_command: ExecutableCommand,
     runtime_configuration: RuntimeConfiguration,
     logger: logging.Logger,
 ) -> bool:
@@ -110,10 +125,10 @@ def run_command_with_compatibility_tool(
         exe_command, runtime_configuration, is_global=False, is_fork=True
     )
     if runtime_configuration.dry_run:
-        logger.info("[DRY RUN] Would execute command: %s", command)
+        logger.info(LOG_DRY_RUN.format("Would execute command: %s"), command)
         return True
     try:
-        logger.info("Executing command: %s", command)
+        logger.info(LOG_EXECUTING.format("Executing command: %s"), command)
         result = subprocess.run(
             command, env=environment_variables, shell=True, check=True
         )
@@ -138,7 +153,7 @@ def run_command_with_compatibility_tool(
 
 
 def run_with_pipeline(
-    exe_command: str,
+    exe_command: ExecutableCommand,
     runtime_configuration: RuntimeConfiguration,
     logger: logging.Logger,
 ) -> Optional[subprocess.Popen]:
@@ -151,9 +166,11 @@ def run_with_pipeline(
 
     environment_variables = os.environ.copy()
     environment_variables.update(runtime_configuration.environment_variables or {})
-    command = __assemble_command_str(exe_command, runtime_configuration, is_global=True)
+    command = __assemble_command_str(
+        exe_command, runtime_configuration, is_global=True, override_log_to_file=False
+    )
     if runtime_configuration.dry_run:
-        logger.info("[DRY RUN] Would execute command: %s", command)
+        logger.info(LOG_DRY_RUN.format("Would execute command: %s"), command)
         return None
     try:
         # cwd=f"{runtime_configuration.prefix_path}/{CWD_DIR_NAME}"
@@ -162,7 +179,7 @@ def run_with_pipeline(
             or f"{runtime_configuration.prefix_path}/{CWD_DIR_NAME}"
         )
         os.makedirs(cwd, exist_ok=True)
-        logger.info("Executing command: %s", command)
+        logger.info(LOG_EXECUTING.format("Executing command: %s"), command)
         return subprocess.Popen(
             command,
             env=environment_variables,
@@ -214,7 +231,7 @@ def run_game_and_forks_with_compatibility_tool(
             )
             launcher_script_content += f"# {command_category} command\n"
             assembled_command_str = __assemble_command_str(
-                command.get_full_command(),
+                command,
                 runtime_configuration,
                 is_global=False,
                 is_fork=True,
@@ -249,7 +266,7 @@ def run_game_and_forks_with_compatibility_tool(
         launcher_script_content += "# main game command\n"
 
         assembled_command_str = __assemble_command_str(
-            game_command.get_full_command(),
+            game_command,
             runtime_configuration,
             is_global=False,
         )
@@ -260,7 +277,7 @@ def run_game_and_forks_with_compatibility_tool(
         script_file.write(launcher_script_content)
     os.chmod(script_filename, 0o755)  # Make the script executable
     game_process = run_with_pipeline(
-        script_filename,
+        ExecutableCommand(script_filename, None),
         runtime_configuration,
         logger,
     )

@@ -24,7 +24,7 @@ GAME_CUSTOM_ARGS_PROPERTY = ConfigurationProperty(
 GAME_RUN_FORKS_ONLY_PROPERTY = ConfigurationProperty(
     bool,
     "GAME_RUN_FORKS_ONLY",
-    "If set to '1', only the forked commands will be executed, skipping the main game command.",
+    "If set to 'True', only the forked commands will be executed, skipping the main game command.",
     default=False,
 )
 

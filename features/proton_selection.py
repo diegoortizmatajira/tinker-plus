@@ -43,7 +43,7 @@ PROTON_VERSION_PROPERTY = ConfigurationProperty(
 PROTON_LOG_PROPERTY = ConfigurationProperty(
     bool,
     "PROTON_LOG",
-    "Enables proton logging when set to '1'.",
+    "Enables proton logging when set to 'True'.",
     generated_environment_variable="PROTON_LOG",
 )
 PROTON_NO_D3D10_PROPERTY = ConfigurationProperty(

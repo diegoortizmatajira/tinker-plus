@@ -8,21 +8,21 @@ from core.runtime_configuration import RuntimeConfiguration, PipelineWrapper
 STEAM_USE_WRAPPER_PROPERTY = ConfigurationProperty(
     bool,
     "STEAM_USE_WRAPPER",
-    "Enables the use of Steam wrapper for Steam games when set to '1'.",
+    "Enables the use of Steam wrapper for Steam games when set to 'True'.",
     default=False,
 )
 
 STEAM_USE_SNIPER_PROPERTY = ConfigurationProperty(
     bool,
     "STEAM_USE_SNIPER",
-    "Enables the use of Sniper for Steam games when set to '1'.",
+    "Enables the use of Sniper for Steam games when set to 'True'.",
     default=True,
 )
 
 STEAM_USE_REAPER_PROPERTY = ConfigurationProperty(
     bool,
     "STEAM_USE_REAPER",
-    "Enables the use of Reaper for Steam games when set to '1'.",
+    "Enables the use of Reaper for Steam games when set to 'True'.",
     default=True,
 )
 

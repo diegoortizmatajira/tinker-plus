@@ -2,13 +2,16 @@
 Main entry point for the Tinker-Plus application.
 """
 
+import argparse
 import logging
 import os
-from pathlib import Path
 import shutil
 import sys
-import argparse
+from pathlib import Path
 from typing import List
+
+from jinja2 import Environment, FileSystemLoader
+
 from core import LogFactory
 from core.config_storage import ConfigStorage
 from core.defaults import TPLUS_BIN_LOCATION, TPLUS_COMPATIBILITY_TOOL_DIR
@@ -16,6 +19,7 @@ from core.file_operations import create_symbolic_link
 from core.runtime_provider import RuntimeProvider
 from features.external_tools import ExternalTools
 from features.game_runner import GameRunner
+from features.general_runtime import GeneralRuntime
 from features.human_readable_links import HumanReadableLinks
 from features.link_user_folders import LinkUserFolders
 from features.prefix_selection import PrefixSelection
@@ -27,7 +31,6 @@ from features.trainer_launch_settings import TrainerLaunchSettings
 from features.wine_config import WineConfig
 from features.winetricks_install import WinetricksInstall
 from gui.main_form import MainForm
-from jinja2 import Environment, FileSystemLoader
 
 
 class MainApp:
@@ -115,6 +118,7 @@ class MainApp:
             # List of feature providers (Order matters as it affects
             # how the command pipeline is built)
             [
+                GeneralRuntime(),
                 ExternalTools(),
                 SteamTools(),
                 ProtonSelection(),
