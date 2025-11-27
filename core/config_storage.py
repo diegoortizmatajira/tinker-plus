@@ -87,7 +87,7 @@ class ConfigStorage:
             self.logger.info("Updating global configuration at: %s", GLOBAL_CONFIG_FILE)
         os.makedirs(CONFIG_LOCATION, exist_ok=True)
         # Convert sourced_configuration to json and save to GLOBAL_CONFIG_FILE
-        global_json_content = json.dumps(config, indent=4)
+        global_json_content = json.dumps(config, indent=4, sort_keys=True)
         with open(GLOBAL_CONFIG_FILE, "w", encoding="utf-8") as f:
             f.write(global_json_content)
 
@@ -140,4 +140,3 @@ class ConfigStorage:
             if key not in global_config or global_config[key] != value:
                 diff[key] = value
         return diff
-

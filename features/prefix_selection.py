@@ -11,8 +11,8 @@ from core import (
 )
 from core.process_runner import run_command_with_compatibility_tool
 
-CUSTOM_PREFIX_PROPERTY = ConfigurationProperty(
-    str, "CUSTOM_PREFIX", "Allows selection of a specific prefix."
+PREFIX_CUSTOM_PATH_PROPERTY = ConfigurationProperty(
+    str, "PREFIX_CUSTOM_PATH", "Allows selection of a specific prefix."
 )
 
 
@@ -26,13 +26,13 @@ class PrefixSelection(FeatureProvider):
     """
 
     def __init__(self):
-        super().__init__([CUSTOM_PREFIX_PROPERTY])
+        super().__init__([PREFIX_CUSTOM_PATH_PROPERTY])
 
     @override
     def apply_configuration(
         self, configuration: dict, runtime_configuration: RuntimeConfiguration
     ) -> RuntimeConfiguration:
-        custom_prefix = CUSTOM_PREFIX_PROPERTY.get(configuration)
+        custom_prefix = PREFIX_CUSTOM_PATH_PROPERTY.get(configuration)
         if custom_prefix:
             runtime_configuration.prefix_path = custom_prefix
             self.logger.info(

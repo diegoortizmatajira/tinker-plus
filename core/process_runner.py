@@ -44,7 +44,7 @@ def run_in_wine_prefix(
         environment_variables["WINE"] = runtime_configuration.wine
         logger.info("Using  WINE=%s", runtime_configuration.wine)
 
-    command = f"{exe_command} >> {log_file} 2>&1"
+    command = f"{exe_command} >> {log_file}"
     if runtime_configuration.dry_run:
         logger.info("[DRY RUN] Would execute command in Wine prefix: %s", command)
         return True
