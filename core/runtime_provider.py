@@ -73,7 +73,7 @@ def parse_command(runtime_configuration: RuntimeConfiguration):
         r"(?P<compatibility_dir>\/\S+compatibilitytools\.d)/"
         r"(?P<compatibility_tool>\S+)/\S+\swaitforexitandrun)\s+"
     )
-    exe_regexp = r"[^\s](?P<gameexe>(?:\/[\w\.][\w\s\-\',]+\w)+\.exe)\s?(?P<gameargs>.*)$"
+    exe_regexp = r"(^|\s)(?P<gameexe>(?:\/[\w\.][\w\s\-\',]+\w)+\.exe)\s?(?P<gameargs>.*)$"
 
     full_command = " ".join(runtime_configuration.original_command)
     runtime_configuration.steam_wrapper = evaluate_match(
