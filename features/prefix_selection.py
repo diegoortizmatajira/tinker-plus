@@ -2,8 +2,14 @@
 Feature: Prefix Selection based on received parameters.
 """
 
+from pathlib import Path
 from typing import override
-from core import FeatureProvider, ConfigurationProperty, RuntimeConfiguration
+from core import (
+    FeatureProvider,
+    ConfigurationProperty,
+    RuntimeConfiguration,
+)
+from core.process_runner import run_command_with_compatibility_tool
 
 CUSTOM_PREFIX_PROPERTY = ConfigurationProperty(
     str, "CUSTOM_PREFIX", "Allows selection of a specific prefix."
@@ -41,3 +47,14 @@ class PrefixSelection(FeatureProvider):
                 "Using default prefix: %s", runtime_configuration.prefix_path
             )
         return runtime_configuration
+
+    @override
+    def execute_in_pipeline(
+        self, _configuration: dict, runtime_configuration: RuntimeConfiguration
+    ):
+        custom_prefix_path = Path(runtime_configuration.prefix_path or ".")
+        if not custom_prefix_path.exists():
+            self.logger.info("Executing mock command, to force prefix creation.")
+            run_command_with_compatibility_tool(
+                "/bin/echo", runtime_configuration, self.logger
+            )

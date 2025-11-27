@@ -92,6 +92,51 @@ def __assemble_command_str(
     return command
 
 
+def run_command_with_compatibility_tool(
+    exe_command: str,
+    runtime_configuration: RuntimeConfiguration,
+    logger: logging.Logger,
+) -> bool:
+    """
+    Executes a given command using a compatibility tool defined in the runtime configuration.
+
+    Args:
+        command (str): The command to execute.
+    """
+
+    environment_variables = os.environ.copy()
+    environment_variables.update(runtime_configuration.environment_variables or {})
+    command = __assemble_command_str(
+        exe_command, runtime_configuration, is_global=False, is_fork=True
+    )
+    if runtime_configuration.dry_run:
+        logger.info("[DRY RUN] Would execute command: %s", command)
+        return True
+    try:
+        logger.info("Executing command: %s", command)
+        result = subprocess.run(
+            command, env=environment_variables, shell=True, check=True
+        )
+        if result.returncode != 0:
+            logger.error(
+                "Command '%s' exited with non-zero return code: %s",
+                command,
+                result.returncode,
+            )
+        else:
+            logger.debug(
+                "Command '%s' executed successfully with return code: %s",
+                command,
+                result.returncode,
+            )
+        return result.returncode == 0
+    except Exception as e:
+        logger.error("Error while running application: %s", e)
+        raise RuntimeError(
+            f"Error executing command: '{exe_command}' with compatibility tool."
+        ) from e
+
+
 def run_with_pipeline(
     exe_command: str,
     runtime_configuration: RuntimeConfiguration,
