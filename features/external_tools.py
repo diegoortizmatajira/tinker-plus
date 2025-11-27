@@ -12,14 +12,14 @@ from core.runtime_configuration import (
 GAMEMODERUN_ENABLED_PROPERTY = ConfigurationProperty(
     bool,
     "GAMEMODERUN_ENABLED",
-    "Enables GameModeRun when set to '1'.",
+    "Enables GameModeRun when set to 'True'.",
     default=False,
 )
 
 GAMESCOPE_ENABLED_PROPERTY = ConfigurationProperty(
     bool,
     "GAMESCOPE_ENABLED",
-    "Enables Gamescope when set to '1'.",
+    "Enables Gamescope when set to 'True'.",
     default=False,
 )
 GAMESCOPE_ARGS_PROPERTY = ConfigurationProperty(

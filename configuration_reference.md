@@ -3,12 +3,13 @@
 
 | Property | Type | Default value | Description |
 | -------- | ---- | ------------- | ----------- |
-|GAMEMODERUN_ENABLED|bool|False|Enables GameModeRun when set to '1'.|
+|GAMEMODERUN_ENABLED|bool|False|Enables GameModeRun when set to 'True'.|
 |GAMESCOPE_ARGS|str|None|Additional arguments to pass to Gamescope.|
-|GAMESCOPE_ENABLED|bool|False|Enables Gamescope when set to '1'.|
+|GAMESCOPE_ENABLED|bool|False|Enables Gamescope when set to 'True'.|
 |GAME_CUSTOM_ARGS|str|None|Allows specifying additional arguments for the game executable.|
 |GAME_CUSTOM_EXE|str|None|Allows specifying the main game executable to run.|
-|GAME_RUN_FORKS_ONLY|bool|False|If set to '1', only the forked commands will be executed, skipping the main game command.|
+|GAME_RUN_FORKS_ONLY|bool|False|If set to 'True', only the forked commands will be executed, skipping the main game command.|
+|GENERAL_LOG_INDIVIDUAL_EXE|bool|False|If set to True, logs each individual executable that is run in is own file.|
 |LINK_PUBLIC_USER_FOLDER|str|None|If provided links the public user folder to the given location|
 |LINK_SHOULD_BACKUP_FOLDERS|bool|True|If true, backups the user folders before linking them|
 |LINK_STEAM_USER_FOLDER|str|None|If provided links the steam user folder to the given location|
@@ -17,7 +18,7 @@
 |PROTON_DXVK_D3D8|bool|None|Enable DXVK's D3D8 support|
 |PROTON_FORCE_LARGE_ADDRESS_AWARE|bool|None|Force Wine to enable the LARGE_ADDRESS_AWARE flag|
 |PROTON_HIDE_NVIDIA_GPU|bool|None|Proton hide Nvidia GPU|
-|PROTON_LOG|bool|None|Enables proton logging when set to '1'.|
+|PROTON_LOG|bool|None|Enables proton logging when set to 'True'.|
 |PROTON_NO_D3D10|bool|None|Disable d3d10.dll and dxgi.dll, for D3D10 games which can fall back to and run better with D3D9|
 |PROTON_NO_D3D11|bool|None|Disable d3d11.dll, for D3D11 games which can fall back to and run better with D3D9|
 |PROTON_NO_ESYNC|bool|None|Do not use eventfd-based in-process synchronization primitives|
@@ -28,9 +29,9 @@
 |STEAM_LAST_REAPER_COMMAND|str|None|Stores the last Reaper command used for Steam games.|
 |STEAM_LAST_SNIPER_COMMAND|str|None|Stores the last Sniper command used for Steam games.|
 |STEAM_LAST_WRAPPER_COMMAND|str|None|Stores the last wrapper command used for Steam games.|
-|STEAM_USE_REAPER|bool|True|Enables the use of Reaper for Steam games when set to '1'.|
-|STEAM_USE_SNIPER|bool|True|Enables the use of Sniper for Steam games when set to '1'.|
-|STEAM_USE_WRAPPER|bool|False|Enables the use of Steam wrapper for Steam games when set to '1'.|
+|STEAM_USE_REAPER|bool|True|Enables the use of Reaper for Steam games when set to 'True'.|
+|STEAM_USE_SNIPER|bool|True|Enables the use of Sniper for Steam games when set to 'True'.|
+|STEAM_USE_WRAPPER|bool|False|Enables the use of Steam wrapper for Steam games when set to 'True'.|
 |TRAINER_ARGS|str|None|Allows providing custom args to the trainer program.|
 |TRAINER_ENABLED|bool|True|Enables custom trainer launching.|
 |TRAINER_EXE|str|None|Allows selection of a specific trainer excecutable program.|
