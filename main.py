@@ -8,6 +8,7 @@ from pathlib import Path
 import shutil
 import sys
 import argparse
+from typing import List
 from core import LogFactory
 from core.config_storage import ConfigStorage
 from core.defaults import TPLUS_BIN_LOCATION, TPLUS_COMPATIBILITY_TOOL_DIR
@@ -26,6 +27,7 @@ from features.trainer_launch_settings import TrainerLaunchSettings
 from features.wine_config import WineConfig
 from features.winetricks_install import WinetricksInstall
 from gui.main_form import MainForm
+from jinja2 import Environment, FileSystemLoader
 
 
 class MainApp:
@@ -46,10 +48,14 @@ class MainApp:
         command_handlers = {
             "install": self.install_as_steam_compatibility_tool,
             "run": self.handle_run_command,
-            "": self.handle_run_command,
+            "generate_documentation": self.generate_documentation,
         }
 
         subparsers.add_parser("install", help="Install as Steam compatibility tool")
+        subparsers.add_parser(
+            "generate_documentation",
+            help="Generate documentation for Tinker-Plus configuration values",
+        )
 
         run_parser = subparsers.add_parser("run", help="Run a game using Tinker-Plus")
         run_parser.add_argument("--gui", action="store_true", help="Run in GUI mode")
@@ -99,6 +105,33 @@ class MainApp:
             self.logger.error("No valid command handler found.")
         self.logger.info("Tinker-Plus application finished.")
 
+    def __get_runtime_provider(
+        self, game_command: List[str], dry_run: bool
+    ) -> RuntimeProvider:
+        storage = ConfigStorage()
+        return RuntimeProvider(
+            game_command,
+            dry_run,
+            # List of feature providers (Order matters as it affects
+            # how the command pipeline is built)
+            [
+                ExternalTools(),
+                SteamTools(),
+                ProtonSelection(),
+                SdlConfig(),
+                WineConfig(),
+                PrefixSelection(),
+                LinkUserFolders(storage),
+                TrainerLaunchSettings(),
+                WinetricksInstall(),
+                HumanReadableLinks(),
+                GameRunner(),
+                # ReadConfig has to be the last to ensure default
+                # configs are read first, then overridden by user configs
+                ReadConfig(storage),
+            ],
+        )
+
     def handle_run_command(self, args):
         """
         Handles the logic for the 'run' command.
@@ -111,29 +144,7 @@ class MainApp:
         game_command = getattr(args, "game_command", [])
 
         try:
-            storage = ConfigStorage()
-            runtime = RuntimeProvider(
-                game_command,
-                dry_run,
-                # List of feature providers (Order matters as it affects
-                # how the command pipeline is built)
-                [
-                    ExternalTools(),
-                    SteamTools(),
-                    ProtonSelection(),
-                    SdlConfig(),
-                    WineConfig(),
-                    PrefixSelection(),
-                    LinkUserFolders(storage),
-                    TrainerLaunchSettings(),
-                    WinetricksInstall(),
-                    HumanReadableLinks(),
-                    GameRunner(),
-                    # ReadConfig has to be the last to ensure default
-                    # configs are read first, then overridden by user configs
-                    ReadConfig(storage),
-                ],
-            )
+            runtime = self.__get_runtime_provider(game_command, dry_run)
             runtime.build_configuration()
             if runtime.runtime_configuration is None:
                 raise RuntimeError("Failed to build runtime configuration.")
@@ -192,6 +203,41 @@ class MainApp:
             link_path = compat_path.joinpath(link_name)
             create_symbolic_link(target, str(link_path), self.logger)
         self.logger.info("Installation as Steam compatibility tool completed.")
+
+    def generate_documentation(self, _):
+        """
+        Generates documentation for the Tinker-Plus application.
+
+        Note:
+            This is a placeholder for future implementation and currently does not
+            contain any logic.
+        """
+        self.logger.info("Generating documentation... (not yet implemented)")
+        runtime = self.__get_runtime_provider([], True)
+        properties = []
+        for feature in runtime.features:
+            for prop in feature.properties:
+                properties.append(
+                    {
+                        "name": prop.name,
+                        "type_ref": prop.type_ref.__name__,
+                        "description": prop.description,
+                        "default": prop.default,
+                    }
+                )
+        properties.sort(key=lambda x: x["name"])
+        # Load templates from current directory
+        env = Environment(loader=FileSystemLoader("./resources/"))
+
+        # Load the template file
+        template = env.get_template("configuration_reference_template.md")
+
+        # Render with object/dictionary
+        output_text = template.render(properties=properties)
+
+        # Save to a text file
+        with open("configuration_reference.md", "w", encoding="utf-8") as f:
+            f.write(output_text)
 
 
 if __name__ == "__main__":

@@ -52,6 +52,10 @@ Once installed, the `tplus` command is available globally for your user.
 Tinker-Plus integrates seamlessly with Steam as a Command Modifier or
 Compatibility Tool.
 
+## Configuration properties
+
+[See the reference](./configuration_reference.md)
+
 ### Running with Modifications
 
 To apply game-specific settings, use the following command for each game:
