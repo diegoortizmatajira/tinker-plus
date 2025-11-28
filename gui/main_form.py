@@ -1,8 +1,6 @@
 """Main Form with Tabs GUI Module"""
 
-import tkinter as tk
-from tkinter import ttk
-from tkinter.ttk import Progressbar
+import ttkbootstrap as ttk
 
 from core import RuntimeProvider
 from gui.generator import Generator
@@ -41,41 +39,47 @@ class MainForm:
         if not runtime_provider.runtime_configuration:
             raise ValueError("Runtime configuration is required")
         self.generator = Generator(runtime_provider)
-        self.form = tk.Tk()
-        self.form.title("Main Form with Tabs")
+        self.form = ttk.Window()
+        self.form.title("Tinker-Plus")
         self.form.geometry("800x600")
         # Create the main Notebook (tabbed control)
         self.notebook = ttk.Notebook(self.form)
-        self.notebook.pack(fill="both", expand=True, padx=10, pady=10)
+        self.notebook.pack(fill="both", expand=True, padx=10, pady=5)
 
         # Create the first tab
         self.main_tab = ttk.Frame(self.notebook)
         self.notebook.add(self.main_tab, text="Main Tab")
 
         # Add an image placeholder to the tab
-        self.image_label = tk.Label(
-            self.main_tab, text="[Image Placeholder]", width=40, height=20, bg="grey"
+        self.image_label = ttk.Label(
+            self.main_tab, text="[Image Placeholder]", width=40
         )
         self.image_label.pack(pady=10)
 
+        button_frame = ttk.Frame(self.form).pack(fill="x", pady=5)
         # Add a progress bar
-        self.progress_bar = Progressbar(
-            self.main_tab, orient="horizontal", length=300, mode="determinate"
+        self.progress_bar = ttk.Progressbar(
+            button_frame,
+            orient="horizontal",
+            value=50,
+            length=100,
+            mode="determinate",
         )
-        self.progress_bar.pack(pady=10)
+        self.progress_bar.pack(padx=5, pady=2, fill="x")
 
         # Add Play buttons
-        self.play_with_trainer_button = tk.Button(
-            self.main_tab,
+        ttk.Button(
+            button_frame,
+            text="Just Play",
+            command=self.on_just_play_click,
+            bootstyle="success",
+        ).pack(side="right", padx=5, pady=5)
+        ttk.Button(
+            button_frame,
             text="Play with Trainer",
             command=self.on_play_with_trainer_click,
-        )
-        self.play_with_trainer_button.pack(side="left", padx=5, pady=10)
-
-        self.just_play_button = tk.Button(
-            self.main_tab, text="Just Play", command=self.on_just_play_click
-        )
-        self.just_play_button.pack(side="right", padx=5, pady=10)
+            bootstyle="primary",
+        ).pack(side="right", padx=5, pady=5)
 
         self.generator.generate_tabs(self.notebook)
 
@@ -100,12 +104,9 @@ class MainForm:
         """
         Handles the click event for the "Play with Trainer" button.
 
-        This method initiates the runtime in the "Play with Trainer" mode, 
+        This method initiates the runtime in the "Play with Trainer" mode,
         ensuring that the application operates with trainers enabled.
         """
-        print("Play with Trainer clicked")
-        self.__play(True)
-        # Default handler for Play with Trainer button
         print("Play with Trainer clicked")
         self.__play(True)
 
@@ -116,9 +117,6 @@ class MainForm:
         This method initiates the runtime in the "Just Play" mode,
         ensuring that the application operates without trainers enabled.
         """
-        print("Just Play clicked")
-        self.__play(False)
-        # Default handler for Just Play button
         print("Just Play clicked")
         self.__play(False)
 
