@@ -8,6 +8,7 @@ from core.runtime_configuration import RuntimeConfiguration, PipelineWrapper
 STEAM_USE_WRAPPER_PROPERTY = ConfigurationProperty(
     bool,
     "STEAM_USE_WRAPPER",
+    "Use Steam Wrapper",
     "Enables the use of Steam wrapper for Steam games when set to 'True'.",
     default=False,
 )
@@ -15,6 +16,7 @@ STEAM_USE_WRAPPER_PROPERTY = ConfigurationProperty(
 STEAM_USE_SNIPER_PROPERTY = ConfigurationProperty(
     bool,
     "STEAM_USE_SNIPER",
+    "Use Steam Sniper",
     "Enables the use of Sniper for Steam games when set to 'True'.",
     default=True,
 )
@@ -22,6 +24,7 @@ STEAM_USE_SNIPER_PROPERTY = ConfigurationProperty(
 STEAM_USE_REAPER_PROPERTY = ConfigurationProperty(
     bool,
     "STEAM_USE_REAPER",
+    "Use Steam Reaper",
     "Enables the use of Reaper for Steam games when set to 'True'.",
     default=True,
 )
@@ -29,18 +32,21 @@ STEAM_USE_REAPER_PROPERTY = ConfigurationProperty(
 STEAM_LAST_WRAPPER_COMMAND_PROPERTY = ConfigurationProperty(
     str,
     "STEAM_LAST_WRAPPER_COMMAND",
+    "Last used Steam wrapper command",
     "Stores the last wrapper command used for Steam games.",
 )
 
 STEAM_LAST_REAPER_COMMAND_PROPERTY = ConfigurationProperty(
     str,
     "STEAM_LAST_REAPER_COMMAND",
+    "Last used Steam Reaper command",
     "Stores the last Reaper command used for Steam games.",
 )
 
 STEAM_LAST_SNIPER_COMMAND_PROPERTY = ConfigurationProperty(
     str,
     "STEAM_LAST_SNIPER_COMMAND",
+    "Last used Steam Sniper command",
     "Stores the last Sniper command used for Steam games.",
 )
 

@@ -6,6 +6,7 @@ from core.feature_provider import FeatureProvider
 WINE_DLLOVERRIDES_PROPERTY = ConfigurationProperty(
     str,
     "WINE_DLLOVERRIDES",
+    "Wine DLL Overrides",
     "Specifies custom DLL overrides for Wine. The value should be"
     " a semicolon-separated list of DLL names and their override"
     " settings (e.g., 'dll1,native;dll2,builtin').",

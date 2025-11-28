@@ -13,6 +13,7 @@ from core.defaults import WINETRICKS_LOG_FILE
 WINETRICKS_RUN_PROPERTY = ConfigurationProperty(
     bool,
     "WINETRICKS_RUN",
+    "Execute Winetricks in pipeline",
     "Specifies if winetricks should be run (true/false).",
     default=True,
 )
@@ -20,6 +21,7 @@ WINETRICKS_RUN_PROPERTY = ConfigurationProperty(
 WINETRICKS_PROPERTY = ConfigurationProperty(
     list,
     "WINETRICKS",
+    "Winetricks Packages",
     "Specifies a list of winetricks packages to install (comma separated).",
     default=[],
 )

@@ -8,6 +8,7 @@ from core.runtime_configuration import RuntimeConfiguration
 GENERAL_LOG_INDIVIDUAL_EXE_PROPERTY = ConfigurationProperty(
     bool,
     "GENERAL_LOG_INDIVIDUAL_EXE",
+    "Log Individual Executables",
     "If set to True, logs each individual executable that is run in is own file.",
     default=False,
 )

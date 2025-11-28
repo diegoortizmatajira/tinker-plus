@@ -11,18 +11,21 @@ from core.file_operations import create_symbolic_link
 LINK_STEAM_USER_FOLDER_PROPERTY = ConfigurationProperty(
     str,
     "LINK_STEAM_USER_FOLDER",
+    "Path to Steam User Folder",
     "If provided links the steam user folder to the given location",
 )
 
 LINK_PUBLIC_USER_FOLDER_PROPERTY = ConfigurationProperty(
     str,
     "LINK_PUBLIC_USER_FOLDER",
+    "Path to Public User Folder",
     "If provided links the public user folder to the given location",
 )
 
 LINK_SHOULD_BACKUP_FOLDERS_PROPERTY = ConfigurationProperty(
     bool,
     "LINK_SHOULD_BACKUP_FOLDERS",
+    "Backup User Folders",
     "If true, backups the user folders before linking them",
     True,
 )

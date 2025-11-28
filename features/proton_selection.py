@@ -25,29 +25,34 @@ def get_proton_versions_list(configuration: RuntimeConfiguration) -> List[ListIt
 PROTON_LAST_COMPATIBILITY_TOOL_PATH_PROPERTY = ConfigurationProperty(
     str,
     "PROTON_LAST_COMPATIBILITY_TOOL_PATH",
+    "Last used steam compatibility tools path",
     "The last used steam compatibility tools path.",
 )
 
 PROTON_LAST_COMPATIBILITY_TOOL_PROPERTY = ConfigurationProperty(
     str,
     "PROTON_LAST_COMPATIBILITY_TOOL",
+    "Last used steam compatibility tool",
     "The last used steam compatibility tool.",
 )
 
 PROTON_VERSION_PROPERTY = ConfigurationProperty(
     str,
     "PROTON_VERSION",
+    "Proton Version to use",
     "Defines which proton version to use.",
     values_provider=get_proton_versions_list,
 )
 PROTON_LOG_PROPERTY = ConfigurationProperty(
     bool,
     "PROTON_LOG",
+    "Enable Proton Logs",
     "Enables proton logging when set to 'True'.",
     generated_environment_variable="PROTON_LOG",
 )
 PROTON_NO_D3D10_PROPERTY = ConfigurationProperty(
     bool,
+    "PROTON_NO_D3D10",
     "PROTON_NO_D3D10",
     "Disable d3d10.dll and dxgi.dll, for D3D10 games which can fall back to and run"
     + " better with D3D9",
@@ -56,11 +61,13 @@ PROTON_NO_D3D10_PROPERTY = ConfigurationProperty(
 PROTON_NO_D3D11_PROPERTY = ConfigurationProperty(
     bool,
     "PROTON_NO_D3D11",
+    "PROTON_NO_D3D11",
     "Disable d3d11.dll, for D3D11 games which can fall back to and run better with D3D9",
     generated_environment_variable="PROTON_NO_D3D11",
 )
 PROTON_NO_ESYNC_PROPERTY = ConfigurationProperty(
     bool,
+    "PROTON_NO_ESYNC",
     "PROTON_NO_ESYNC",
     "Do not use eventfd-based in-process synchronization primitives",
     generated_environment_variable="PROTON_NO_ESYNC",
@@ -68,11 +75,13 @@ PROTON_NO_ESYNC_PROPERTY = ConfigurationProperty(
 PROTON_NO_FSYNC_PROPERTY = ConfigurationProperty(
     bool,
     "PROTON_NO_FSYNC",
+    "PROTON_NO_FSYNC",
     "Do not use futex-based in-process synchronization primitives",
     generated_environment_variable="PROTON_NO_FSYNC",
 )
 PROTON_FORCE_LARGE_ADDRESS_AWARE_PROPERTY = ConfigurationProperty(
     bool,
+    "PROTON_FORCE_LARGE_ADDRESS_AWARE",
     "PROTON_FORCE_LARGE_ADDRESS_AWARE",
     "Force Wine to enable the LARGE_ADDRESS_AWARE flag",
     generated_environment_variable="PROTON_FORCE_LARGE_ADDRESS_AWARE",
@@ -80,11 +89,13 @@ PROTON_FORCE_LARGE_ADDRESS_AWARE_PROPERTY = ConfigurationProperty(
 PROTON_USE_WINED3D_PROPERTY = ConfigurationProperty(
     bool,
     "PROTON_USE_WINED3D",
+    "PROTON_USE_WINED3D",
     "Use OpenGL-based WineD3D instead of Vulkan-based DXVK for D3D11, D3D10 and D3D9",
     generated_environment_variable="PROTON_USE_WINED3D",
 )
 PROTON_DXVK_D3D8_PROPERTY = ConfigurationProperty(
     bool,
+    "PROTON_DXVK_D3D8",
     "PROTON_DXVK_D3D8",
     "Enable DXVK's D3D8 support",
     generated_environment_variable="PROTON_DXVK_D3D8",
@@ -92,11 +103,13 @@ PROTON_DXVK_D3D8_PROPERTY = ConfigurationProperty(
 PROTON_DISABLE_NVAPI_PROPERTY = ConfigurationProperty(
     bool,
     "PROTON_DISABLE_NVAPI",
+    "PROTON_DISABLE_NVAPI",
     "Disable Proton support for Nvidia's NVAPI GPU and DLSS",
     generated_environment_variable="PROTON_DISABLE_NVAPI",
 )
 PROTON_HIDE_NVIDIA_GPU_PROPERTY = ConfigurationProperty(
     bool,
+    "PROTON_HIDE_NVIDIA_GPU",
     "PROTON_HIDE_NVIDIA_GPU",
     "Proton hide Nvidia GPU",
     generated_environment_variable="PROTON_HIDE_NVIDIA_GPU",

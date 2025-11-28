@@ -12,18 +12,21 @@ from core.process_runner import run_game_and_forks_with_compatibility_tool
 GAME_CUSTOM_EXE_PROPERTY = ConfigurationProperty(
     str,
     "GAME_CUSTOM_EXE",
+    "Custom Game Executable",
     "Allows specifying the main game executable to run.",
     None,
 )
 GAME_CUSTOM_ARGS_PROPERTY = ConfigurationProperty(
     str,
     "GAME_CUSTOM_ARGS",
+    "Custom Game Arguments",
     "Allows specifying additional arguments for the game executable.",
     None,
 )
 GAME_RUN_FORKS_ONLY_PROPERTY = ConfigurationProperty(
     bool,
     "GAME_RUN_FORKS_ONLY",
+    "Run Forked Commands Only",
     "If set to 'True', only the forked commands will be executed, skipping the main game command.",
     default=False,
 )

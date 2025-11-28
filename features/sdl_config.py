@@ -9,6 +9,7 @@ from core.feature_provider import FeatureProvider
 SDL_VIDEODRIVER_PROPERTY = ConfigurationProperty(
     str,
     "SDL_VIDEODRIVER",
+    "SDL Video Driver",
     "Simple DirectMedia Layer (SDL) video driver to use.",
     generated_environment_variable="SDL_VIDEODRIVER",
     values_provider=lambda _: [

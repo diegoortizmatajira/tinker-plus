@@ -32,6 +32,7 @@ class ConfigurationProperty[T]:
 
     type_ref: Type[T]
     name: str
+    display_name: str
     description: str
     default: Optional[T] = None
     values_provider: Optional[Callable[[RuntimeConfiguration], List[ListItem[T]]]] = (

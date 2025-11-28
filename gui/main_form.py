@@ -15,7 +15,7 @@ class MainForm:
         self.generator = Generator(runtime_provider)
         self.form = tk.Tk()
         self.form.title("Main Form with Tabs")
-        self.form.geometry("500x500")
+        self.form.geometry("800x600")
         # Create the main Notebook (tabbed control)
         self.notebook = ttk.Notebook(self.form)
         self.notebook.pack(fill="both", expand=True, padx=10, pady=10)
@@ -53,6 +53,7 @@ class MainForm:
 
         # Binding
         self.runtime_provider = runtime_provider
+        self.generator.display_values(self.runtime_provider.configuration)
 
         # temp_has_trainers = runtime_provider.runtime_configuration.has_trainers
         # self.just_play_button.configure(
@@ -66,11 +67,13 @@ class MainForm:
     def on_play_with_trainer_click(self):
         # Default handler for Play with Trainer button
         print("Play with Trainer clicked")
+        self.generator.recover_values(self.runtime_provider.configuration)
         self.runtime_provider.run(True)
 
     def on_just_play_click(self):
         # Default handler for Just Play button
         print("Just Play clicked")
+        self.generator.recover_values(self.runtime_provider.configuration)
         self.runtime_provider.run(False)
 
     def show(self):

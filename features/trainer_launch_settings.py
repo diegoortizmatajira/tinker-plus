@@ -5,30 +5,51 @@ from core import FeatureProvider, ConfigurationProperty, RuntimeConfiguration
 from core.runtime_configuration import COMMAND_TRAINER, ExecutableCommand
 
 TRAINER_ENABLED_PROPERTY = ConfigurationProperty(
-    bool, "TRAINER_ENABLED", "Enables custom trainer launching.", True
+    bool,
+    "TRAINER_ENABLED",
+    "Enable running custom trainer",
+    "Enables custom trainer launching.",
+    True,
 )
 TRAINER_EXE_PROPERTY = ConfigurationProperty(
-    str, "TRAINER_EXE", "Allows selection of a specific trainer excecutable program."
+    str,
+    "TRAINER_EXE",
+    "Custom trainer executable",
+    "Allows selection of a specific trainer excecutable program.",
 )
 
 TRAINER_ARGS_PROPERTY = ConfigurationProperty(
-    str, "TRAINER_ARGS", "Allows providing custom args to the trainer program."
+    str,
+    "TRAINER_ARGS",
+    "Custom trainer arguments",
+    "Allows providing custom args to the trainer program.",
 )
 
 WEMOD_ENABLED_PROPERTY = ConfigurationProperty(
-    bool, "WEMOD_ENABLED", "Enables WeMod integration for trainer launching.", False
+    bool,
+    "WEMOD_ENABLED",
+    "Enable Wemod integration",
+    "Enables WeMod integration for trainer launching.",
+    False,
 )
 
 WEMOD_EXE_PROPERTY = ConfigurationProperty(
-    str, "WEMOD_EXE", "Specifies the path to the WeMod executable."
+    str,
+    "WEMOD_EXE",
+    "WeMod executable",
+    "Specifies the path to the WeMod executable.",
 )
 
 WEMOD_GAMEID_PROPERTY = ConfigurationProperty(
-    str, "WEMOD_GAMEID", "Specifies the WeMod game ID for the target game."
+    str,
+    "WEMOD_GAMEID",
+    "WeMod game ID",
+    "Specifies the WeMod game ID for the target game.",
 )
 WEMOD_WINETRICKS_REQUIREMENTS = ConfigurationProperty(
     list,
     "WEMOD_WINETRICKS_REQUIREMENTS",
+    "WeMod Winetricks Requirements",
     "Specifies the Winetricks requirements for WeMod integration.",
     ["dotnet48"],
 )
