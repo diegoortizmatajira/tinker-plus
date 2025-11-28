@@ -116,27 +116,42 @@ class Generator:
             # Create a labeled frame for each category
             category_frame = ttk.LabelFrame(tab, text=category_name)
             category_frame.pack(fill="both", expand=True, padx=10, pady=10)
+            row = 0
             for prop in props:
+                # Create a variable wrapper for the property
+                prop_var = self.__add_wrapper(prop)
+                # Create a label for the property
+                ttk.Label(category_frame, text=prop.display_name).grid(
+                    row=row, column=0, sticky="w", padx=5, pady=5
+                )
+
                 # Depending on the property type, create appropriate input widgets
                 if prop.type_ref is bool:
-                    # Create a checkbox for boolean properties
-                    prop_var = self.__add_wrapper(prop)
-                    chk = tk.Checkbutton(
-                        category_frame,
-                        text=prop.display_name,
+                    radio_frame = ttk.Frame(category_frame)
+                    radio_frame.grid(row=row, column=1, sticky="w", padx=5, pady=5)
+                    # Create tree radio buttons for: True, False, None
+                    tk.Radiobutton(
+                        radio_frame,
+                        text="Enabled",
                         variable=prop_var,
-                        onvalue=True,  # Checked
-                        offvalue=False,  # Unchecked
-                        tristatevalue=None,  # Indeterminate (null)
-                    )
-                    chk.pack(anchor="w", padx=5, pady=5)
+                        value=True,
+                    ).pack(side="left", padx=5)
+                    tk.Radiobutton(
+                        radio_frame,
+                        text="Disabled",
+                        variable=prop_var,
+                        value=False,
+                    ).pack(side="left", padx=5)
+                    tk.Radiobutton(
+                        radio_frame,
+                        text="Default",
+                        variable=prop_var,
+                        value=None,
+                    ).pack(side="left", padx=5)
                 elif prop.type_ref is str:
-                    prop_label = ttk.Label(category_frame, text=prop.display_name)
-                    prop_label.pack(anchor="w", padx=5, pady=2)
                     if prop.values_provider:
-                        prop_var = self.__add_wrapper(prop)
                         # Create a dropdown if there are predefined values
-                        prop_combo = ttk.Combobox(
+                        ttk.Combobox(
                             category_frame,
                             values=[
                                 item.value or item.name
@@ -146,19 +161,17 @@ class Generator:
                                 or []
                             ],
                             textvariable=prop_var,
-                        )
-                        prop_combo.pack(fill="x", padx=5, pady=5)
+                        ).grid(row=row, column=1, sticky="w", padx=5, pady=5)
                     else:
-                        prop_var = self.__add_wrapper(prop)
                         # Create a text entry for string properties
-                        prop_entry = ttk.Entry(category_frame, textvariable=prop_var)
-                        prop_entry.pack(fill="x", padx=5, pady=5)
+                        ttk.Entry(category_frame, textvariable=prop_var).grid(
+                            row=row, column=1, sticky="w", padx=5, pady=5
+                        )
                 elif prop.type_ref is list:
-                    prop_label = ttk.Label(category_frame, text=prop.display_name)
-                    prop_label.pack(anchor="w", padx=5, pady=2)
-                    prop_var = self.__add_wrapper(prop)
-                    prop_entry = ttk.Entry(category_frame, textvariable=prop_var)
-                    prop_entry.pack(fill="x", padx=5, pady=5)
+                    ttk.Entry(category_frame, textvariable=prop_var).grid(
+                        row=row, column=1, sticky="w", padx=5, pady=5
+                    )
+                row += 1
 
     def display_values(self, configuration: dict):
         """Sets the GUI variables from the configuration properties."""
