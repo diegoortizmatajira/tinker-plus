@@ -18,8 +18,15 @@ class FeatureProvider(ABC):
     handling default property configurations and applying configurations to a runtime setup.
     """
 
-    def __init__(self, properties: List[ConfigurationProperty]):
+    def __init__(
+        self,
+        name: str,
+        properties: List[ConfigurationProperty],
+        category: str = "General",
+    ):
         self.properties = properties
+        self.name = name
+        self.category = category
         self.logger = LogFactory.singleton().get_logger(self.__class__.__name__)
 
     def build_configuration(

@@ -114,6 +114,7 @@ class ProtonSelection(FeatureProvider):
 
     def __init__(self):
         super().__init__(
+            "Options",
             [
                 PROTON_VERSION_PROPERTY,
                 PROTON_LOG_PROPERTY,
@@ -126,7 +127,8 @@ class ProtonSelection(FeatureProvider):
                 PROTON_DISABLE_NVAPI_PROPERTY,
                 PROTON_HIDE_NVIDIA_GPU_PROPERTY,
                 PROTON_DXVK_D3D8_PROPERTY,
-            ]
+            ],
+            "Proton",
         )
 
     def __get_wine(self, runtime_configuration: RuntimeConfiguration) -> str:

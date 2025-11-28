@@ -19,7 +19,7 @@ class ReadConfig(FeatureProvider):
     """
 
     def __init__(self, config_storage: ConfigStorage):
-        super().__init__([])
+        super().__init__("Configuration", [], "Data Management")
         self.config_storage = config_storage
         self.global_config = {}
 

@@ -57,6 +57,7 @@ class SteamTools(FeatureProvider):
 
     def __init__(self):
         super().__init__(
+            "Steam Tools",
             [
                 STEAM_USE_WRAPPER_PROPERTY,
                 STEAM_USE_REAPER_PROPERTY,
@@ -64,7 +65,8 @@ class SteamTools(FeatureProvider):
                 STEAM_LAST_WRAPPER_COMMAND_PROPERTY,
                 STEAM_LAST_REAPER_COMMAND_PROPERTY,
                 STEAM_LAST_SNIPER_COMMAND_PROPERTY,
-            ]
+            ],
+            "Pipeline",
         )
 
     @override
@@ -104,16 +106,16 @@ class SteamTools(FeatureProvider):
             "Steam Launch Wrapper: %s", runtime_configuration.steam_wrapper
         )
         if not runtime_configuration.steam_sniper:
-            runtime_configuration.steam_sniper = (
-                STEAM_LAST_SNIPER_COMMAND_PROPERTY.get(configuration)
+            runtime_configuration.steam_sniper = STEAM_LAST_SNIPER_COMMAND_PROPERTY.get(
+                configuration
             )
             self.logger.info(
                 "Restored last used Steam Sniper command as it was not set by runtime provider."
             )
         self.logger.info("Steam Sniper Command: %s", runtime_configuration.steam_sniper)
         if not runtime_configuration.steam_reaper:
-            runtime_configuration.steam_reaper = (
-                STEAM_LAST_REAPER_COMMAND_PROPERTY.get(configuration)
+            runtime_configuration.steam_reaper = STEAM_LAST_REAPER_COMMAND_PROPERTY.get(
+                configuration
             )
             self.logger.info(
                 "Restored last used Steam Reaper command as it was not set by runtime provider."

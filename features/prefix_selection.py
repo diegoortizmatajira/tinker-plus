@@ -27,7 +27,7 @@ class PrefixSelection(FeatureProvider):
     """
 
     def __init__(self):
-        super().__init__([PREFIX_CUSTOM_PATH_PROPERTY])
+        super().__init__("Prefix selection", [PREFIX_CUSTOM_PATH_PROPERTY], "General")
 
     @override
     def apply_configuration(

@@ -24,9 +24,11 @@ class GeneralRuntime(FeatureProvider):
 
     def __init__(self):
         super().__init__(
+            "General Runtime",
             [
                 GENERAL_LOG_INDIVIDUAL_EXE_PROPERTY,
-            ]
+            ],
+            "General",
         )
 
     @override

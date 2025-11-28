@@ -39,11 +39,13 @@ class LinkUserFolders(FeatureProvider):
 
     def __init__(self, config_storage: ConfigStorage):
         super().__init__(
+            "Link User Folders",
             [
                 LINK_STEAM_USER_FOLDER_PROPERTY,
                 LINK_PUBLIC_USER_FOLDER_PROPERTY,
                 LINK_SHOULD_BACKUP_FOLDERS_PROPERTY,
-            ]
+            ],
+            "Data Management",
         )
         self.config_storage = config_storage
 

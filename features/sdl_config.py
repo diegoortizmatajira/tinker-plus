@@ -33,7 +33,9 @@ class SdlConfig(FeatureProvider):
 
     def __init__(self):
         super().__init__(
+            "SDL Configuration",
             [
                 SDL_VIDEODRIVER_PROPERTY,
-            ]
+            ],
+            "General",
         )

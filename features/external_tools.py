@@ -41,11 +41,13 @@ class ExternalTools(FeatureProvider):
 
     def __init__(self):
         super().__init__(
+            "Run in the pipeline",
             [
                 GAMEMODERUN_ENABLED_PROPERTY,
                 GAMESCOPE_ENABLED_PROPERTY,
                 GAMESCOPE_ARGS_PROPERTY,
-            ]
+            ],
+            "Additional Tools",
         )
 
     @override

@@ -24,7 +24,7 @@ class HumanReadableLinks(FeatureProvider):
     """
 
     def __init__(self):
-        super().__init__([])
+        super().__init__("Human Links", [], "UI")
 
     @override
     def execute_in_pipeline(

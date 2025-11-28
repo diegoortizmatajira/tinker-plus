@@ -41,6 +41,7 @@ class TrainerLaunchSettings(FeatureProvider):
 
     def __init__(self):
         super().__init__(
+            "Trainers",
             [
                 TRAINER_ENABLED_PROPERTY,
                 TRAINER_EXE_PROPERTY,
@@ -49,7 +50,8 @@ class TrainerLaunchSettings(FeatureProvider):
                 WEMOD_EXE_PROPERTY,
                 WEMOD_GAMEID_PROPERTY,
                 WEMOD_WINETRICKS_REQUIREMENTS,
-            ]
+            ],
+            "Additional Tools",
         )
 
     @override

@@ -18,7 +18,9 @@ class WineConfig(FeatureProvider):
 
     def __init__(self):
         super().__init__(
+            "Wine Configuration",
             [
                 WINE_DLLOVERRIDES_PROPERTY,
-            ]
+            ],
+            "General",
         )

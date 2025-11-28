@@ -30,10 +30,12 @@ class WinetricksInstall(FeatureProvider):
 
     def __init__(self):
         super().__init__(
+            "Winetricks Install",
             [
                 WINETRICKS_RUN_PROPERTY,
                 WINETRICKS_PROPERTY,
-            ]
+            ],
+            "Pipeline",
         )
 
     @override

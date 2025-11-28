@@ -49,7 +49,7 @@ class MainForm:
         )
         self.just_play_button.pack(side="right", padx=5, pady=10)
 
-        self.generator.generate(self.notebook)
+        self.generator.generate_tabs(self.notebook)
 
         # Binding
         self.runtime_provider = runtime_provider
