@@ -8,7 +8,35 @@ from core import RuntimeProvider
 from gui.generator import Generator
 
 
+# pylint: disable=too-many-instance-attributes
 class MainForm:
+    """
+    The MainForm class represents the primary graphical user interface (GUI) component
+    with tabbed functionality. It manages the main application window, including tabs,
+    buttons, and other UI elements.
+
+    Attributes:
+        generator (Generator): The generator instance responsible for creating tabs.
+        form (tk.Tk): The main application window.
+        notebook (ttk.Notebook): A tabbed notebook control.
+        main_tab (ttk.Frame): The first tab of the notebook.
+        image_label (tk.Label): A placeholder label for an image display.
+        progress_bar (Progressbar): A progress bar in the main tab.
+        play_with_trainer_button (tk.Button): A button to initiate "Play with Trainer" mode.
+        just_play_button (tk.Button): A button to initiate "Just Play" mode.
+        runtime_provider (RuntimeProvider): Provides runtime configuration for the application.
+
+    Methods:
+        __init__(runtime_provider: RuntimeProvider):
+            Initializes the MainForm, validates the runtime configuration, and sets up the GUI.
+        on_play_with_trainer_click():
+            Handles the "Play with Trainer" button click event, invoking the runtime with trainers.
+        on_just_play_click():
+            Handles the "Just Play" button click event, invoking the runtime without trainers.
+        show():
+            Displays the main application window and starts the Tkinter main event loop.
+    """
+
     def __init__(self, runtime_provider: RuntimeProvider):
         if not runtime_provider.runtime_configuration:
             raise ValueError("Runtime configuration is required")
@@ -64,17 +92,41 @@ class MainForm:
         #     default=temp_has_trainers and tk.ACTIVE or tk.NORMAL,
         # )
 
+    def __play(self, with_trainers: bool):
+        self.generator.recover_values(self.runtime_provider.configuration)
+        self.runtime_provider.run(with_trainers)
+
     def on_play_with_trainer_click(self):
+        """
+        Handles the click event for the "Play with Trainer" button.
+
+        This method initiates the runtime in the "Play with Trainer" mode, 
+        ensuring that the application operates with trainers enabled.
+        """
+        print("Play with Trainer clicked")
+        self.__play(True)
         # Default handler for Play with Trainer button
         print("Play with Trainer clicked")
-        self.generator.recover_values(self.runtime_provider.configuration)
-        self.runtime_provider.run(True)
+        self.__play(True)
 
     def on_just_play_click(self):
+        """
+        Handles the click event for the "Just Play" button.
+
+        This method initiates the runtime in the "Just Play" mode,
+        ensuring that the application operates without trainers enabled.
+        """
+        print("Just Play clicked")
+        self.__play(False)
         # Default handler for Just Play button
         print("Just Play clicked")
-        self.generator.recover_values(self.runtime_provider.configuration)
-        self.runtime_provider.run(False)
+        self.__play(False)
 
     def show(self):
+        """
+        Displays the main application window and starts the Tkinter main event loop.
+
+        This method is responsible for launching the graphical user interface (GUI)
+        and entering the main event loop of the Tkinter library to handle user interactions.
+        """
         self.form.mainloop()

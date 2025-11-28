@@ -89,6 +89,7 @@ class Generator:
         Args:
             notebook (Notebook): The notebook widget where tabs will be added.
         """
+        self.property_wrappers.clear()
         properties = self.__get_categorized_properties()
         for tab_name, categories in properties.items():
             new_tab = ttk.Frame(notebook)
@@ -120,8 +121,6 @@ class Generator:
                 if prop.type_ref is bool:
                     # Create a checkbox for boolean properties
                     prop_var = self.__add_wrapper(prop)
-                    # prop_label = ttk.Label(category_frame, text=prop.display_name)
-                    # prop_label.pack(anchor="w", padx=5, pady=2)
                     chk = tk.Checkbutton(
                         category_frame,
                         text=prop.display_name,
@@ -131,24 +130,6 @@ class Generator:
                         tristatevalue=None,  # Indeterminate (null)
                     )
                     chk.pack(anchor="w", padx=5, pady=5)
-                    # # Insert a container for radio buttons to be horizontally aligned
-                    # radio_container = ttk.Frame(category_frame)
-                    # radio_container.pack(anchor="w", padx=5, pady=2)
-                    # # Create radio buttons
-                    # rb_default = tk.Radiobutton(
-                    #     radio_container, text="Default", variable=prop_var, value="None"
-                    # )
-                    # rb_true = tk.Radiobutton(
-                    #     radio_container, text="True", variable=prop_var, value="True"
-                    # )
-                    # rb_false = tk.Radiobutton(
-                    #     radio_container, text="False", variable=prop_var, value="False"
-                    # )
-                    #
-                    # # Pack them
-                    # rb_default.pack(side="left", padx=3)
-                    # rb_true.pack(side="left", padx=3)
-                    # rb_false.pack(side="left", padx=3)
                 elif prop.type_ref is str:
                     prop_label = ttk.Label(category_frame, text=prop.display_name)
                     prop_label.pack(anchor="w", padx=5, pady=2)
