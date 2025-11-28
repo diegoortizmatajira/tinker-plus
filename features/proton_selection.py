@@ -2,8 +2,8 @@
 Module for selecting proton version.
 """
 
+import logging
 import os
-import pathlib
 
 from typing import List, override
 from core import FeatureProvider, ConfigurationProperty, RuntimeConfiguration, ListItem
@@ -12,30 +12,18 @@ from core.log_storage import LogFactory
 from core.runtime_configuration import PipelineWrapper
 
 
-def get_proton_versions_list(configuration: RuntimeConfiguration) -> List[ListItem]:
+def get_proton_versions_list(
+    _configuration: RuntimeConfiguration, logger: logging.Logger
+) -> List[ListItem]:
     """
     Retrieves a list of available proton versions from the specified
     steam compatibility tools path.
     """
-    compat_dirs = []
-    if configuration.steam_compatibility_tools_path:
-        compat_dirs.append(configuration.steam_compatibility_tools_path)
-    for _, value in CompatToolInfo.get_cache().items():
-        if value.dir not in compat_dirs:
-            compat_dirs.append(value.dir)
-
-    result: List[ListItem] = []
-    for compat_dir in compat_dirs:
-        compat_dir_path = pathlib.Path(compat_dir)
-        if compat_dir_path.exists() and compat_dir_path.is_dir():
-            folders = compat_dir_path.glob("proton", case_sensitive=False)
-            result.extend(
-                [
-                    ListItem(folder.name, folder.name)
-                    for folder in folders
-                    if folder.is_dir()
-                ]
-            )
+    result = [
+        ListItem(item.name, item.name)
+        for item in CompatToolInfo.get_cache(logger).values()
+    ]
+    result.sort(key=lambda x: x.name)
     return result
 
 
@@ -229,10 +217,32 @@ class ProtonSelection(FeatureProvider):
         """
 
         runtime_configuration.steam_compatibility_tool = (
-            PROTON_VERSION_PROPERTY.get(configuration)
-            or runtime_configuration.steam_compatibility_tool
+            runtime_configuration.steam_compatibility_tool
             or PROTON_LAST_COMPATIBILITY_TOOL_PROPERTY.get(configuration)
         )
+        custom_proton_version = PROTON_VERSION_PROPERTY.get(configuration)
+        if custom_proton_version:
+            # Get compatibility tool info from cache to verify it exists
+            compat_tool_info = CompatToolInfo.from_cache(
+                custom_proton_version, self.logger
+            )
+            if compat_tool_info:
+                self.logger.info(
+                    "Setting custom proton version: %s", custom_proton_version
+                )
+                runtime_configuration.steam_compatibility_tool = compat_tool_info.name
+                runtime_configuration.steam_compatibility_tools_path = (
+                    compat_tool_info.dir
+                )
+            else:
+                self.logger.error(
+                    "Selected proton version '%s' not found in compatibility tools cache.",
+                    custom_proton_version,
+                )
+                raise RuntimeError(
+                    f"Selected proton version '{custom_proton_version}' not found."
+                )
+
         if not runtime_configuration.steam_compatibility_tool:
             self.logger.error("No steam compatibility tool (proton) version selected.")
             raise RuntimeError("There is no proton version selected.")

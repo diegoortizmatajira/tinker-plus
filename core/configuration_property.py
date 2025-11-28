@@ -35,9 +35,9 @@ class ConfigurationProperty[T]:
     display_name: str
     description: str
     default: Optional[T] = None
-    values_provider: Optional[Callable[[RuntimeConfiguration], List[ListItem[T]]]] = (
-        None
-    )
+    values_provider: Optional[
+        Callable[[RuntimeConfiguration, logging.Logger], List[ListItem[T]]]
+    ] = None
     values_cache: Optional[List[ListItem[T]]] = None
     generated_environment_variable: Optional[str] = None
 
@@ -101,7 +101,7 @@ class ConfigurationProperty[T]:
         )
 
     def get_possible_values(
-        self, runtime_configuration: RuntimeConfiguration
+        self, runtime_configuration: RuntimeConfiguration, logger: logging.Logger
     ) -> Optional[List[ListItem[T]]]:
         """
         Retrieves the possible values for the configuration property if a values provider is set.
@@ -110,7 +110,7 @@ class ConfigurationProperty[T]:
             Optional[List[ListItem]]: A list of possible values or None if no provider is set.
         """
         if not self.values_cache and self.values_provider:
-            return self.values_provider(runtime_configuration)
+            return self.values_provider(runtime_configuration, logger)
         return self.values_cache
 
     # pylint: disable=too-many-return-statements

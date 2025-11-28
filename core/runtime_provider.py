@@ -174,6 +174,9 @@ class RuntimeProvider:
                         or "",
                     )
                     compat_tool_info.put_in_cache(self.logger)
+            CompatToolInfo.scan_and_populate_cache(
+                self.logger, self.runtime_configuration
+            )
         except RuntimeError as e:
             self.logger.warning("Failed to parse the game command line: %s", e)
             return

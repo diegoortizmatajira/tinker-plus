@@ -76,17 +76,23 @@ class TestProtonSelection(unittest.TestCase):
         )
 
     @patch("pathlib.Path")
-    def test_get_proton_versions_list(self, mock_pathlib):
+    @patch("features.proton_selection.CompatToolInfo.get_cache")
+    def test_get_proton_versions_list(self, mock_get_cache, mock_path):
         """
         Test that get_proton_versions_list correctly retrieves a list of proton
         versions from the mock runtime configuration.
 
         Args:
-            mock_pathlib: Mocked pathlib.Path object used to simulate file system operations.
+            mock_path: Mocked pathlib.Path class
         """
         # Arrange
-        mock_path = "/mock/path"
-        self.mock_runtime_config.steam_compatibility_tools_path = mock_path
+        compat_tools_path = "/mock/path"
+        self.mock_runtime_config.steam_compatibility_tools_path = compat_tools_path
+
+        mock_path_instance = MagicMock()
+        mock_path.return_value = mock_path_instance
+
+        # Mock folders
         mock_folder_1 = MagicMock()
         mock_folder_1.is_dir.return_value = True
         mock_folder_1.name = "proton-1"
@@ -94,21 +100,23 @@ class TestProtonSelection(unittest.TestCase):
         mock_folder_2.is_dir.return_value = True
         mock_folder_2.name = "proton-2"
 
-        # Configure the mock to return the mock folders only when mock_path is
-        # used, and empty otherwise
-        def iterdir_side_effect():
-            if mock_pathlib.call_args[0][0] == mock_path:
-                return [mock_folder_1, mock_folder_2]
-            return []
+        mock_path_instance.exists.return_value = True
+        mock_path_instance.is_dir.return_value = True
+        mock_path_instance.glob.return_value = [mock_folder_1, mock_folder_2]
 
-        mock_pathlib.return_value.iterdir.side_effect = iterdir_side_effect
+        # Mock the compatibility tool cache to return additional paths
+        mock_cache = {
+            "tool-1": MagicMock(dir="/mock/path_1"),
+            "tool-2": MagicMock(dir="/mock/path_2"),
+        }
+        mock_get_cache.return_value = mock_cache
 
         # Act
         result = get_proton_versions_list(self.mock_runtime_config)
 
         # Assert
         self.assertEqual([item.value for item in result], ["proton-1", "proton-2"])
-        mock_pathlib.assert_called_with("/mock/path")
+        mock_path.assert_any_call(compat_tools_path)
 
 
 if __name__ == "__main__":

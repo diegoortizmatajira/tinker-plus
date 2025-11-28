@@ -12,6 +12,8 @@ def timestamped_log(folder: str, base: str) -> str:
 
 
 DEFAULT_STEAM_FOLDER = os.path.expandvars("$HOME/.local/share/Steam")
+DEFAULT_STEAM_COMMON_FOLDER = "{}/steamapps/common"
+DEFAULT_STEAM_COMPATIBILITY_TOOLS_FOLDER = "{}/compatibilitytools.d"
 
 TPLUS_BIN_LOCATION = os.path.expandvars("$HOME/.local/bin/tplus")
 TPLUS_COMPATIBILITY_TOOL_DIR = (
@@ -47,6 +49,7 @@ STEAM_MANIFESTS_TEMPLATE = "{}/steamapps/appmanifest_{}.acf"
 LOG_STAGE_STARTED = "🟢 STAGE STARTED: {}"
 LOG_DRY_RUN = "ℹ️ DRY RUN: {}"
 LOG_EXECUTING = "▶️ {}"
+LOG_SEARCHING = "🔍 {}"
 # Create directories if they do not exist
 os.makedirs(GAME_CONFIG_DIR, exist_ok=True)
 os.makedirs(LOGS_DIR, exist_ok=True)

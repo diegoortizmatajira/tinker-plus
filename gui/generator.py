@@ -7,6 +7,7 @@ import ttkbootstrap as ttk
 from ttkbootstrap.style import DANGER, PRIMARY, SUCCESS
 
 from core.configuration_property import ConfigurationProperty
+from core.log_storage import LogFactory
 from core.runtime_provider import RuntimeProvider
 
 
@@ -77,6 +78,7 @@ class Generator:
             raise ValueError("Runtime configuration is required")
         self.runtime_provider = runtime_provider
         self.property_wrappers: List[PropertyWrapper] = []
+        self.logger = LogFactory.singleton().get_logger(self.__class__.__name__)
 
     def __add_wrapper(self, config_property: ConfigurationProperty) -> ttk.Variable:
         wrapper = PropertyWrapper(config_property)
@@ -182,7 +184,8 @@ class Generator:
                             values=[
                                 item.value or item.name
                                 for item in prop.get_possible_values(
-                                    self.runtime_provider.runtime_configuration
+                                    self.runtime_provider.runtime_configuration,
+                                    self.logger,
                                 )
                                 or []
                             ],
