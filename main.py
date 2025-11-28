@@ -125,7 +125,7 @@ class MainApp:
                 SdlConfig(),
                 WineConfig(),
                 PrefixSelection(),
-                LinkUserFolders(storage),
+                LinkUserFolders(),
                 TrainerLaunchSettings(),
                 WinetricksInstall(),
                 HumanReadableLinks(),
