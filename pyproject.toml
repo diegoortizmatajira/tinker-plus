@@ -17,4 +17,8 @@ testpaths = ["tests"]
 pythonpath = ["."]
 
 [dependency-groups]
-dev = ["pylint>=4.0.2", "pytest>=9.0.0"]
+dev = [
+    "pydebug>=1.0.3",
+    "pylint>=4.0.2",
+    "pytest>=9.0.0",
+]

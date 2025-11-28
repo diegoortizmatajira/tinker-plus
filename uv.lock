@@ -206,6 +206,12 @@ wheels = [
 ]
 
 [[package]]
+name = "pydebug"
+version = "1.0.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/5b/7a/161dfb5bb88e8ee49851e43e1ab0fe5c71a56285cf4bbb82b08035f45f59/pydebug-1.0.3.tar.gz", hash = "sha256:d81094bf93943614acaad413ee0b4fda77d721b81a90856668a41a0ff0e401c1", size = 4330, upload-time = "2013-10-13T14:01:55.978Z" }
+
+[[package]]
 name = "pygments"
 version = "2.19.2"
 source = { registry = "https://pypi.org/simple" }
@@ -259,6 +265,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "pydebug" },
     { name = "pylint" },
     { name = "pytest" },
 ]
@@ -271,6 +278,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "pydebug", specifier = ">=1.0.3" },
     { name = "pylint", specifier = ">=4.0.2" },
     { name = "pytest", specifier = ">=9.0.0" },
 ]

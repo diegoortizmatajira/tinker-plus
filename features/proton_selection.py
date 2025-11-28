@@ -7,6 +7,7 @@ import pathlib
 
 from typing import List, override
 from core import FeatureProvider, ConfigurationProperty, RuntimeConfiguration, ListItem
+from core.compat_tool_info import CompatToolInfo
 from core.log_storage import LogFactory
 from core.runtime_configuration import PipelineWrapper
 
@@ -16,10 +17,26 @@ def get_proton_versions_list(configuration: RuntimeConfiguration) -> List[ListIt
     Retrieves a list of available proton versions from the specified
     steam compatibility tools path.
     """
-    folders = pathlib.Path(configuration.steam_compatibility_tools_path or ".").glob(
-        "proton"
-    )
-    return [ListItem(folder.name, folder.name) for folder in folders if folder.is_dir()]
+    compat_dirs = []
+    if configuration.steam_compatibility_tools_path:
+        compat_dirs.append(configuration.steam_compatibility_tools_path)
+    for _, value in CompatToolInfo.get_cache().items():
+        if value.dir not in compat_dirs:
+            compat_dirs.append(value.dir)
+
+    result: List[ListItem] = []
+    for compat_dir in compat_dirs:
+        compat_dir_path = pathlib.Path(compat_dir)
+        if compat_dir_path.exists() and compat_dir_path.is_dir():
+            folders = compat_dir_path.glob("proton", case_sensitive=False)
+            result.extend(
+                [
+                    ListItem(folder.name, folder.name)
+                    for folder in folders
+                    if folder.is_dir()
+                ]
+            )
+    return result
 
 
 PROTON_LAST_COMPATIBILITY_TOOL_PATH_PROPERTY = ConfigurationProperty(

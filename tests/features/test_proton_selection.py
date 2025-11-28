@@ -85,14 +85,23 @@ class TestProtonSelection(unittest.TestCase):
             mock_pathlib: Mocked pathlib.Path object used to simulate file system operations.
         """
         # Arrange
-        self.mock_runtime_config.steam_compatibility_tools_path = "/mock/path"
+        mock_path = "/mock/path"
+        self.mock_runtime_config.steam_compatibility_tools_path = mock_path
         mock_folder_1 = MagicMock()
         mock_folder_1.is_dir.return_value = True
         mock_folder_1.name = "proton-1"
         mock_folder_2 = MagicMock()
         mock_folder_2.is_dir.return_value = True
         mock_folder_2.name = "proton-2"
-        mock_pathlib.return_value.glob.return_value = [mock_folder_1, mock_folder_2]
+
+        # Configure the mock to return the mock folders only when mock_path is
+        # used, and empty otherwise
+        def iterdir_side_effect():
+            if mock_pathlib.call_args[0][0] == mock_path:
+                return [mock_folder_1, mock_folder_2]
+            return []
+
+        mock_pathlib.return_value.iterdir.side_effect = iterdir_side_effect
 
         # Act
         result = get_proton_versions_list(self.mock_runtime_config)

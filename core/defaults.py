@@ -22,6 +22,7 @@ CONFIG_LOCATION = os.path.expandvars("$HOME/.config/tinker-plus")
 GLOBAL_CONFIG_FILE = f"{CONFIG_LOCATION}/global_config.json"
 LAST_RUN_LOG_FILE = f"{CONFIG_LOCATION}/lastrun.log"
 GLOBAL_GAME_INFO_CACHE_FILE = f"{CONFIG_LOCATION}/game_info_cache.json"
+GLOBAL_COMPAT_TOOL_CACHE_FILE = f"{CONFIG_LOCATION}/compat_tool_cache.json"
 GAME_CONFIG_DIR = f"{CONFIG_LOCATION}/game_configs"
 GAME_CONFIG_FILE_TEMPLATE = f"{GAME_CONFIG_DIR}/{{}}.json"
 LOGS_DIR = f"{CONFIG_LOCATION}/logs"

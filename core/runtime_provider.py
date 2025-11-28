@@ -10,6 +10,7 @@ import re
 
 from typing import List, Optional
 
+from core.compat_tool_info import CompatToolInfo
 from core.defaults import LOG_STAGE_STARTED, STEAM_MANIFESTS_TEMPLATE
 from core.game_info import GameInfo
 from .runtime_configuration import RuntimeConfiguration
@@ -161,6 +162,18 @@ class RuntimeProvider:
         )
         try:
             parse_command(self.runtime_configuration)
+            # Ensure CompatToolInfo is cached
+            if self.runtime_configuration.steam_compatibility_tool:
+                compat_tool_info = CompatToolInfo.from_cache(
+                    self.runtime_configuration.steam_compatibility_tool, self.logger
+                )
+                if not compat_tool_info:
+                    compat_tool_info = CompatToolInfo(
+                        name=self.runtime_configuration.steam_compatibility_tool,
+                        dir=self.runtime_configuration.steam_compatibility_tools_path
+                        or "",
+                    )
+                    compat_tool_info.put_in_cache(self.logger)
         except RuntimeError as e:
             self.logger.warning("Failed to parse the game command line: %s", e)
             return
