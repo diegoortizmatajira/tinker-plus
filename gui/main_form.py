@@ -1,6 +1,8 @@
 """Main Form with Tabs GUI Module"""
 
+# pylint: disable=import-error
 import ttkbootstrap as ttk
+from ttkbootstrap.style import STRIPED, SUCCESS, PRIMARY
 
 from core import RuntimeProvider
 from gui.generator import Generator
@@ -64,6 +66,7 @@ class MainForm:
             value=50,
             length=100,
             mode="determinate",
+            bootstyle=STRIPED,
         )
         self.progress_bar.pack(padx=5, pady=2, fill="x")
 
@@ -72,13 +75,13 @@ class MainForm:
             button_frame,
             text="Just Play",
             command=self.on_just_play_click,
-            bootstyle="success",
+            bootstyle=SUCCESS,
         ).pack(side="right", padx=5, pady=5)
         ttk.Button(
             button_frame,
             text="Play with Trainer",
             command=self.on_play_with_trainer_click,
-            bootstyle="primary",
+            bootstyle=PRIMARY,
         ).pack(side="right", padx=5, pady=5)
 
         self.generator.generate_tabs(self.notebook)

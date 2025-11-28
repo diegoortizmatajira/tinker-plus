@@ -4,6 +4,7 @@ from typing import List
 
 # pylint: disable=import-error
 import ttkbootstrap as ttk
+from ttkbootstrap.style import DANGER, PRIMARY, SUCCESS
 
 from core.configuration_property import ConfigurationProperty
 from core.runtime_provider import RuntimeProvider
@@ -157,18 +158,21 @@ class Generator:
                         text="Enabled",
                         variable=prop_var,
                         value="1",
+                        bootstyle=SUCCESS,
                     ).pack(side="left", padx=5)
                     ttk.Radiobutton(
                         radio_frame,
                         text="Disabled",
                         variable=prop_var,
                         value="0",
+                        bootstyle=DANGER,
                     ).pack(side="left", padx=5)
                     ttk.Radiobutton(
                         radio_frame,
                         text="Default",
                         variable=prop_var,
                         value="",
+                        bootstyle=PRIMARY,
                     ).pack(side="left", padx=5)
                 elif prop.type_ref is str:
                     if prop.values_provider:
