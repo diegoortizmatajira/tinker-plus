@@ -44,6 +44,7 @@ class MainForm:
         self.form = ttk.Window()
         self.form.title("Tinker-Plus")
         self.form.geometry("800x600")
+        self.form.minsize(800, 600)
         # Create the main Notebook (tabbed control)
         self.notebook = ttk.Notebook(self.form)
         self.notebook.pack(fill="both", expand=True, padx=10, pady=5)
@@ -58,7 +59,9 @@ class MainForm:
         )
         self.image_label.pack(pady=10)
 
-        button_frame = ttk.Frame(self.form).pack(fill="x", pady=5)
+        button_frame = ttk.Frame(self.form)
+        button_frame.pack(fill="x", pady=5)
+
         # Add a progress bar
         self.progress_bar = ttk.Progressbar(
             button_frame,
