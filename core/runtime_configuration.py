@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 import logging
-from typing import Callable, List, Optional
+from typing import Any, Callable, List, Optional
 
 from core.game_info import GameInfo
 
@@ -132,6 +132,7 @@ class RuntimeConfiguration:
     environment_variables: Optional[dict[str, str]] = None
     pipeline_wrappers: Optional[List[PipelineWrapper]] = None
     log_executable_commands: bool = False
+    loaded_global_configuration: Optional[dict[str, Any]] = None
 
     @staticmethod
     def empty() -> "RuntimeConfiguration":

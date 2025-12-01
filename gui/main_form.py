@@ -2,7 +2,7 @@
 
 # pylint: disable=import-error
 import ttkbootstrap as ttk
-from ttkbootstrap.style import STRIPED, SUCCESS, PRIMARY
+from ttkbootstrap.style import SECONDARY, STRIPED, SUCCESS, PRIMARY
 
 from core import RuntimeProvider
 from gui.generator import Generator
@@ -86,6 +86,17 @@ class MainForm:
             command=self.on_play_with_trainer_click,
             bootstyle=PRIMARY,
         ).pack(side="right", padx=5, pady=5)
+        ttk.Button(
+            button_frame,
+            text="Save Config",
+            command=self.on_save_config_click,
+            bootstyle=SECONDARY,
+        ).pack(side="left", padx=5, pady=5)
+        ttk.Button(
+            button_frame,
+            text="Close",
+            bootstyle=SECONDARY,
+        ).pack(side="left", padx=5, pady=5)
 
         self.generator.generate_tabs(self.notebook)
 
@@ -101,6 +112,20 @@ class MainForm:
         #     state=temp_has_trainers and tk.NORMAL or tk.DISABLED,
         #     default=temp_has_trainers and tk.ACTIVE or tk.NORMAL,
         # )
+
+    def on_save_config_click(self):
+        """
+        Handles the click event for the "Save Config" button.
+
+        This method saves the current configuration values from the GUI
+        back to the runtime provider's configuration.
+        """
+        self.generator.recover_values(self.runtime_provider.configuration)
+        self.runtime_provider.config_storage.save_game_config(
+            self.runtime_provider.configuration,
+            self.runtime_provider.runtime_configuration.steam_game_id,
+            self.runtime_provider.runtime_configuration.loaded_global_configuration,
+        )
 
     def __play(self, with_trainers: bool):
         self.generator.recover_values(self.runtime_provider.configuration)

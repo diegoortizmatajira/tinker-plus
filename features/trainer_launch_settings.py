@@ -40,12 +40,21 @@ WEMOD_EXE_PROPERTY = ConfigurationProperty(
     "Specifies the path to the WeMod executable.",
 )
 
+WEMOD_OPEN_WITHOUT_GAMEID_PROPERTY = ConfigurationProperty(
+    bool,
+    "WEMOD_OPEN_WITHOUT_GAMEID",
+    "WeMod open without game ID",
+    "Specifies whether to open WeMod without a specific game ID.",
+    False,
+)
+
 WEMOD_GAMEID_PROPERTY = ConfigurationProperty(
     str,
     "WEMOD_GAMEID",
     "WeMod game ID",
     "Specifies the WeMod game ID for the target game.",
 )
+
 WEMOD_WINETRICKS_REQUIREMENTS = ConfigurationProperty(
     list,
     "WEMOD_WINETRICKS_REQUIREMENTS",
@@ -69,6 +78,7 @@ class TrainerLaunchSettings(FeatureProvider):
                 TRAINER_ARGS_PROPERTY,
                 WEMOD_ENABLED_PROPERTY,
                 WEMOD_EXE_PROPERTY,
+                WEMOD_OPEN_WITHOUT_GAMEID_PROPERTY,
                 WEMOD_GAMEID_PROPERTY,
                 WEMOD_WINETRICKS_REQUIREMENTS,
             ],
@@ -106,8 +116,10 @@ class TrainerLaunchSettings(FeatureProvider):
             and WEMOD_EXE_PROPERTY.get(configuration)
             or None
         )
-        if wemod_path:
-            game_id = WEMOD_GAMEID_PROPERTY.get(configuration)
+        game_id = WEMOD_GAMEID_PROPERTY.get(configuration)
+        if wemod_path and (
+            WEMOD_OPEN_WITHOUT_GAMEID_PROPERTY.get(configuration) or game_id
+        ):
             wemod_args = (
                 f'"wemod://play?titleId={game_id}&gameId={game_id}"'
                 if game_id

@@ -21,7 +21,6 @@ class ReadConfig(FeatureProvider):
     def __init__(self, config_storage: ConfigStorage):
         super().__init__("Configuration", [], "Data Management")
         self.config_storage = config_storage
-        self.global_config = {}
 
     @override
     def build_configuration(
@@ -32,12 +31,13 @@ class ReadConfig(FeatureProvider):
         )
         # At this point, sourced_configuration contains all default configurations
 
-        self.global_config = self.config_storage.get_global_config() or {}
-        sourced_configuration.update(self.global_config)
+        global_config = self.config_storage.get_global_config() or {}
+        sourced_configuration.update(global_config)
         # Persist the global configuration back to storage
         # Applies any new defaults that were not present before
-        self.global_config = sourced_configuration.copy()
-        self.config_storage.save_global_config(self.global_config)
+        self.config_storage.save_global_config(sourced_configuration)
+        # Update the runtime configuration with the loaded global configuration
+        runtime_configuration.loaded_global_configuration = sourced_configuration.copy()
 
         self.logger.info("Global configuration loaded and applied.")
 

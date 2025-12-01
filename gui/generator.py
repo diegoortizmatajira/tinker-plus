@@ -36,7 +36,7 @@ class PropertyWrapper:
             reverse_map = {v: k for k, v in self.map.items()}
             mapped_value = reverse_map.get(value)
         elif self.config_property.type_ref is list and isinstance(value, str):
-            mapped_value = value.split(",")
+            mapped_value = value.split(",") if value != "" else []
         else:
             mapped_value = value if value != "" else None
 

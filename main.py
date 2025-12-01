@@ -13,6 +13,7 @@ from typing import List
 from jinja2 import Environment, FileSystemLoader
 
 from core import LogFactory
+from core import config_storage
 from core.config_storage import ConfigStorage
 from core.defaults import TPLUS_BIN_LOCATION, TPLUS_COMPATIBILITY_TOOL_DIR
 from core.file_operations import create_symbolic_link
@@ -134,6 +135,7 @@ class MainApp:
                 # configs are read first, then overridden by user configs
                 ReadConfig(storage),
             ],
+            storage,
         )
 
     def handle_run_command(self, args):

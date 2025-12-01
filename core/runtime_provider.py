@@ -11,6 +11,7 @@ import re
 from typing import List, Optional
 
 from core.compat_tool_info import CompatToolInfo
+from core.config_storage import ConfigStorage
 from core.defaults import LOG_STAGE_STARTED, STEAM_MANIFESTS_TEMPLATE
 from core.game_info import GameInfo
 from .runtime_configuration import RuntimeConfiguration
@@ -124,11 +125,16 @@ class RuntimeProvider:
     """
 
     def __init__(
-        self, game_command: List[str], dry_run: bool, features: List[FeatureProvider]
+        self,
+        game_command: List[str],
+        dry_run: bool,
+        features: List[FeatureProvider],
+        config_storage: ConfigStorage,
     ):
         self.logger = LogFactory.singleton().get_logger(self.__class__.__name__)
         self.configuration: dict = {}
         self.features = features
+        self.config_storage = config_storage
         self.runtime_configuration = RuntimeConfiguration(
             game_command, GameInfo.empty(), dry_run
         )
