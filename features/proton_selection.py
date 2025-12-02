@@ -105,11 +105,18 @@ PROTON_DXVK_D3D8_PROPERTY = ConfigurationProperty(
     "Enable DXVK's D3D8 support",
     generated_environment_variable="PROTON_DXVK_D3D8",
 )
+PROTON_ENABLE_NVAPI_PROPERTY = ConfigurationProperty(
+    bool,
+    "PROTON_ENABLE_NVAPI",
+    "PROTON_ENABLE_NVAPI (Proton 8 or earlier)",
+    "Enables Proton support for Nvidia's NVAPI GPU and DLSS (in Proton 8 or earlier)",
+    generated_environment_variable="PROTON_ENABLE_NVAPI",
+)
 PROTON_DISABLE_NVAPI_PROPERTY = ConfigurationProperty(
     bool,
     "PROTON_DISABLE_NVAPI",
-    "PROTON_DISABLE_NVAPI",
-    "Disable Proton support for Nvidia's NVAPI GPU and DLSS",
+    "PROTON_DISABLE_NVAPI (Proton 9 or later)",
+    "Disable Proton support for Nvidia's NVAPI GPU and DLSS (in Proton 9 or later)",
     generated_environment_variable="PROTON_DISABLE_NVAPI",
 )
 PROTON_HIDE_NVIDIA_GPU_PROPERTY = ConfigurationProperty(
@@ -142,6 +149,7 @@ class ProtonSelection(FeatureProvider):
                 PROTON_NO_FSYNC_PROPERTY,
                 PROTON_FORCE_LARGE_ADDRESS_AWARE_PROPERTY,
                 PROTON_USE_WINED3D_PROPERTY,
+                PROTON_ENABLE_NVAPI_PROPERTY,
                 PROTON_DISABLE_NVAPI_PROPERTY,
                 PROTON_HIDE_NVIDIA_GPU_PROPERTY,
                 PROTON_DXVK_D3D8_PROPERTY,

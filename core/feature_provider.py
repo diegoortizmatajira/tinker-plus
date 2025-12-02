@@ -63,6 +63,20 @@ class FeatureProvider(ABC):
         """
         return runtime_configuration
 
+    def before_execution(
+        self, _configuration: dict, _runtime_configuration: RuntimeConfiguration
+    ):
+        """
+        Hook method called before the execution of game pipeline.
+        """
+
+    def after_execution(
+        self, _configuration: dict, _runtime_configuration: RuntimeConfiguration
+    ):
+        """
+        Hook method called after the execution of game pipeline.
+        """
+
     def execute_in_pipeline(
         self, _configuration: dict, _runtime_configuration: RuntimeConfiguration
     ):

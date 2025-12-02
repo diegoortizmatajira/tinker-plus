@@ -359,6 +359,14 @@ class RuntimeProvider:
             )
         self.runtime_configuration.execute_trainers = run_with_trainers
 
+        self.logger.info(LOG_STAGE_STARTED.format("Before Execution Stage."))
+        for features in self.features:
+            features.before_execution(self.configuration, self.runtime_configuration)
+
         self.logger.info(LOG_STAGE_STARTED.format("Pipeline Execution Stage."))
         for features in self.features:
             features.execute_in_pipeline(self.configuration, self.runtime_configuration)
+
+        self.logger.info(LOG_STAGE_STARTED.format("After Execution Stage."))
+        for features in self.features:
+            features.after_execution(self.configuration, self.runtime_configuration)

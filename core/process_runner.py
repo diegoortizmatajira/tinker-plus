@@ -4,7 +4,7 @@ import logging
 import os
 import subprocess
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 from core.defaults import (
     CWD_DIR_NAME,
@@ -152,6 +152,62 @@ def run_command_with_compatibility_tool(
         ) from e
 
 
+def run_command(
+    exe_command: Union[str, ExecutableCommand],
+    logger: logging.Logger,
+    *,
+    environment_variables: Optional[dict] = None,
+    cwd: Optional[str] = None,
+    dry_run: bool = False,
+) -> Optional[subprocess.Popen]:
+    """
+    Executes a given command using subprocess.Popen.
+
+    Args:
+        - exe_command (Union[str, ExecutableCommand]): The command to execute,
+          either as a string or an ExecutableCommand object.
+        - logger (logging.Logger): The logger instance for logging execution
+          details.
+        - environment_variables (Optional[dict], optional): A dictionary of
+          environment variables to override for the command. Defaults to None.
+        - cwd (Optional[str], optional): The working directory to set for the
+          command execution. Defaults to None.
+
+    Returns:
+        Optional[subprocess.Popen]: The subprocess.Popen object for the
+        executed command, or None if the execution fails.
+    """
+    try:
+        actual_command = (
+            exe_command
+            if isinstance(exe_command, str)
+            else exe_command.get_full_command()
+        )
+
+        if dry_run:
+            logger.info(LOG_DRY_RUN.format("Would execute command: %s"), actual_command)
+            return None
+
+        logger.info(
+            LOG_EXECUTING.format("Executing command: %s"),
+            actual_command,
+        )
+        return subprocess.Popen(
+            actual_command,
+            env=environment_variables,
+            cwd=cwd,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            stdin=subprocess.DEVNULL,
+        )
+    except Exception as e:
+        logger.error("Error while running application: %s", e)
+        raise RuntimeError(
+            f"Error executing command: '{exe_command}' with execution pipeline."
+        ) from e
+
+
 def run_with_pipeline(
     exe_command: ExecutableCommand,
     runtime_configuration: RuntimeConfiguration,
@@ -169,31 +225,18 @@ def run_with_pipeline(
     command = __assemble_command_str(
         exe_command, runtime_configuration, is_global=True, override_log_to_file=False
     )
-    if runtime_configuration.dry_run:
-        logger.info(LOG_DRY_RUN.format("Would execute command: %s"), command)
-        return None
-    try:
-        # cwd=f"{runtime_configuration.prefix_path}/{CWD_DIR_NAME}"
-        cwd = (
-            runtime_configuration.steam_compat_install_path
-            or f"{runtime_configuration.prefix_path}/{CWD_DIR_NAME}"
-        )
-        os.makedirs(cwd, exist_ok=True)
-        logger.info(LOG_EXECUTING.format("Executing command: %s"), command)
-        return subprocess.Popen(
-            command,
-            env=environment_variables,
-            cwd=cwd,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            stdin=subprocess.DEVNULL,
-        )
-    except Exception as e:
-        logger.error("Error while running application: %s", e)
-        raise RuntimeError(
-            f"Error executing command: '{exe_command}' with execution pipeline."
-        ) from e
+    cwd = (
+        runtime_configuration.steam_compat_install_path
+        or f"{runtime_configuration.prefix_path}/{CWD_DIR_NAME}"
+    )
+    os.makedirs(cwd, exist_ok=True)
+    return run_command(
+        command,
+        logger,
+        environment_variables=environment_variables,
+        cwd=cwd,
+        dry_run=runtime_configuration.dry_run,
+    )
 
 
 def run_game_and_forks_with_compatibility_tool(
