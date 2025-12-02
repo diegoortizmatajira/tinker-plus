@@ -19,6 +19,7 @@ from core.file_operations import create_symbolic_link
 from core.runtime_provider import RuntimeProvider
 from features.context_commands import ContextCommands
 from features.external_tools import ExternalTools
+from features.game_files_backup import GameFilesBackup
 from features.game_runner import GameRunner
 from features.general_runtime import GeneralRuntime
 from features.human_readable_links import HumanReadableLinks
@@ -120,6 +121,7 @@ class MainApp:
             # how the command pipeline is built)
             [
                 GeneralRuntime(),
+                GameFilesBackup(),
                 ContextCommands(),
                 ExternalTools(),
                 SteamTools(),

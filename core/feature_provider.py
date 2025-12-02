@@ -3,11 +3,20 @@ Feature Provider Base Class
 """
 
 from abc import ABC
-from typing import List
+from dataclasses import dataclass
+import logging
+from typing import Any, Callable, Dict, List, Optional
 
 from .configuration_property import ConfigurationProperty
 from .log_storage import LogFactory
 from .runtime_configuration import RuntimeConfiguration
+
+
+@dataclass
+class FeatureAction:
+    name: str
+    description: str
+    action: Callable[[Dict[str, Any], RuntimeConfiguration], None]
 
 
 class FeatureProvider(ABC):
@@ -23,10 +32,12 @@ class FeatureProvider(ABC):
         name: str,
         properties: List[ConfigurationProperty],
         category: str = "General",
+        actions: Optional[List[FeatureAction]] = None,
     ):
         self.properties = properties
         self.name = name
         self.category = category
+        self.actions = actions or []
         self.logger = LogFactory.singleton().get_logger(self.__class__.__name__)
 
     def build_configuration(
