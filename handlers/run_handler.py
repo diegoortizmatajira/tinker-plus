@@ -1,0 +1,64 @@
+import argparse
+import logging
+from typing import override
+
+from gui.main_form import MainForm
+from handlers.base_handler import BaseHandler
+
+RUN_COMMAND = "run"
+
+
+class RunHandler(BaseHandler):
+    def __init__(
+        self,
+        subparser: argparse._SubParsersAction,
+        handlers: dict[str, BaseHandler],
+    ) -> None:
+        handlers[RUN_COMMAND] = self
+        run_parser = subparser.add_parser(
+            RUN_COMMAND,
+            help="Run the main application process.",
+            description="This command starts the main application process"
+            " with the specified configurations.",
+        )
+        run_parser.add_argument("--gui", action="store_true", help="Run in GUI mode")
+        run_parser.add_argument(
+            "--dry", action="store_true", help="Run in DRY mode (no game launch)"
+        )
+        run_parser.add_argument(
+            "--trainer", action="store_true", help="Run with trainer"
+        )
+        run_parser.add_argument(
+            "game_command",
+            nargs="+",  # Accepts any number of arguments as a list
+            help=(
+                "The command to launch the game followed by its parameters"
+                " (e.g., executable + arguments)"
+            ),
+        )
+
+    @override
+    def handle(
+        self,
+        args: argparse.Namespace,
+        logger: logging.Logger,
+    ) -> None:
+        use_gui = getattr(args, "gui", False)
+        dry_run = getattr(args, "dry", False)
+        execute_trainer = getattr(args, "trainer", True)
+        game_command = getattr(args, "game_command", [])
+
+        try:
+            runtime = self.get_runtime_provider(game_command, dry_run)
+            runtime.build_configuration()
+            if runtime.runtime_configuration is None:
+                raise RuntimeError("Failed to build runtime configuration.")
+            runtime.runtime_configuration.execute_trainers = execute_trainer
+            if use_gui:
+                main_form = MainForm(runtime)
+                main_form.show()
+            else:
+                runtime.run()
+
+        except RuntimeError as e:
+            logger.error("An error occurred during runtime execution. %s", e)
