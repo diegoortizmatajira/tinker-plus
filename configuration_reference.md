@@ -3,6 +3,9 @@
 
 | Property | Type | Default value | Description |
 | -------- | ---- | ------------- | ----------- |
+|BACKUP_LOCATION|str|None|The location where game files are backed up|
+|CONTEXT_COMMAND_AFTER_EXIT|str|None|Command that will be executed after exiting the game.|
+|CONTEXT_COMMAND_BEFORE_STARTUP|str|None|Command that will be executed before starting the game.|
 |GAMEMODERUN_ENABLED|bool|False|Enables GameModeRun when set to 'True'.|
 |GAMESCOPE_ARGS|str|None|Additional arguments to pass to Gamescope.|
 |GAMESCOPE_ENABLED|bool|False|Enables Gamescope when set to 'True'.|
@@ -14,8 +17,9 @@
 |LINK_SHOULD_BACKUP_FOLDERS|bool|True|If true, backups the user folders before linking them|
 |LINK_STEAM_USER_FOLDER|str|None|If provided links the steam user folder to the given location|
 |PREFIX_CUSTOM_PATH|str|None|Allows selection of a specific prefix.|
-|PROTON_DISABLE_NVAPI|bool|None|Disable Proton support for Nvidia's NVAPI GPU and DLSS|
+|PROTON_DISABLE_NVAPI|bool|None|Disable Proton support for Nvidia's NVAPI GPU and DLSS (in Proton 9 or later)|
 |PROTON_DXVK_D3D8|bool|None|Enable DXVK's D3D8 support|
+|PROTON_ENABLE_NVAPI|bool|None|Enables Proton support for Nvidia's NVAPI GPU and DLSS (in Proton 8 or earlier)|
 |PROTON_FORCE_LARGE_ADDRESS_AWARE|bool|None|Force Wine to enable the LARGE_ADDRESS_AWARE flag|
 |PROTON_HIDE_NVIDIA_GPU|bool|None|Proton hide Nvidia GPU|
 |PROTON_LOG|bool|None|Enables proton logging when set to 'True'.|
@@ -38,7 +42,11 @@
 |WEMOD_ENABLED|bool|False|Enables WeMod integration for trainer launching.|
 |WEMOD_EXE|str|None|Specifies the path to the WeMod executable.|
 |WEMOD_GAMEID|str|None|Specifies the WeMod game ID for the target game.|
+|WEMOD_OPEN_WITHOUT_GAMEID|bool|False|Specifies whether to open WeMod without a specific game ID.|
 |WEMOD_WINETRICKS_REQUIREMENTS|list|['dotnet48']|Specifies the Winetricks requirements for WeMod integration.|
 |WINETRICKS|list|[]|Specifies a list of winetricks packages to install (comma separated).|
 |WINETRICKS_RUN|bool|True|Specifies if winetricks should be run (true/false).|
 |WINE_DLLOVERRIDES|str|None|Specifies custom DLL overrides for Wine. The value should be a semicolon-separated list of DLL names and their override settings (e.g., 'dll1,native;dll2,builtin').|
+|WINE_FULLSCREEN_FSR_CUSTOM_MODE|str|None|Sets a custom Fullscreen FSR mode for Wine when 'custom' is selected in the Fullscreen FSR Mode setting. The value should be a resolution scale factor (e.g., '1.5' for 150% scaling).|
+|WINE_FULLSCREEN_FSR_MODE|bool|None|Enables Fullscreen FSR (FidelityFX Super Resolution) mode in Wine|
+|WINE_FULLSCREEN_FSR_MODE|str|None|Sets the Fullscreen FSR mode for Wine.|
