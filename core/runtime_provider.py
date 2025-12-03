@@ -15,7 +15,7 @@ from core.config_storage import ConfigStorage
 from core.defaults import LOG_STAGE_STARTED, STEAM_MANIFESTS_TEMPLATE
 from core.game_info import GameInfo
 from .runtime_configuration import RuntimeConfiguration
-from .feature_provider import FeatureProvider
+from .feature_provider import FeatureAction, FeatureProvider
 from .log_storage import LogFactory
 
 EMPTY = "(not provided)"
@@ -338,6 +338,12 @@ class RuntimeProvider:
                 self.runtime_configuration,
             )
 
+    def __apply_feature_configurations(self):
+        for feature in self.features:
+            feature.try_apply_configuration(
+                self.configuration, self.runtime_configuration
+            )
+
     def run(self, run_with_trainers: bool = True):
         """
         Executes the runtime environment using the provided configuration and optional trainers.
@@ -353,10 +359,7 @@ class RuntimeProvider:
         self.runtime_configuration.reset()
         self.logger.info(LOG_STAGE_STARTED.format("Apply Configuration Stage."))
         # Apply configurations to runtime
-        for feature in self.features:
-            feature.try_apply_configuration(
-                self.configuration, self.runtime_configuration
-            )
+        self.__apply_feature_configurations()
         self.runtime_configuration.execute_trainers = run_with_trainers
 
         self.logger.info(LOG_STAGE_STARTED.format("Before Execution Stage."))
@@ -370,3 +373,38 @@ class RuntimeProvider:
         self.logger.info(LOG_STAGE_STARTED.format("After Execution Stage."))
         for features in self.features:
             features.after_execution(self.configuration, self.runtime_configuration)
+
+    def run_action(self, action: FeatureAction):
+        """
+        Executes a specific feature action using the current runtime configuration.
+
+        This method first builds the runtime configuration, applies necessary
+        feature configurations, and then executes the provided action within the
+        runtime environment. The action being executed is logged for tracking.
+
+        Args:
+            action (FeatureAction): The specific feature action to execute, which
+                defines its own behavior within the runtime environment.
+
+        Logs:
+            - Logs the execution stage and the status of the action being executed.
+        """
+        self.__apply_feature_configurations()
+        self.logger.info(LOG_STAGE_STARTED.format(f"Executing Action: {action.name}"))
+        action.action(self.configuration, self.runtime_configuration)
+        self.logger.info("Action '%s' executed successfully.", action.name)
+
+    def get_available_actions(self) -> List[FeatureAction]:
+        """
+        Lists all available actions provided by the feature providers.
+
+        This method iterates through the list of feature providers and collects
+        their available actions into a single list.
+
+        Returns:
+            List[FeatureProvider]: A list of all available feature providers.
+        """
+        available_actions: List[FeatureAction] = []
+        for feature in self.features:
+            available_actions.extend(feature.actions)
+        return available_actions

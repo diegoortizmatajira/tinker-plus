@@ -39,8 +39,6 @@ HUMAN_READABLE_LINKS_DIR_TEMPLATE = f"{HUMAN_READABLE_LINKS_DIR}/{{}}"
 
 # Log files
 APP_LAST_RUN_LOG_FILE = "lastrun.log"
-GENERAL_TOOLS_LOG_FILE = "tools.log"
-WINETRICKS_LOG_FILE = "winetricks.log"
 PROTON_LOG_FILE = "proton.log"
 # Common paths
 USERS_DIR_NAME = "drive_c/users"

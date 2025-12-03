@@ -9,7 +9,6 @@ from typing import Optional, Union
 from core.defaults import (
     CWD_DIR_NAME,
     GAME_SCRIPT_TEMPLATE,
-    GENERAL_TOOLS_LOG_FILE,
     LOG_DRY_RUN,
     LOG_EXECUTING,
 )
@@ -22,10 +21,9 @@ from core.runtime_configuration import (
 
 
 def run_in_wine_prefix(
-    exe_command: str,
+    exe_command: ExecutableCommand,
     runtime_configuration: RuntimeConfiguration,
     logger: logging.Logger,
-    output_log_file: Optional[str] = None,
 ) -> bool:
     """
     Executes a given command within a specified Wine prefix using subprocess.
@@ -37,9 +35,6 @@ def run_in_wine_prefix(
     if not wine_prefix:
         raise RuntimeError("WINEPREFIX environment variable is not set.")
 
-    log_file = LogFactory.singleton().get_log_filename(
-        output_log_file or GENERAL_TOOLS_LOG_FILE
-    )
     environment_variables = os.environ.copy()
     environment_variables.update(runtime_configuration.environment_variables or {})
     environment_variables["WINEPREFIX"] = wine_prefix
@@ -48,7 +43,11 @@ def run_in_wine_prefix(
         environment_variables["WINE"] = runtime_configuration.wine
         logger.info("Using  WINE=%s", runtime_configuration.wine)
 
-    command = f"{exe_command} >> {log_file}"
+    command = f"{exe_command.get_full_command()}"
+    if runtime_configuration.log_executable_commands:
+        exe_path = Path(exe_command.command)
+        log_file = LogFactory.singleton().get_log_filename(f"{exe_path.stem}.log")
+        command += f" >> {log_file}"
     if runtime_configuration.dry_run:
         logger.info(
             LOG_DRY_RUN.format("Would execute command in Wine prefix: %s"), command

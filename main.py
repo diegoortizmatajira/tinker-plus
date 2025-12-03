@@ -10,8 +10,10 @@ import sys
 
 from core import LogFactory
 from handlers.base_handler import BaseHandler
+from handlers.execute_action_handler import ExecuteActionHandler
 from handlers.generate_documentation_handler import GenerateDocumentationHandler
 from handlers.install_handler import InstallHandler
+from handlers.list_actions_handler import ListActionsHandler
 from handlers.run_handler import RunHandler
 
 
@@ -37,6 +39,8 @@ def main():
     RunHandler(subparsers, command_handlers)
     InstallHandler(subparsers, command_handlers)
     GenerateDocumentationHandler(subparsers, command_handlers)
+    ListActionsHandler(subparsers, command_handlers)
+    ExecuteActionHandler(subparsers, command_handlers)
 
     if len(sys.argv) == 1:
         parser.print_help()
@@ -51,15 +55,23 @@ def main():
     game_id = os.getenv("SteamGameId") or "unknown"
 
     factory = LogFactory.initialize(
-        game_id, logging.DEBUG if debug_mode else logging.INFO, True
+        game_id,
+        console_level=logging.DEBUG if debug_mode else logging.ERROR,
+        file_level=logging.DEBUG if debug_mode else logging.INFO,
     )
     logger = factory.get_logger("TinkerPlus")
     logger.info("Starting Tinker-Plus application...")
+    result_code = 0
     if handler:
-        handler.handle(args, logger)
+        try:
+            handler.handle(args, logger)
+        except RuntimeError as e:
+            logger.error("Runtime error occurred: %s", str(e))
+            result_code = 1
     else:
         logger.error("No valid command handler found.")
     logger.info("Tinker-Plus application finished.")
+    sys.exit(result_code)
 
 
 if __name__ == "__main__":

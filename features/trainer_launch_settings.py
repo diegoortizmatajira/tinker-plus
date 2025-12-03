@@ -1,7 +1,12 @@
 """Module for enabling and configuring custom trainers or WeMod integration."""
 
 from typing import Any, override
-from core import FeatureProvider, ConfigurationProperty, RuntimeConfiguration
+from core import (
+    FeatureProvider,
+    ConfigurationProperty,
+    RuntimeConfiguration,
+    process_runner,
+)
 from core.feature_provider import FeatureAction
 from core.runtime_configuration import COMMAND_TRAINER, ExecutableCommand
 
@@ -61,7 +66,7 @@ WEMOD_WINETRICKS_REQUIREMENTS = ConfigurationProperty(
     "WEMOD_WINETRICKS_REQUIREMENTS",
     "WeMod Winetricks Requirements",
     "Specifies the Winetricks requirements for WeMod integration.",
-    ["dotnet48"],
+    ["dotnet48", "dotnetdesktop6"],
 )
 
 
@@ -86,6 +91,7 @@ class TrainerLaunchSettings(FeatureProvider):
             "Additional Tools",
             actions=[
                 FeatureAction(
+                    "prepare-wemod",
                     "Prepare Prefix for WeMod",
                     "Prepare the Wine prefix for WeMod integration.",
                     self.prepare_prefix_for_wemod,
@@ -151,12 +157,42 @@ class TrainerLaunchSettings(FeatureProvider):
     def prepare_prefix_for_wemod(
         self,
         configuration: dict[str, Any],
-        _runtime_configuration: RuntimeConfiguration,
+        runtime_configuration: RuntimeConfiguration,
     ):
         # pylint: disable=line-too-long
         """
         Prepares the Wine prefix for WeMod integration by adding necessary Winetricks.
         See: https://www.reddit.com/r/SteamDeck/comments/1gtlydp/wemod_a_guide_to_installing/?share_id=utlceK1w5lmQ33fx6jBij&utm_name=iossmf
         """
-        wemod_winetricks = WEMOD_WINETRICKS_REQUIREMENTS.get(configuration, [])
-        self.logger.info("WeMod trainer winetricks: %s", ",".join(wemod_winetricks))
+        winetricks = WEMOD_WINETRICKS_REQUIREMENTS.get(configuration, [])
+        self.logger.info("WeMod trainer winetricks: %s", ",".join(winetricks))
+
+        def set_win_version(version: str, description: str):
+            succeed = process_runner.run_in_wine_prefix(
+                ExecutableCommand("winecfg", f"/v {version}"),
+                runtime_configuration,
+                self.logger,
+            )
+            if succeed:
+                self.logger.info("%s mode set successfully.", description)
+            else:
+                self.logger.error("%s mode setting failed.", description)
+                raise RuntimeError("Winecfg failed")
+
+        try:
+            set_win_version("win7", "Use Windows 7")
+            # Install required Winetricks packages
+            succeed = process_runner.run_in_wine_prefix(
+                ExecutableCommand("winetricks", f"--unattended {' '.join(winetricks)}"),
+                runtime_configuration,
+                self.logger,
+            )
+            if succeed:
+                self.logger.info("Winetricks packages installed successfully.")
+            else:
+                self.logger.error("Winetricks packages installation failed.")
+                raise RuntimeError("Winetricks installation failed")
+            set_win_version("win10", "Use Windows 10")
+        except RuntimeError as e:
+            self.logger.error("Failed to prepare Wine prefix for WeMod: %s", e)
+            raise

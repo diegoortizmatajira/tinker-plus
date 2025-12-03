@@ -4,7 +4,6 @@ Feature Provider Base Class
 
 from abc import ABC
 from dataclasses import dataclass
-import logging
 from typing import Any, Callable, Dict, List, Optional
 
 from .configuration_property import ConfigurationProperty
@@ -14,6 +13,7 @@ from .runtime_configuration import RuntimeConfiguration
 
 @dataclass
 class FeatureAction:
+    alias: str
     name: str
     description: str
     action: Callable[[Dict[str, Any], RuntimeConfiguration], None]

@@ -7,8 +7,8 @@ from core import (
     RuntimeConfiguration,
     process_runner,
 )
-from core.defaults import WINETRICKS_LOG_FILE
 from core.feature_provider import FeatureAction
+from core.runtime_configuration import ExecutableCommand
 
 
 WINETRICKS_RUN_PROPERTY = ConfigurationProperty(
@@ -41,6 +41,7 @@ class WinetricksInstall(FeatureProvider):
             "Pipeline",
             actions=[
                 FeatureAction(
+                    "install-winetricks",
                     "Install Winetricks Packages",
                     "Installs required Winetricks packages into game Prefix",
                     self.install_required_winetricks,
@@ -75,10 +76,9 @@ class WinetricksInstall(FeatureProvider):
         )
         try:
             succeed = process_runner.run_in_wine_prefix(
-                f"winetricks --unattended {' '.join(winetricks)}",
+                ExecutableCommand("winetricks", f"--unattended {' '.join(winetricks)}"),
                 runtime_configuration,
                 self.logger,
-                WINETRICKS_LOG_FILE,
             )
             if succeed:
                 self.logger.info("Winetricks packages installed successfully.")
