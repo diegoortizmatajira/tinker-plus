@@ -101,7 +101,7 @@ class MainForm:
 
         def create_action(action: FeatureAction):
             # Creates a closure for a feature action to collect the current
-            # configuration and execute the action.
+            # selected configuration and execute the action.
             def new_action():
                 self.generator.recover_values(self.runtime_provider.configuration)
                 action.action(

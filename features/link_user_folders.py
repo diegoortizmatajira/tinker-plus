@@ -51,7 +51,7 @@ class LinkUserFolders(FeatureProvider):
         )
 
     @override
-    def execute_in_pipeline(
+    def before_execution(
         self, configuration: dict, runtime_configuration: RuntimeConfiguration
     ):
         if not runtime_configuration.prefix_path:

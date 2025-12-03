@@ -1,7 +1,8 @@
 """Module for enabling and configuring custom trainers or WeMod integration."""
 
-from typing import override
+from typing import Any, override
 from core import FeatureProvider, ConfigurationProperty, RuntimeConfiguration
+from core.feature_provider import FeatureAction
 from core.runtime_configuration import COMMAND_TRAINER, ExecutableCommand
 
 TRAINER_ENABLED_PROPERTY = ConfigurationProperty(
@@ -83,6 +84,13 @@ class TrainerLaunchSettings(FeatureProvider):
                 WEMOD_WINETRICKS_REQUIREMENTS,
             ],
             "Additional Tools",
+            actions=[
+                FeatureAction(
+                    "Prepare Prefix for WeMod",
+                    "Prepare the Wine prefix for WeMod integration.",
+                    self.prepare_prefix_for_wemod,
+                ),
+            ],
         )
 
     @override
@@ -132,13 +140,23 @@ class TrainerLaunchSettings(FeatureProvider):
                     COMMAND_TRAINER,
                 )
             )
-            wemod_winetricks = WEMOD_WINETRICKS_REQUIREMENTS.get(configuration, [])
-            runtime_configuration.add_winetricks(wemod_winetricks)
             execute_trainer = True
             self.logger.info("WeMod trainer: %s", wemod_path)
             self.logger.info("WeMod trainer game id: %s", game_id or "Not specified")
-            self.logger.info("WeMod trainer winetricks: %s", ",".join(wemod_winetricks))
 
         # Set the execute_trainers flag based on the configuration
         runtime_configuration.execute_trainers = execute_trainer
         return runtime_configuration
+
+    def prepare_prefix_for_wemod(
+        self,
+        configuration: dict[str, Any],
+        _runtime_configuration: RuntimeConfiguration,
+    ):
+        # pylint: disable=line-too-long
+        """
+        Prepares the Wine prefix for WeMod integration by adding necessary Winetricks.
+        See: https://www.reddit.com/r/SteamDeck/comments/1gtlydp/wemod_a_guide_to_installing/?share_id=utlceK1w5lmQ33fx6jBij&utm_name=iossmf
+        """
+        wemod_winetricks = WEMOD_WINETRICKS_REQUIREMENTS.get(configuration, [])
+        self.logger.info("WeMod trainer winetricks: %s", ",".join(wemod_winetricks))

@@ -31,7 +31,6 @@ class BaseHandler(ABC):
         """
         Handles the command with the given arguments and logger.
         """
-        pass
 
     def get_runtime_provider(
         self, game_command: List[str], dry_run: bool
@@ -48,18 +47,20 @@ class BaseHandler(ABC):
             # how the command pipeline is built)
             [
                 GeneralRuntime(),
+                # Features that run before game launch
                 GameFilesBackup(),
+                WinetricksInstall(),
+                LinkUserFolders(),
+                HumanReadableLinks(),
                 ContextCommands(),
+                # Features that affect run pipeline or game launch
                 ExternalTools(),
                 SteamTools(),
                 ProtonSelection(),
                 SdlConfig(),
                 WineConfig(),
                 PrefixSelection(),
-                LinkUserFolders(),
                 TrainerLaunchSettings(),
-                WinetricksInstall(),
-                HumanReadableLinks(),
                 GameRunner(),
                 # ReadConfig has to be the last to ensure default
                 # configs are read first, then overridden by user configs
