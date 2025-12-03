@@ -2,9 +2,10 @@
 
 # pylint: disable=import-error
 import ttkbootstrap as ttk
-from ttkbootstrap.style import SECONDARY, STRIPED, SUCCESS, PRIMARY
+from ttkbootstrap.style import INFO, OUTLINE, SECONDARY, STRIPED, SUCCESS, PRIMARY
 
 from core import RuntimeProvider
+from core.feature_provider import FeatureAction
 from gui.generator import Generator
 
 
@@ -90,12 +91,40 @@ class MainForm:
             button_frame,
             text="Save Config",
             command=self.on_save_config_click,
-            bootstyle=SECONDARY,
+            bootstyle=(INFO, OUTLINE),
         ).pack(side="left", padx=5, pady=5)
         ttk.Button(
             button_frame,
             text="Close",
-            bootstyle=SECONDARY,
+            bootstyle=(SECONDARY, OUTLINE),
+        ).pack(side="left", padx=5, pady=5)
+
+        def create_action(action: FeatureAction):
+            # Creates a closure for a feature action to collect the current
+            # configuration and execute the action.
+            def new_action():
+                self.generator.recover_values(self.runtime_provider.configuration)
+                action.action(
+                    self.runtime_provider.configuration,
+                    self.runtime_provider.runtime_configuration,
+                )
+
+            return new_action
+
+        # Builds the menu for feature actions
+        actions_menu = ttk.Menu()
+        for feature in runtime_provider.features:
+            if feature.actions and len(feature.actions) > 0:
+                for feature_action in feature.actions:
+                    actions_menu.add_command(
+                        label=feature_action.name, command=create_action(feature_action)
+                    )
+
+        ttk.Menubutton(
+            button_frame,
+            text="Actions",
+            bootstyle=(PRIMARY, OUTLINE),
+            menu=actions_menu,
         ).pack(side="left", padx=5, pady=5)
 
         self.generator.generate_tabs(self.notebook)

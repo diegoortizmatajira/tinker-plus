@@ -47,7 +47,7 @@ class ContextCommands(FeatureProvider):
                 CONTEXT_COMMAND_BEFORE_STARTUP_PROPERTY,
                 CONTEXT_COMMAND_AFTER_EXIT_PROPERTY,
             ],
-            "Events",
+            "Game Execution",
         )
 
     @override
