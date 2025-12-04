@@ -96,7 +96,7 @@ class TrainerLaunchSettings(FeatureProvider):
             "Additional Tools",
             actions=[
                 FeatureAction(
-                    "prepare-wemod",
+                    "trainers-prepare-wemod",
                     "Prepare Prefix for WeMod",
                     "Prepare the Wine prefix for WeMod integration.",
                     self.prepare_prefix_for_wemod,

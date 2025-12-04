@@ -11,9 +11,38 @@ from core.defaults import (
     GAME_LOGS_DIR_TEMPLATE,
     GAME_SCRIPT_TEMPLATE,
     HUMAN_READABLE_LINKS_DIR_TEMPLATE,
+    LOG_DRY_RUN,
     LOG_EXECUTING,
 )
 from core.game_info import GameInfo
+
+
+def delete_folder_tree(folder_path: str, logger: logging.Logger, *, dry_run: bool):
+    """
+    Deletes a folder and all its contents.
+
+    Args:
+        folder_path (str): The path of the folder to delete.
+        logger (logging.Logger): The logger instance for logging progress and errors.
+        dry_run (bool): If True, only logs the deletion without performing it.
+    """
+    try:
+        location = Path(folder_path)
+
+        if location.exists() and location.is_dir():
+            if dry_run:
+                logger.info(
+                    LOG_DRY_RUN.format("Dry run: would delete folder tree at %s"),
+                    folder_path,
+                )
+            else:
+                shutil.rmtree(location)
+                logger.info("Deleted folder tree at %s", folder_path)
+        else:
+            logger.info("Folder does not exist, skipping deletion: %s", folder_path)
+    except Exception as e:
+        logger.error("Error deleting folder tree at %s: %s", folder_path, e)
+        raise RuntimeError(f"Error deleting folder tree at {folder_path}") from e
 
 
 def create_symbolic_link(

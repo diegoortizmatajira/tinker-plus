@@ -41,7 +41,7 @@ class WinetricksInstall(FeatureProvider):
             "Pipeline",
             actions=[
                 FeatureAction(
-                    "install-winetricks",
+                    "winetricks-install-packages",
                     "Install Winetricks Packages",
                     "Installs required Winetricks packages into game Prefix",
                     self.install_required_winetricks,

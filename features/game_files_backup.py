@@ -81,13 +81,13 @@ class GameFilesBackup(FeatureProvider):
             "Data Management",
             actions=[
                 FeatureAction(
-                    "backup-game",
+                    "backup-create-game",
                     "Backup Game Files",
                     "Backs up game files to the specified location.",
                     self.backup_game_files,
                 ),
                 FeatureAction(
-                    "restore-game",
+                    "backup-restore-game",
                     "Restore Game Files",
                     "Restores game files from the backup location.",
                     self.restore_game_files,

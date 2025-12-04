@@ -1,3 +1,5 @@
+"""Module for handling the 'list-actions' command."""
+
 import argparse
 import logging
 from typing import override
@@ -7,6 +9,13 @@ LIST_ACTIONS_COMMAND = "list-actions"
 
 
 class ListActionsHandler(BaseHandler):
+    """Handler for the 'list-actions' command.
+
+    This handler is responsible for registering and executing the 'list-actions'
+    command, which lists all available actions in the system along with their
+    aliases and descriptions.
+    """
+
     def __init__(
         self,
         subparser: argparse._SubParsersAction,

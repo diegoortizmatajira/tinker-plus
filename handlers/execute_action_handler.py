@@ -1,3 +1,5 @@
+"""Module for handling the 'execute' action command."""
+
 import argparse
 import logging
 from typing import override
@@ -7,6 +9,13 @@ EXECUTE_ACTION_COMMAND = "execute"
 
 
 class ExecuteActionHandler(BaseHandler):
+    """
+    Handler for the 'execute' action command.
+
+    This class initializes the command-line interface for executing a specific action
+    and provides the implementation for handling the execution logic.
+    """
+
     def __init__(
         self,
         subparser: argparse._SubParsersAction,

@@ -1,3 +1,5 @@
+"""Module to handle the 'run' command for executing the main application process."""
+
 import argparse
 import logging
 from typing import override
@@ -9,6 +11,13 @@ RUN_COMMAND = "run"
 
 
 class RunHandler(BaseHandler):
+    """
+    Handles the 'run' command which initiates the main application process.
+    This handler supports various operational modes such as GUI, dry run (no game
+    launch), and trainer execution. It also facilitates execution of the specified
+    game command with its parameters.
+    """
+
     def __init__(
         self,
         subparser: argparse._SubParsersAction,

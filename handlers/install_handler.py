@@ -1,3 +1,5 @@
+"""Module to handle installation as a Steam compatibility tool."""
+
 import argparse
 import logging
 import os
@@ -16,6 +18,15 @@ INSTALL_COMMAND = "install"
 
 
 class InstallHandler(BaseHandler):
+    """
+    Handles the installation process for the application as a Steam compatibility tool.
+
+    This class defines the `install` command, prepares the necessary resources,
+    and executes the installation process. It ensures that the application is set up
+    correctly as a Steam compatibility tool by creating symbolic links, copying required
+    files, and setting up the tool's directory structure.
+    """
+
     def __init__(
         self,
         subparser: argparse._SubParsersAction,
