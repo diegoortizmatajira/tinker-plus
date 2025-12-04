@@ -23,7 +23,7 @@ class ExecutableCommand:
     """
 
     command: str
-    args: Optional[str]
+    args: Optional[str] = None
     category: Optional[str] = None
 
     def get_full_command(self) -> str:

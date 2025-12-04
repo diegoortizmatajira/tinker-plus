@@ -7,8 +7,13 @@ from core import (
     RuntimeConfiguration,
     process_runner,
 )
+from core.defaults import ACTUAL_TPLUS_LOCATION
 from core.feature_provider import FeatureAction
 from core.runtime_configuration import COMMAND_TRAINER, ExecutableCommand
+
+DOTNET48_OFFLINE_INSTALLER = (
+    f"{ACTUAL_TPLUS_LOCATION}/redist/NDP48-x86-x64-AllOS-ENU.exe"
+)
 
 TRAINER_ENABLED_PROPERTY = ConfigurationProperty(
     bool,
@@ -183,15 +188,15 @@ class TrainerLaunchSettings(FeatureProvider):
             set_win_version("win7", "Use Windows 7")
             # Install required Winetricks packages
             succeed = process_runner.run_in_wine_prefix(
-                ExecutableCommand("winetricks", f"--unattended {' '.join(winetricks)}"),
+                ExecutableCommand("wine", DOTNET48_OFFLINE_INSTALLER),
                 runtime_configuration,
                 self.logger,
             )
             if succeed:
-                self.logger.info("Winetricks packages installed successfully.")
+                self.logger.info("Dotnet 4.8 installed successfully.")
             else:
-                self.logger.error("Winetricks packages installation failed.")
-                raise RuntimeError("Winetricks installation failed")
+                self.logger.error("Dotnet 4.8 installation failed.")
+                raise RuntimeError("Dotnet 4.8 installation failed")
             set_win_version("win10", "Use Windows 10")
         except RuntimeError as e:
             self.logger.error("Failed to prepare Wine prefix for WeMod: %s", e)

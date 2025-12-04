@@ -17,14 +17,18 @@ class ExecuteActionHandler(BaseHandler):
             EXECUTE_ACTION_COMMAND, help="Execute a specified action"
         )
         execute_parser.add_argument(
+            "--dry", action="store_true", help="Run in DRY mode"
+        )
+        execute_parser.add_argument(
             "action_alias", type=str, help="The alias of the action to execute"
         )
 
     @override
-    def handle(self, _args, logger: logging.Logger):
-        runtime_provider = self.get_runtime_provider([], True)
+    def handle(self, args, logger: logging.Logger):
+        selected_action = getattr(args, "action_alias", "")
+        dry_run = getattr(args, "dry", False)
+        runtime_provider = self.get_runtime_provider([], dry_run)
         actions = runtime_provider.get_available_actions()
-        selected_action = getattr(_args, "action_alias", "")
         found_actions = [
             action for action in actions if action.alias == selected_action
         ]

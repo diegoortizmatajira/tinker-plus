@@ -14,3 +14,5 @@ test_compat_tool:
 	tplus --debug run --dry /home/diegoortizmatajira/.local/share/Steam/steamapps/common/Hollow Knight/hollow_knight.exe
 generate_documentation:
 	tplus generate_documentation 
+test_action:
+	tplus --debug execute prepare-wemod

@@ -10,7 +10,9 @@ def timestamped_log(folder: str, base: str) -> str:
     """Generate a log file name with a timestamp."""
     return f"{folder}/{base}-{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.log"
 
-
+ACTUAL_TPLUS_LOCATION = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..")
+)
 DEFAULT_STEAM_FOLDER = os.path.expandvars("$HOME/.local/share/Steam")
 DEFAULT_STEAM_COMMON_FOLDER = "{}/steamapps/common"
 DEFAULT_STEAM_COMPATIBILITY_TOOLS_FOLDER = "{}/compatibilitytools.d"

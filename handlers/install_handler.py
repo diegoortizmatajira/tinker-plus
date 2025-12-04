@@ -4,7 +4,11 @@ import os
 from pathlib import Path
 import shutil
 from typing import override
-from core.defaults import TPLUS_BIN_LOCATION, TPLUS_COMPATIBILITY_TOOL_DIR
+from core.defaults import (
+    ACTUAL_TPLUS_LOCATION,
+    TPLUS_BIN_LOCATION,
+    TPLUS_COMPATIBILITY_TOOL_DIR,
+)
 from core.file_operations import create_symbolic_link
 from handlers.base_handler import BaseHandler
 
@@ -38,8 +42,7 @@ class InstallHandler(BaseHandler):
         logger.info(
             "Creating symbolic link for Tinker-Plus (tplus) in '%s'", TPLUS_BIN_LOCATION
         )
-        current_script_directory = os.path.dirname(os.path.abspath(__file__))
-        tinker_plus_sh_path = os.path.join(current_script_directory, "tinker-plus.sh")
+        tinker_plus_sh_path = os.path.join(ACTUAL_TPLUS_LOCATION, "tinker-plus.sh")
 
         create_symbolic_link(tinker_plus_sh_path, TPLUS_BIN_LOCATION, logger)
         # Check if the compatibility tool directory exists, and remove it if it does.

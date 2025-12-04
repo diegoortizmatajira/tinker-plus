@@ -1,7 +1,10 @@
 """Feature provider for Wine configuration."""
 
+from typing import Any
+from core import process_runner
 from core.configuration_property import ConfigurationProperty, ListItem
-from core.feature_provider import FeatureProvider
+from core.feature_provider import FeatureAction, FeatureProvider
+from core.runtime_configuration import ExecutableCommand, RuntimeConfiguration
 
 WINE_DLLOVERRIDES_PROPERTY = ConfigurationProperty(
     str,
@@ -59,4 +62,73 @@ class WineConfig(FeatureProvider):
                 WINE_FULLSCREEN_FSR_CUSTOM_MODE_PROPERTY,
             ],
             "General",
+            actions=[
+                FeatureAction(
+                    "run-winetrics",
+                    "Run Winetricks",
+                    "Launch Winetricks to manage Wine prefixes.",
+                    self.run_winetricks,
+                ),
+                FeatureAction(
+                    "run-winecfg",
+                    "Run Winecfg",
+                    "Launch Winecfg to configure Wine settings.",
+                    self.run_winecfg,
+                ),
+            ],
         )
+
+    def __run(
+        self,
+        app: str,
+        _configuration: dict[str, Any],
+        runtime_configuration: RuntimeConfiguration,
+    ):
+        try:
+            # Install required Winetricks packages
+            succeed = process_runner.run_in_wine_prefix(
+                ExecutableCommand(app),
+                runtime_configuration,
+                self.logger,
+            )
+            if succeed:
+                self.logger.info("%s executed successfully.", app)
+            else:
+                self.logger.error("%s execution failed.", app)
+        except RuntimeError as e:
+            self.logger.error("Failed to run %s: %s", app, e)
+            raise
+
+    def run_winetricks(
+        self,
+        configuration: dict[str, Any],
+        runtime_configuration: RuntimeConfiguration,
+    ):
+        """
+        Executes the Winetricks application for managing Wine prefixes.
+
+        Args:
+            configuration (dict[str, Any]): The current configuration settings.
+            runtime_configuration (RuntimeConfiguration): The runtime-specific configuration to use.
+
+        Raises:
+            RuntimeError: If the application fails to execute.
+        """
+        self.__run("winetricks", configuration, runtime_configuration)
+
+    def run_winecfg(
+        self,
+        configuration: dict[str, Any],
+        runtime_configuration: RuntimeConfiguration,
+    ):
+        """
+        Executes the Winecfg application for configuring Wine settings.
+
+        Args:
+            configuration (dict[str, Any]): The current configuration settings.
+            runtime_configuration (RuntimeConfiguration): The runtime-specific configuration to use.
+
+        Raises:
+            RuntimeError: If the application fails to execute.
+        """
+        self.__run("winecfg", configuration, runtime_configuration)
