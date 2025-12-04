@@ -113,12 +113,16 @@ class MainForm:
 
         # Builds the menu for feature actions
         actions_menu = ttk.Menu()
+        first_feature = True
         for feature in runtime_provider.features:
             if feature.actions and len(feature.actions) > 0:
+                if not first_feature:
+                    actions_menu.add_separator()
                 for feature_action in feature.actions:
                     actions_menu.add_command(
                         label=feature_action.name, command=create_action(feature_action)
                     )
+                first_feature = False
 
         ttk.Menubutton(
             button_frame,
