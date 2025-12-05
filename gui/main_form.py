@@ -9,9 +9,18 @@ from typing import Optional
 
 import ttkbootstrap as ttk
 from PIL import Image, ImageTk
-from ttkbootstrap.style import INFO, OUTLINE, PRIMARY, SECONDARY, STRIPED, SUCCESS
+from ttkbootstrap.style import (
+    DANGER,
+    DEFAULT,
+    INFO,
+    OUTLINE,
+    PRIMARY,
+    SECONDARY,
+    STRIPED,
+    SUCCESS,
+)
 
-from core import RuntimeProvider, runtime_configuration
+from core import RuntimeProvider
 from core.defaults import (
     DEFAULT_STEAM_HEADER_IMAGE_TEMPLATE,
     LOG_TIMER_ACTION,
@@ -63,9 +72,9 @@ class MainForm:
         self.remaining_seconds = countdown_in_seconds
         self.timer_running = False
         self.generator = Generator(runtime_provider)
-        self.form = ttk.Window()
-        self.form.title(
-            f"Tinker-Plus: {runtime_provider.runtime_configuration.game_info.name}"
+        self.form = ttk.Window(
+            f"Tinker-Plus: {runtime_provider.runtime_configuration.game_info.name}",
+            themename="superhero",
         )
         self.form.geometry("800x600")
         self.form.minsize(800, 600)
@@ -104,6 +113,7 @@ class MainForm:
             text="Play with Trainer",
             command=self.on_play_with_trainer_click,
             bootstyle=PRIMARY,
+            style=(DEFAULT),
         ).pack(side="right", padx=5, pady=5)
         ttk.Button(
             button_frame,
@@ -114,7 +124,8 @@ class MainForm:
         ttk.Button(
             button_frame,
             text="Close",
-            bootstyle=(SECONDARY, OUTLINE),
+            command=self.on_close_click,
+            bootstyle=(DANGER, OUTLINE),
         ).pack(side="left", padx=5, pady=5)
         # Bind all mouse and keyboard events to root
         self.form.bind_all("<Button>", self.on_user_interaction)  # any mouse click
@@ -154,9 +165,9 @@ class MainForm:
             value_label.configure(
                 text=link_text,
                 font=underlined_font,
-                foreground="blue",
                 cursor="hand2",
                 anchor="w",
+                bootstyle=INFO,
             )
             value_label.bind(
                 "<Button-1>",
@@ -187,7 +198,9 @@ class MainForm:
             img = Image.open(img_path.as_posix())
             self.game_image = ImageTk.PhotoImage(img)
             # Create a label to hold the image
-            image_label = ttk.Label(main_tab, image=self.game_image, text="Header Image")
+            image_label = ttk.Label(
+                main_tab, image=self.game_image, text="Header Image"
+            )
             image_label.pack(pady=5)
         else:
             self.logger.warning("There is no header image at '%s'", img_path)
@@ -195,15 +208,16 @@ class MainForm:
         game_name_for_search = (
             self.runtime_provider.runtime_configuration.game_info.name.replace(" ", "+")
         )
+        game_id = self.runtime_provider.runtime_configuration.steam_game_id
         self.__display_property(
             main_tab,
             "Game Id",
-            self.runtime_provider.runtime_configuration.steam_game_id,
+            game_id,
         )
         relative_exe_path = Path(
             self.runtime_provider.runtime_configuration.steam_game_exe or ""
         ).relative_to(
-            self.runtime_provider.runtime_configuration.steam_compat_install_path or "."
+            self.runtime_provider.runtime_configuration.steam_compat_install_path or "/"
         )
         self.__display_property(
             main_tab,
@@ -213,13 +227,13 @@ class MainForm:
         self.__display_property(
             main_tab,
             "Technical Info",
-            f"https://steamdb.info/app/{self.runtime_provider.runtime_configuration.steam_game_id}",
+            f"https://steamdb.info/app/{game_id}/",
             link_text="View on Steam DB",
         )
         self.__display_property(
             main_tab,
             "Game Compatibility Reports",
-            f"https://www.protondb.com/app/{self.runtime_provider.runtime_configuration.steam_game_id}",
+            f"https://www.protondb.com/app/{game_id}",
             link_text="View on ProtonDB",
         )
         self.__display_property(
@@ -314,6 +328,15 @@ class MainForm:
         """
         self.logger.info(LOG_USER_ACTION.format("Just Play clicked"))
         self.__play(False)
+
+    def on_close_click(self):
+        """
+        Handles the click event for the "Close" button.
+
+        This method closes the main application window and exits the program.
+        """
+        self.logger.info(LOG_USER_ACTION.format("Close clicked, exiting application"))
+        self.form.destroy()
 
     def show(self):
         """
