@@ -260,6 +260,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "jinja2" },
+    { name = "pillow" },
     { name = "ttkbootstrap" },
 ]
 
@@ -273,6 +274,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "jinja2", specifier = ">=3.1.6" },
+    { name = "pillow", specifier = ">=12.0.0" },
     { name = "ttkbootstrap", specifier = ">=1.19.1" },
 ]
 

@@ -1,11 +1,22 @@
 """Main Form with Tabs GUI Module"""
 
+import tkinter.font as tkfont
+import webbrowser
+from pathlib import Path
+
 # pylint: disable=import-error
+from typing import Optional
+
 import ttkbootstrap as ttk
+from PIL import Image, ImageTk
 from ttkbootstrap.style import INFO, OUTLINE, PRIMARY, SECONDARY, STRIPED, SUCCESS
 
-from core import RuntimeProvider
-from core.defaults import LOG_TIMER_ACTION, LOG_USER_ACTION
+from core import RuntimeProvider, runtime_configuration
+from core.defaults import (
+    DEFAULT_STEAM_HEADER_IMAGE_TEMPLATE,
+    LOG_TIMER_ACTION,
+    LOG_USER_ACTION,
+)
 from core.log_storage import LogFactory
 from gui.generator import Generator
 
@@ -46,6 +57,7 @@ class MainForm:
         if not runtime_provider.runtime_configuration:
             self.logger.error("Runtime configuration is required")
             raise ValueError("Runtime configuration is required")
+        self.runtime_provider = runtime_provider
         self.logger.info("Initializing application main form")
         self.countdown_in_seconds = countdown_in_seconds
         self.remaining_seconds = countdown_in_seconds
@@ -58,23 +70,14 @@ class MainForm:
         self.form.geometry("800x600")
         self.form.minsize(800, 600)
         # Create the main Notebook (tabbed control)
+        self.default_font = tkfont.nametofont("TkDefaultFont")
+        self.game_image: Optional[ImageTk.PhotoImage] = None
         self.notebook = ttk.Notebook(self.form)
         self.notebook.pack(fill="both", expand=True, padx=10, pady=5)
+        self.__generate_main_tab()
+        self.generator.generate_tabs(self.notebook)
 
-        # Create the first tab
-        self.main_tab = ttk.Frame(self.notebook)
-        self.notebook.add(self.main_tab, text="Main Tab")
-        ttk.Label(
-            self.main_tab,
-            text=runtime_provider.runtime_configuration.game_info.name,
-            font=("Arial", 16, "bold"),
-        ).pack(pady=10)
-
-        # Add an image placeholder to the tab
-        self.image_label = ttk.Label(self.main_tab, text="[Image Placeholder]")
-        self.image_label.pack(fill="x", pady=10)
-
-
+        # Create a frame for buttons at the bottom
         button_frame = ttk.Frame(self.form)
         button_frame.pack(fill="x", pady=5)
 
@@ -113,23 +116,124 @@ class MainForm:
             text="Close",
             bootstyle=(SECONDARY, OUTLINE),
         ).pack(side="left", padx=5, pady=5)
-
-        self.generator.generate_tabs(self.notebook)
         # Bind all mouse and keyboard events to root
         self.form.bind_all("<Button>", self.on_user_interaction)  # any mouse click
         self.form.bind_all("<Key>", self.on_user_interaction)  # any key press
         # Binding
-        self.runtime_provider = runtime_provider
         self.generator.display_values(self.runtime_provider.configuration)
 
-        # temp_has_trainers = runtime_provider.runtime_configuration.has_trainers
-        # self.just_play_button.configure(
-        #     default=temp_has_trainers and tk.NORMAL or tk.ACTIVE
-        # )
-        # self.play_with_trainer_button.configure(
-        #     state=temp_has_trainers and tk.NORMAL or tk.DISABLED,
-        #     default=temp_has_trainers and tk.ACTIVE or tk.NORMAL,
-        # )
+    def __display_property(
+        self,
+        root,
+        property_name: str,
+        property_value: Optional[str],
+        link_text: Optional[str] = None,
+    ):
+        frame = ttk.Frame(root)
+        frame.pack(fill="x", pady=2, padx=5)
+        bold_font = self.default_font.copy()
+        bold_font.configure(weight=tkfont.BOLD)
+        ttk.Label(
+            frame,
+            text=f"{property_name}:",
+            font=bold_font,
+            anchor="w",
+        ).pack(side="left", padx=3)
+        # Display as normal text with wrapping
+        value_label = ttk.Label(
+            frame,
+            text=property_value or "",
+            anchor="w",
+            wraplength=500,
+        )
+        value_label.pack(side="left", padx=3)
+        if link_text:
+            # Make it look like a hyperlink
+            underlined_font = self.default_font.copy()
+            underlined_font.configure(underline=True)
+            value_label.configure(
+                text=link_text,
+                font=underlined_font,
+                foreground="blue",
+                cursor="hand2",
+                anchor="w",
+            )
+            value_label.bind(
+                "<Button-1>",
+                lambda _: webbrowser.open_new(property_value or ""),
+            )
+
+    def __generate_main_tab(self):
+        # Create the first tab
+        main_tab = ttk.Frame(self.notebook)
+        self.notebook.add(main_tab, text="Main Tab")
+        title_font = self.default_font.copy()
+        title_font.configure(size=16, weight=tkfont.BOLD)
+        ttk.Label(
+            main_tab,
+            text=self.runtime_provider.runtime_configuration.game_info.name,
+            font=title_font,
+        ).pack(pady=10)
+
+        img_path = Path(
+            DEFAULT_STEAM_HEADER_IMAGE_TEMPLATE.format(
+                self.runtime_provider.runtime_configuration.steam_base_folder,
+                self.runtime_provider.runtime_configuration.steam_game_id,
+            )
+        )
+        if img_path.exists():
+            self.logger.debug("Loading header image from '%s'", img_path)
+            # Add an image placeholder to the tab
+            img = Image.open(img_path.as_posix())
+            self.game_image = ImageTk.PhotoImage(img)
+            # Create a label to hold the image
+            image_label = ttk.Label(main_tab, image=self.game_image, text="Header Image")
+            image_label.pack(pady=5)
+        else:
+            self.logger.warning("There is no header image at '%s'", img_path)
+
+        game_name_for_search = (
+            self.runtime_provider.runtime_configuration.game_info.name.replace(" ", "+")
+        )
+        self.__display_property(
+            main_tab,
+            "Game Id",
+            self.runtime_provider.runtime_configuration.steam_game_id,
+        )
+        relative_exe_path = Path(
+            self.runtime_provider.runtime_configuration.steam_game_exe or ""
+        ).relative_to(
+            self.runtime_provider.runtime_configuration.steam_compat_install_path or "."
+        )
+        self.__display_property(
+            main_tab,
+            "Game Executable",
+            relative_exe_path.as_posix(),
+        )
+        self.__display_property(
+            main_tab,
+            "Technical Info",
+            f"https://steamdb.info/app/{self.runtime_provider.runtime_configuration.steam_game_id}",
+            link_text="View on Steam DB",
+        )
+        self.__display_property(
+            main_tab,
+            "Game Compatibility Reports",
+            f"https://www.protondb.com/app/{self.runtime_provider.runtime_configuration.steam_game_id}",
+            link_text="View on ProtonDB",
+        )
+        self.__display_property(
+            main_tab,
+            "Game Info & Fixes",
+            f"https://www.pcgamingwiki.com/w/index.php?search={game_name_for_search}",
+            link_text="View on PCGamingWiki",
+        )
+        self.__display_property(
+            main_tab,
+            "Trainers & Mods",
+            f"https://flingtrainer.com/?s={game_name_for_search}",
+            link_text="Search on Fling Trainer",
+        )
 
     def on_user_interaction(self, _):
         """
@@ -141,14 +245,15 @@ class MainForm:
         Args:
             event (Event): The event object generated by the user interaction.
         """
-        self.logger.info(
-            LOG_USER_ACTION.format(
-                "User interaction detected, stopping timer for auto-play."
+        if self.timer_running:
+            self.logger.info(
+                LOG_USER_ACTION.format(
+                    "User interaction detected, stopping timer for auto-play."
+                )
             )
-        )
-        self.timer_running = False
-        self.progress_bar["value"] = self.countdown_in_seconds
-        self.progress_bar.configure(bootstyle=(SECONDARY, STRIPED))
+            self.timer_running = False
+            self.progress_bar["value"] = self.countdown_in_seconds
+            self.progress_bar.configure(bootstyle=(SECONDARY, STRIPED))
 
     def on_timer_tick(self):
         """
