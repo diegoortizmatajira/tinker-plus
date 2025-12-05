@@ -99,38 +99,6 @@ class MainForm:
             bootstyle=(SECONDARY, OUTLINE),
         ).pack(side="left", padx=5, pady=5)
 
-        def create_action(action: FeatureAction):
-            # Creates a closure for a feature action to collect the current
-            # selected configuration and execute the action.
-            def new_action():
-                self.generator.recover_values(self.runtime_provider.configuration)
-                action.action(
-                    self.runtime_provider.configuration,
-                    self.runtime_provider.runtime_configuration,
-                )
-
-            return new_action
-
-        # Builds the menu for feature actions
-        actions_menu = ttk.Menu()
-        first_feature = True
-        for feature in runtime_provider.features:
-            if feature.actions and len(feature.actions) > 0:
-                if not first_feature:
-                    actions_menu.add_separator()
-                for feature_action in feature.actions:
-                    actions_menu.add_command(
-                        label=feature_action.name, command=create_action(feature_action)
-                    )
-                first_feature = False
-
-        ttk.Menubutton(
-            button_frame,
-            text="Actions",
-            bootstyle=(PRIMARY, OUTLINE),
-            menu=actions_menu,
-        ).pack(side="left", padx=5, pady=5)
-
         self.generator.generate_tabs(self.notebook)
 
         # Binding

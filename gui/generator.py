@@ -4,9 +4,10 @@ from typing import List
 
 # pylint: disable=import-error
 import ttkbootstrap as ttk
-from ttkbootstrap.style import DANGER, PRIMARY, SUCCESS
+from ttkbootstrap.style import DANGER, INFO, PRIMARY, SUCCESS
 
 from core.configuration_property import ConfigurationProperty
+from core.feature_provider import FeatureAction
 from core.log_storage import LogFactory
 from core.runtime_provider import RuntimeProvider
 
@@ -100,6 +101,18 @@ class Generator:
 
         return categorized_properties
 
+    def __create_action(self, action: FeatureAction):
+        # Creates a closure for a feature action to collect the current
+        # selected configuration and execute the action.
+        def new_action():
+            self.recover_values(self.runtime_provider.configuration)
+            action.action(
+                self.runtime_provider.configuration,
+                self.runtime_provider.runtime_configuration,
+            )
+
+        return new_action
+
     def generate_tabs(self, notebook: ttk.Notebook):
         """
         Creates and adds tabs to the provided notebook widget.
@@ -118,6 +131,21 @@ class Generator:
             new_tab = ttk.Frame(notebook)
             notebook.add(new_tab, text=tab_name)
             self.generate_tab_content(new_tab, categories)
+        # Generate the actions tab
+        actions_tab = ttk.Frame(notebook)
+        notebook.add(actions_tab, text="Actions")
+
+        for feature in self.runtime_provider.features:
+            if feature.actions and len(feature.actions) > 0:
+                feature_frame = ttk.Labelframe(actions_tab, text=feature.name)
+                feature_frame.pack(fill="x", padx=5, pady=5)
+                for feature_action in feature.actions:
+                    ttk.Button(
+                        feature_frame,
+                        text=feature_action.name,
+                        command=self.__create_action(feature_action),
+                        bootstyle=INFO,
+                    ).pack(side="left", padx=5, pady=5)
 
     def generate_tab_content(
         self, tab: ttk.Frame, categories: dict[str, List[ConfigurationProperty]]
