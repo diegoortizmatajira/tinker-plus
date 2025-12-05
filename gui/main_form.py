@@ -52,7 +52,9 @@ class MainForm:
         self.timer_running = False
         self.generator = Generator(runtime_provider)
         self.form = ttk.Window()
-        self.form.title("Tinker-Plus")
+        self.form.title(
+            f"Tinker-Plus: {runtime_provider.runtime_configuration.game_info.name}"
+        )
         self.form.geometry("800x600")
         self.form.minsize(800, 600)
         # Create the main Notebook (tabbed control)
@@ -62,12 +64,16 @@ class MainForm:
         # Create the first tab
         self.main_tab = ttk.Frame(self.notebook)
         self.notebook.add(self.main_tab, text="Main Tab")
+        ttk.Label(
+            self.main_tab,
+            text=runtime_provider.runtime_configuration.game_info.name,
+            font=("Arial", 16, "bold"),
+        ).pack(pady=10)
 
         # Add an image placeholder to the tab
-        self.image_label = ttk.Label(
-            self.main_tab, text="[Image Placeholder]", width=40
-        )
-        self.image_label.pack(pady=10)
+        self.image_label = ttk.Label(self.main_tab, text="[Image Placeholder]")
+        self.image_label.pack(fill="x", pady=10)
+
 
         button_frame = ttk.Frame(self.form)
         button_frame.pack(fill="x", pady=5)
