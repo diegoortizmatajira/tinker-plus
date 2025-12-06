@@ -4,6 +4,8 @@ import argparse
 import logging
 from typing import override
 
+from core.defaults import LOG_STAGE_STARTED
+from features.gui_options import CURRENT_GUI_OPTIONS
 from gui.main_form import MainForm
 from handlers.base_handler import BaseHandler
 
@@ -24,13 +26,22 @@ class RunHandler(BaseHandler):
         handlers: dict[str, BaseHandler],
     ) -> None:
         handlers[RUN_COMMAND] = self
-        run_parser = subparser.add_parser(
+        run_parser: argparse.ArgumentParser = subparser.add_parser(
             RUN_COMMAND,
             help="Run the main application process.",
             description="This command starts the main application process"
             " with the specified configurations.",
         )
-        run_parser.add_argument("--gui", action="store_true", help="Run in GUI mode")
+        run_parser.add_argument(
+            "--gui",
+            action="store_true",
+            help="Run in GUI mode",
+        )
+        run_parser.add_argument(
+            "--nogui",
+            action="store_true",
+            help="Run in GUI mode",
+        )
         run_parser.add_argument(
             "--dry", action="store_true", help="Run in DRY mode (no game launch)"
         )
@@ -52,7 +63,6 @@ class RunHandler(BaseHandler):
         args: argparse.Namespace,
         logger: logging.Logger,
     ) -> None:
-        use_gui = getattr(args, "gui", True)
         dry_run = getattr(args, "dry", False)
         execute_trainer = getattr(args, "trainer", True)
         game_command = getattr(args, "game_command", [])
@@ -63,8 +73,13 @@ class RunHandler(BaseHandler):
             if runtime.runtime_configuration is None:
                 raise RuntimeError("Failed to build runtime configuration.")
             runtime.runtime_configuration.execute_trainers = execute_trainer
+            # Uses the read setting for GUI if not explicitly provided
+            use_gui = not getattr(args, "nogui") and (
+                getattr(args, "gui") or CURRENT_GUI_OPTIONS.use_ui
+            )
             if use_gui:
-                main_form = MainForm(runtime)
+                logger.info("💡 Using Graphical User Interface Display")
+                main_form = MainForm(runtime, CURRENT_GUI_OPTIONS.autorun_timeout)
                 main_form.show()
             else:
                 runtime.run()

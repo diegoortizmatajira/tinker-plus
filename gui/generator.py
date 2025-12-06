@@ -38,6 +38,8 @@ class PropertyWrapper:
             mapped_value = reverse_map.get(value)
         elif self.config_property.type_ref is list and isinstance(value, str):
             mapped_value = value.split(",") if value != "" else []
+        elif self.config_property.type_ref is int:
+            mapped_value = int(value) if value != "" else None
         else:
             mapped_value = value if value != "" else None
 
@@ -50,6 +52,8 @@ class PropertyWrapper:
             mapped_value = self.map.get(value, value)
         elif self.config_property.type_ref is list and isinstance(value, list):
             mapped_value = ",".join(str(item) for item in value)
+        elif self.config_property.type_ref is int:
+            mapped_value = f"{value}" if value is not None else "0"
         else:
             mapped_value = value if value is not None else ""
         self.variable.set(mapped_value)
@@ -225,6 +229,11 @@ class Generator:
                             row=row, column=1, sticky="ew", padx=5, pady=5
                         )
                 elif prop.type_ref is list:
+                    ttk.Entry(category_frame, textvariable=prop_var).grid(
+                        row=row, column=1, sticky="ew", padx=5, pady=5
+                    )
+                else:
+                    # Create a text entry for any other type
                     ttk.Entry(category_frame, textvariable=prop_var).grid(
                         row=row, column=1, sticky="ew", padx=5, pady=5
                     )

@@ -346,7 +346,9 @@ class MainForm:
         self.logger.info(
             LOG_TIMER_ACTION.format("Starting countdown timer for auto-play")
         )
-        self.timer_running = True
-        self.on_timer_tick()
+        # Only start timer if countdown is greater than 0
+        if self.countdown_in_seconds > 0:
+            self.timer_running = True
+            self.on_timer_tick()
         # Start the Tkinter main event loop
         self.form.mainloop()

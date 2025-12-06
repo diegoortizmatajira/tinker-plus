@@ -12,6 +12,7 @@ from features.external_tools import ExternalTools
 from features.game_files_backup import GameFilesBackup
 from features.game_runner import GameRunner
 from features.general_runtime import GeneralRuntime
+from features.gui_options import CURRENT_GUI_OPTIONS
 from features.human_readable_links import HumanReadableLinks
 from features.link_user_folders import LinkUserFolders
 from features.prefix_selection import PrefixSelection
@@ -66,9 +67,10 @@ class BaseHandler(ABC):
                 PrefixSelection(),
                 TrainerLaunchSettings(),
                 GameRunner(),
-                # ReadConfig has to be the last to ensure default
-                # configs are read first, then overridden by user configs
+                # ReadConfig and CURRENT_GUI_OPTIONS have to be the last ones
+                # to ensure default configs are read first, then overridden by user configs
                 ReadConfig(storage),
+                CURRENT_GUI_OPTIONS,
             ],
             storage,
         )
