@@ -52,7 +52,7 @@ class RunHandler(BaseHandler):
         args: argparse.Namespace,
         logger: logging.Logger,
     ) -> None:
-        use_gui = getattr(args, "gui", False)
+        use_gui = getattr(args, "gui", True)
         dry_run = getattr(args, "dry", False)
         execute_trainer = getattr(args, "trainer", True)
         game_command = getattr(args, "game_command", [])

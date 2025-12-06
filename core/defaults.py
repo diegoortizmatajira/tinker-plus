@@ -18,7 +18,7 @@ DEFAULT_STEAM_COMPATIBILITY_TOOLS_FOLDER = "{}/compatibilitytools.d"
 DEFAULT_STEAM_WRAPPER = "{}/ubuntu12_32/steam-launch-wrapper"
 DEFAULT_STEAM_REAPER = "{}/ubuntu12_32/reaper"
 DEFAULT_STEAM_SNIPER = "{}/steamapps/common/SteamLinuxRuntime_sniper/_v2-entry-point --verb=waitforexitandrun"
-DEFAULT_STEAM_HEADER_IMAGE_TEMPLATE = "{}/appcache/librarycache/{}/header.jpg"
+DEFAULT_STEAM_APP_CACHE_FOLDER = "{}/appcache/librarycache/{}"
 
 TPLUS_BIN_LOCATION = os.path.expandvars("$HOME/.local/bin/tplus")
 TPLUS_COMPATIBILITY_TOOL_DIR = (

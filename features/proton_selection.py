@@ -3,13 +3,13 @@ Module for selecting proton version.
 """
 
 import logging
-import os
 
 from typing import List, override
 from core import FeatureProvider, ConfigurationProperty, RuntimeConfiguration, ListItem
 from core.compat_tool_info import CompatToolInfo
 from core.log_storage import LogFactory
 from core.runtime_configuration import PipelineWrapper
+from core.steam import get_wine
 
 
 def get_proton_versions_list(
@@ -157,33 +157,6 @@ class ProtonSelection(FeatureProvider):
             "Proton",
         )
 
-    def __get_wine(self, runtime_configuration: RuntimeConfiguration) -> str:
-        """
-        Retrieves the Wine executable path from the runtime configuration.
-
-        Returns:
-            str: The Wine executable path.
-        """
-
-        compat_tool_path = os.path.join(
-            runtime_configuration.steam_compatibility_tools_path or "missing",
-            runtime_configuration.steam_compatibility_tool or "missing",
-        )
-        proton_wine = os.path.join(compat_tool_path, "dist/bin/wine")
-        ge_proton_wine = os.path.join(compat_tool_path, "files/bin/wine")
-        self.logger.debug("Checking for Proton Wine at: %s", proton_wine)
-        if os.path.isfile(proton_wine):
-            self.logger.info("Found Proton Wine at: %s", proton_wine)
-            return proton_wine
-        self.logger.debug("Checking for GE-Proton Wine at: %s", ge_proton_wine)
-        if os.path.isfile(ge_proton_wine):
-            self.logger.info("Found GE-Proton Wine at: %s", ge_proton_wine)
-            return ge_proton_wine
-        self.logger.warning(
-            "Could not find a valid Wine executable in the compatibility tool path."
-        )
-        return ""
-
     @override
     def build_configuration(
         self, sourced_configuration: dict, runtime_configuration: RuntimeConfiguration
@@ -279,7 +252,7 @@ class ProtonSelection(FeatureProvider):
             runtime_configuration.set_environment_variable("PROTON_LOG_DIR", log_dir)
 
         # Get the Wine executable path corresponding to the selected proton version
-        runtime_configuration.wine = self.__get_wine(runtime_configuration)
+        runtime_configuration.wine = get_wine(runtime_configuration, self.logger)
         runtime_configuration.add_pipeline_wrapper(
             PipelineWrapper(
                 wrapper=lambda cmd, runtime_configuration: (

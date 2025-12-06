@@ -22,11 +22,11 @@ from ttkbootstrap.style import (
 
 from core import RuntimeProvider
 from core.defaults import (
-    DEFAULT_STEAM_HEADER_IMAGE_TEMPLATE,
     LOG_TIMER_ACTION,
     LOG_USER_ACTION,
 )
 from core.log_storage import LogFactory
+from core.steam import get_steam_header_image_path
 from gui.generator import Generator
 
 
@@ -186,16 +186,13 @@ class MainForm:
             font=title_font,
         ).pack(pady=10)
 
-        img_path = Path(
-            DEFAULT_STEAM_HEADER_IMAGE_TEMPLATE.format(
-                self.runtime_provider.runtime_configuration.steam_base_folder,
-                self.runtime_provider.runtime_configuration.steam_game_id,
-            )
+        img_path = get_steam_header_image_path(
+            self.runtime_provider.runtime_configuration
         )
-        if img_path.exists():
+        if img_path:
             self.logger.debug("Loading header image from '%s'", img_path)
             # Add an image placeholder to the tab
-            img = Image.open(img_path.as_posix())
+            img = Image.open(img_path)
             self.game_image = ImageTk.PhotoImage(img)
             # Create a label to hold the image
             image_label = ttk.Label(
@@ -203,7 +200,7 @@ class MainForm:
             )
             image_label.pack(pady=5)
         else:
-            self.logger.warning("There is no header image at '%s'", img_path)
+            self.logger.warning("There is no header image")
 
         game_name_for_search = (
             self.runtime_provider.runtime_configuration.game_info.name.replace(" ", "+")
