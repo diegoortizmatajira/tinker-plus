@@ -9,9 +9,10 @@ from core.feature_provider import FeatureProvider
 SDL_VIDEODRIVER_PROPERTY = ConfigurationProperty(
     str,
     "SDL_VIDEODRIVER",
+    "SDL Video Driver",
     "Simple DirectMedia Layer (SDL) video driver to use.",
     generated_environment_variable="SDL_VIDEODRIVER",
-    values_provider=lambda _: [
+    values_provider=lambda *_: [
         ListItem("wayland", "wayland"),
         ListItem("wayland,x11,dummy", "wayland,x11,dummy"),
         ListItem("x11", "x11"),
@@ -33,7 +34,9 @@ class SdlConfig(FeatureProvider):
 
     def __init__(self):
         super().__init__(
+            "SDL Configuration",
             [
                 SDL_VIDEODRIVER_PROPERTY,
-            ]
+            ],
+            "General",
         )

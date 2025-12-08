@@ -12,6 +12,7 @@ from core.runtime_configuration import (
 GAMEMODERUN_ENABLED_PROPERTY = ConfigurationProperty(
     bool,
     "GAMEMODERUN_ENABLED",
+    "Enable GameModeRun",
     "Enables GameModeRun when set to 'True'.",
     default=False,
 )
@@ -19,12 +20,14 @@ GAMEMODERUN_ENABLED_PROPERTY = ConfigurationProperty(
 GAMESCOPE_ENABLED_PROPERTY = ConfigurationProperty(
     bool,
     "GAMESCOPE_ENABLED",
+    "Enable Gamescope",
     "Enables Gamescope when set to 'True'.",
     default=False,
 )
 GAMESCOPE_ARGS_PROPERTY = ConfigurationProperty(
     str,
     "GAMESCOPE_ARGS",
+    "Gamescope Arguments",
     "Additional arguments to pass to Gamescope.",
 )
 
@@ -41,11 +44,13 @@ class ExternalTools(FeatureProvider):
 
     def __init__(self):
         super().__init__(
+            "Run in the pipeline",
             [
                 GAMEMODERUN_ENABLED_PROPERTY,
                 GAMESCOPE_ENABLED_PROPERTY,
                 GAMESCOPE_ARGS_PROPERTY,
-            ]
+            ],
+            "Additional Tools",
         )
 
     @override

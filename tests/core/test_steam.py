@@ -2,7 +2,7 @@ import unittest
 
 from core import RuntimeConfiguration
 from core.game_info import GameInfo
-from core.runtime_provider import parse_command
+from core.steam import parse_steam_command
 
 
 PART_WRAPPER = "wrapper"
@@ -43,7 +43,7 @@ class TestParseCommand(unittest.TestCase):
         runtime_configuration = RuntimeConfiguration(
             command, GameInfo.empty(), dry_run=True
         )
-        parse_command(runtime_configuration)
+        parse_steam_command(runtime_configuration)
         self.assertEqual(
             command_dict.get(PART_WRAPPER),
             runtime_configuration.steam_wrapper,
@@ -101,7 +101,7 @@ class TestParseCommand(unittest.TestCase):
                 runtime_configuration = RuntimeConfiguration(
                     command, GameInfo.empty(), dry_run=True
                 )
-                parse_command(runtime_configuration)
+                parse_steam_command(runtime_configuration)
                 self.assertEqual(
                     executable,
                     runtime_configuration.steam_game_exe,
@@ -122,7 +122,7 @@ class TestParseCommand(unittest.TestCase):
                     command, GameInfo.empty(), dry_run=True
                 )
                 with self.assertRaises(RuntimeError):
-                    parse_command(runtime_configuration)
+                    parse_steam_command(runtime_configuration)
 
     def test_parse_compatibility_tools(self):
         #pylint: disable=line-too-long
@@ -138,7 +138,7 @@ class TestParseCommand(unittest.TestCase):
                 runtime_configuration = RuntimeConfiguration(
                     command, GameInfo.empty(), dry_run=True
                 )
-                parse_command(runtime_configuration)
+                parse_steam_command(runtime_configuration)
                 self.assertEqual(
                     compat_tool,
                     runtime_configuration.steam_compatibility_command,

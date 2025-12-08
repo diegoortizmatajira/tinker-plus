@@ -13,7 +13,10 @@ from core.process_runner import run_command_with_compatibility_tool
 from core.runtime_configuration import ExecutableCommand
 
 PREFIX_CUSTOM_PATH_PROPERTY = ConfigurationProperty(
-    str, "PREFIX_CUSTOM_PATH", "Allows selection of a specific prefix."
+    str,
+    "PREFIX_CUSTOM_PATH",
+    "Custom WINE Prefix",
+    "Allows selection of a specific prefix.",
 )
 
 
@@ -27,7 +30,7 @@ class PrefixSelection(FeatureProvider):
     """
 
     def __init__(self):
-        super().__init__([PREFIX_CUSTOM_PATH_PROPERTY])
+        super().__init__("Prefix selection", [PREFIX_CUSTOM_PATH_PROPERTY], "General")
 
     @override
     def apply_configuration(

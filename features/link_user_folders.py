@@ -4,25 +4,27 @@ Feature to link user folders to specified locations to manage saved games and se
 
 from typing import override
 from core import ConfigurationProperty, FeatureProvider, RuntimeConfiguration
-from core.config_storage import ConfigStorage
 from core.defaults import LOG_DRY_RUN, PUBLIC_USER_FOLDER_NAME, STEAM_USER_FOLDER_NAME
 from core.file_operations import create_symbolic_link
 
 LINK_STEAM_USER_FOLDER_PROPERTY = ConfigurationProperty(
     str,
     "LINK_STEAM_USER_FOLDER",
+    "Path to Steam User Folder",
     "If provided links the steam user folder to the given location",
 )
 
 LINK_PUBLIC_USER_FOLDER_PROPERTY = ConfigurationProperty(
     str,
     "LINK_PUBLIC_USER_FOLDER",
+    "Path to Public User Folder",
     "If provided links the public user folder to the given location",
 )
 
 LINK_SHOULD_BACKUP_FOLDERS_PROPERTY = ConfigurationProperty(
     bool,
     "LINK_SHOULD_BACKUP_FOLDERS",
+    "Backup User Folders",
     "If true, backups the user folders before linking them",
     True,
 )
@@ -37,18 +39,19 @@ class LinkUserFolders(FeatureProvider):
     organization and management.
     """
 
-    def __init__(self, config_storage: ConfigStorage):
+    def __init__(self):
         super().__init__(
+            "Link User Folders",
             [
                 LINK_STEAM_USER_FOLDER_PROPERTY,
                 LINK_PUBLIC_USER_FOLDER_PROPERTY,
                 LINK_SHOULD_BACKUP_FOLDERS_PROPERTY,
-            ]
+            ],
+            "Data Management",
         )
-        self.config_storage = config_storage
 
     @override
-    def execute_in_pipeline(
+    def before_execution(
         self, configuration: dict, runtime_configuration: RuntimeConfiguration
     ):
         if not runtime_configuration.prefix_path:

@@ -2,9 +2,11 @@
 Unit tests for the ProtonSelection class.
 """
 
+import logging
 import unittest
 from unittest.mock import MagicMock, patch
 
+from core.compat_tool_info import CompatToolInfo
 from core.runtime_configuration import RuntimeConfiguration
 from features.proton_selection import ProtonSelection, get_proton_versions_list
 
@@ -75,31 +77,34 @@ class TestProtonSelection(unittest.TestCase):
             updated_runtime_config.steam_compatibility_tool, "DEFAULT_PROTON"
         )
 
-    @patch("pathlib.Path")
-    def test_get_proton_versions_list(self, mock_pathlib):
+    @patch("features.proton_selection.CompatToolInfo.get_cache")
+    def test_get_proton_versions_list(self, mock_get_cache):
         """
         Test that get_proton_versions_list correctly retrieves a list of proton
         versions from the mock runtime configuration.
 
         Args:
-            mock_pathlib: Mocked pathlib.Path object used to simulate file system operations.
+            mock_path: Mocked pathlib.Path class
         """
         # Arrange
-        self.mock_runtime_config.steam_compatibility_tools_path = "/mock/path"
-        mock_folder_1 = MagicMock()
-        mock_folder_1.is_dir.return_value = True
-        mock_folder_1.name = "proton-1"
-        mock_folder_2 = MagicMock()
-        mock_folder_2.is_dir.return_value = True
-        mock_folder_2.name = "proton-2"
-        mock_pathlib.return_value.glob.return_value = [mock_folder_1, mock_folder_2]
+        compat_tools_path = "/mock/path"
+        self.mock_runtime_config.steam_compatibility_tools_path = compat_tools_path
+
+        # Mock logger instance
+        logger_instance = logging.getLogger("test_logger")
+
+        # Mock the compatibility tool cache to return additional paths
+        mock_cache: dict[str, CompatToolInfo] = {
+            "tool-1": CompatToolInfo("proton-1", "/mock/path_1"),
+            "tool-2": CompatToolInfo("proton-2", "/mock/path_2"),
+        }
+        mock_get_cache.return_value = mock_cache
 
         # Act
-        result = get_proton_versions_list(self.mock_runtime_config)
+        result = get_proton_versions_list(self.mock_runtime_config, logger_instance)
 
         # Assert
         self.assertEqual([item.value for item in result], ["proton-1", "proton-2"])
-        mock_pathlib.assert_called_with("/mock/path")
 
 
 if __name__ == "__main__":

@@ -10,7 +10,6 @@ from core.defaults import GLOBAL_GAME_INFO_CACHE_FILE
 
 
 @dataclass
-@dataclass
 class GameInfo:
     """
     Represents information about a game, including its unique identifier

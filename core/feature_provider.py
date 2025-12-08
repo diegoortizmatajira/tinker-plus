@@ -3,11 +3,20 @@ Feature Provider Base Class
 """
 
 from abc import ABC
-from typing import List
+from dataclasses import dataclass
+from typing import Any, Callable, Dict, List, Optional
 
 from .configuration_property import ConfigurationProperty
 from .log_storage import LogFactory
 from .runtime_configuration import RuntimeConfiguration
+
+
+@dataclass
+class FeatureAction:
+    alias: str
+    name: str
+    description: str
+    action: Callable[[Dict[str, Any], RuntimeConfiguration], None]
 
 
 class FeatureProvider(ABC):
@@ -18,8 +27,17 @@ class FeatureProvider(ABC):
     handling default property configurations and applying configurations to a runtime setup.
     """
 
-    def __init__(self, properties: List[ConfigurationProperty]):
+    def __init__(
+        self,
+        name: str,
+        properties: List[ConfigurationProperty],
+        category: str = "General",
+        actions: Optional[List[FeatureAction]] = None,
+    ):
         self.properties = properties
+        self.name = name
+        self.category = category
+        self.actions = actions or []
         self.logger = LogFactory.singleton().get_logger(self.__class__.__name__)
 
     def build_configuration(
@@ -55,6 +73,20 @@ class FeatureProvider(ABC):
             RuntimeConfiguration: The updated runtime configuration with the applied settings.
         """
         return runtime_configuration
+
+    def before_execution(
+        self, _configuration: dict, _runtime_configuration: RuntimeConfiguration
+    ):
+        """
+        Hook method called before the execution of game pipeline.
+        """
+
+    def after_execution(
+        self, _configuration: dict, _runtime_configuration: RuntimeConfiguration
+    ):
+        """
+        Hook method called after the execution of game pipeline.
+        """
 
     def execute_in_pipeline(
         self, _configuration: dict, _runtime_configuration: RuntimeConfiguration

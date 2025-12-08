@@ -12,10 +12,16 @@ from core.runtime_configuration import RuntimeConfiguration
 class TestConfigurationProperty(unittest.TestCase):
     def test_get(self):
         properties: List[ConfigurationProperty] = [
-            ConfigurationProperty(str, "STRING_PROPERTY", "A string property"),
-            ConfigurationProperty(int, "INT_PROPERTY", "An integer property"),
-            ConfigurationProperty(bool, "BOOL_PROPERTY", "A boolean property"),
-            ConfigurationProperty(list, "LIST_PROPERTY", "A list property"),
+            ConfigurationProperty(
+                str, "STRING_PROPERTY", "A string", "A string property"
+            ),
+            ConfigurationProperty(
+                int, "INT_PROPERTY", "An integer", "An integer property"
+            ),
+            ConfigurationProperty(
+                bool, "BOOL_PROPERTY", "A boolean", "A boolean property"
+            ),
+            ConfigurationProperty(list, "LIST_PROPERTY", "A list", "A list property"),
         ]
         configuration = {
             "STRING_PROPERTY": "test_string",
@@ -31,17 +37,29 @@ class TestConfigurationProperty(unittest.TestCase):
     def test_get_defaults(self):
         properties: List[ConfigurationProperty] = [
             # Properties without defaults should return None
-            ConfigurationProperty(str, "STRING_PROPERTY", "A string property"),
-            ConfigurationProperty(int, "INT_PROPERTY", "An integer property"),
-            ConfigurationProperty(bool, "BOOL_PROPERTY", "A boolean property"),
-            ConfigurationProperty(list, "LIST_PROPERTY", "A list property"),
+            ConfigurationProperty(
+                str, "STRING_PROPERTY", "A string", "A string property"
+            ),
+            ConfigurationProperty(
+                int, "INT_PROPERTY", "An integer", "An integer property"
+            ),
+            ConfigurationProperty(
+                bool, "BOOL_PROPERTY", "A boolean", "A boolean property"
+            ),
+            ConfigurationProperty(list, "LIST_PROPERTY", "A list", "A list property"),
             # Properties with defaults should return the default value
             ConfigurationProperty(
-                str, "STRING_PROPERTY", "A string property", "default"
+                str, "STRING_PROPERTY", "A string", "A string property", "default"
             ),
-            ConfigurationProperty(int, "INT_PROPERTY", "An integer property", 999),
-            ConfigurationProperty(bool, "BOOL_PROPERTY", "A boolean property", False),
-            ConfigurationProperty(list, "LIST_PROPERTY", "A list property", []),
+            ConfigurationProperty(
+                int, "INT_PROPERTY", "An integer", "An integer property", 999
+            ),
+            ConfigurationProperty(
+                bool, "BOOL_PROPERTY", "A boolean", "A boolean property", False
+            ),
+            ConfigurationProperty(
+                list, "LIST_PROPERTY", "A list", "A list property", []
+            ),
         ]
         configuration = {}
         for prop in properties:
@@ -54,10 +72,16 @@ class TestConfigurationProperty(unittest.TestCase):
 
     def test_get_or_fail(self):
         properties: List[ConfigurationProperty] = [
-            ConfigurationProperty(str, "STRING_PROPERTY", "A string property"),
-            ConfigurationProperty(int, "INT_PROPERTY", "An integer property"),
-            ConfigurationProperty(bool, "BOOL_PROPERTY", "A boolean property"),
-            ConfigurationProperty(list, "LIST_PROPERTY", "A list property"),
+            ConfigurationProperty(
+                str, "STRING_PROPERTY", "A string", "A string property"
+            ),
+            ConfigurationProperty(
+                int, "INT_PROPERTY", "An integer", "An integer property"
+            ),
+            ConfigurationProperty(
+                bool, "BOOL_PROPERTY", "A boolean", "A boolean property"
+            ),
+            ConfigurationProperty(list, "LIST_PROPERTY", "A list", "A list property"),
         ]
         configuration = {}
         for prop in properties:
@@ -67,19 +91,30 @@ class TestConfigurationProperty(unittest.TestCase):
     def test_get_possible_values(self):
         # Scenario: values provider is set and returns values
         values = [ListItem("value1", "value1"), ListItem("value2", "value2")]
+        logger = logging.getLogger("test_logger")
 
-        def values_provider(_):
+        def values_provider(*_):
             return values
 
         prop = ConfigurationProperty(
-            str, name="key", description="A key", values_provider=values_provider
+            str,
+            name="key",
+            display_name="key",
+            description="A key",
+            values_provider=values_provider,
         )
         runtime_configuration = RuntimeConfiguration.empty()
-        self.assertEqual(prop.get_possible_values(runtime_configuration), values)
+        self.assertEqual(
+            prop.get_possible_values(runtime_configuration, logger), values
+        )
 
         # Scenario: values provider is not set
-        prop_no_provider = ConfigurationProperty(str, name="key", description="A key")
-        self.assertIsNone(prop_no_provider.get_possible_values(runtime_configuration))
+        prop_no_provider = ConfigurationProperty(
+            str, name="key", display_name="key", description="A key"
+        )
+        self.assertIsNone(
+            prop_no_provider.get_possible_values(runtime_configuration, logger)
+        )
 
     def test_translate_to_environment_variable(self):
         runtime_configuration = RuntimeConfiguration.empty()
@@ -89,6 +124,7 @@ class TestConfigurationProperty(unittest.TestCase):
         prop = ConfigurationProperty(
             bool,
             name="binary_key",
+            display_name="binary_key",
             description="Test binary key",
             generated_environment_variable="TEST_BINARY",
         )
@@ -106,6 +142,7 @@ class TestConfigurationProperty(unittest.TestCase):
         prop = ConfigurationProperty(
             list,
             name="list_key",
+            display_name="list_key",
             description="Testing multi-value list key",
             generated_environment_variable="TEST_LIST",
         )
@@ -123,10 +160,14 @@ class TestConfigurationProperty(unittest.TestCase):
     def test_initialize_defaults(self):
         # Scenario: properties with defaults initialize the configuration
         prop1 = ConfigurationProperty(
-            str, name="key1", description="A key", default="value1"
+            str, name="key1", display_name="key1", description="A key", default="value1"
         )
         prop2 = ConfigurationProperty(
-            str, name="key2", description="Another key", default="value2"
+            str,
+            name="key2",
+            display_name="key2",
+            description="Another key",
+            default="value2",
         )
         configuration = {}
         updated_config = ConfigurationProperty.initialize_defaults(

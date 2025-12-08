@@ -8,10 +8,10 @@ from core.runtime_configuration import RuntimeConfiguration
 GENERAL_LOG_INDIVIDUAL_EXE_PROPERTY = ConfigurationProperty(
     bool,
     "GENERAL_LOG_INDIVIDUAL_EXE",
+    "Log Individual Executables",
     "If set to True, logs each individual executable that is run in is own file.",
     default=False,
 )
-
 
 class GeneralRuntime(FeatureProvider):
     """
@@ -24,9 +24,11 @@ class GeneralRuntime(FeatureProvider):
 
     def __init__(self):
         super().__init__(
+            "General Runtime",
             [
                 GENERAL_LOG_INDIVIDUAL_EXE_PROPERTY,
-            ]
+            ],
+            "General",
         )
 
     @override

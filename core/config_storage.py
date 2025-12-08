@@ -91,7 +91,9 @@ class ConfigStorage:
         with open(GLOBAL_CONFIG_FILE, "w", encoding="utf-8") as f:
             f.write(global_json_content)
 
-    def save_game_config(self, config: dict, game_id: str):
+    def save_game_config(
+        self, config: dict, game_id: Optional[str], global_config: Optional[dict]
+    ):
         """
         Save the game-specific configuration for a given game ID.
         This method saves the provided game-specific configuration dictionary to the
@@ -103,7 +105,9 @@ class ConfigStorage:
             represented as a dictionary.
             game_id (str): The unique identifier of the game whose configuration is to be saved.
         """
-        game_configuration_file = str.format(GAME_CONFIG_FILE_TEMPLATE, game_id)
+        game_configuration_file = str.format(
+            GAME_CONFIG_FILE_TEMPLATE, game_id or "unknown"
+        )
         if not os.path.exists(game_configuration_file):
             self.logger.warning(
                 "Creating game-specific configuration file at: %s",
@@ -114,12 +118,15 @@ class ConfigStorage:
                 "Updating game-specific configuration at: %s", game_configuration_file
             )
         os.makedirs(GAME_CONFIG_DIR, exist_ok=True)
+        # Calculate the diff if global_config is provided
+        if global_config is not None:
+            config = self.__diff_configs(global_config, config)
         # Convert sourced_configuration to json and save to game_configuration_file
-        game_json_content = json.dumps(config, indent=4)
+        game_json_content = json.dumps(config, indent=4, sort_keys=True)
         with open(game_configuration_file, "w", encoding="utf-8") as f:
             f.write(game_json_content)
 
-    def _diff_configs(self, global_config: dict, game_config: dict) -> dict:
+    def __diff_configs(self, global_config: dict, game_config: dict) -> dict:
         """
         Compute the difference between global and game-specific configurations.
 

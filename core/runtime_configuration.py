@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 import logging
-from typing import Callable, List, Optional
+from typing import Any, Callable, List, Optional
 
 from core.game_info import GameInfo
 
@@ -23,7 +23,7 @@ class ExecutableCommand:
     """
 
     command: str
-    args: Optional[str]
+    args: Optional[str] = None
     category: Optional[str] = None
 
     def get_full_command(self) -> str:
@@ -124,14 +124,13 @@ class RuntimeConfiguration:
     steam_game_args: Optional[str] = None
     wine: Optional[str] = None
     fork_commands: Optional[List[ExecutableCommand]] = None
-    install_winetricks: bool = True
-    winetricks: Optional[List[str]] = None
     prefix_path: Optional[str] = None
     execute_trainers: bool = True
     execute_forks_only: bool = False
     environment_variables: Optional[dict[str, str]] = None
     pipeline_wrappers: Optional[List[PipelineWrapper]] = None
     log_executable_commands: bool = False
+    loaded_global_configuration: Optional[dict[str, Any]] = None
 
     @staticmethod
     def empty() -> "RuntimeConfiguration":
@@ -152,7 +151,6 @@ class RuntimeConfiguration:
         Resets the runtime configuration to its default state.
         """
         self.fork_commands = None
-        self.winetricks = None
         self.execute_trainers = True
         self.environment_variables = None
         self.pipeline_wrappers = None
@@ -171,22 +169,6 @@ class RuntimeConfiguration:
             if cmd.category == COMMAND_TRAINER:
                 return True
         return False
-
-    def add_winetricks(self, tricks: List[str]) -> None:
-        """
-        Adds a list of winetricks to the current configuration.
-
-        Args:
-            tricks (List[str]): A list of winetricks to be added. Duplicates
-            will be avoided, and an empty list will initialize the winetricks
-            list if it is currently None.
-        """
-        if self.winetricks is None:
-            self.winetricks = []
-        for trick in tricks:
-            # Avoid duplicates
-            if trick != "" and trick not in self.winetricks:
-                self.winetricks.append(trick)
 
     def add_fork_command(self, command: ExecutableCommand) -> None:
         """

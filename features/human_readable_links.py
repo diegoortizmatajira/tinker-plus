@@ -24,10 +24,10 @@ class HumanReadableLinks(FeatureProvider):
     """
 
     def __init__(self):
-        super().__init__([])
+        super().__init__("Human Links", [], "UI")
 
     @override
-    def execute_in_pipeline(
+    def before_execution(
         self, _configuration: dict, runtime_configuration: RuntimeConfiguration
     ):
         if not runtime_configuration.steam_game_exe:
