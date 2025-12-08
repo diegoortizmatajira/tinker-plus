@@ -4,7 +4,6 @@ import argparse
 import logging
 from typing import override
 
-from core.defaults import LOG_STAGE_STARTED
 from features.gui_options import CURRENT_GUI_OPTIONS
 from gui.main_form import MainForm
 from handlers.base_handler import BaseHandler
