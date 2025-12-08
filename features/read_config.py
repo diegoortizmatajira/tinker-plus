@@ -48,11 +48,15 @@ class ReadConfig(FeatureProvider):
         )
         # Check for game-specific configuration file
         game_config = self.config_storage.get_game_config(game_id)
+        sourced_configuration.update(game_config or {})
+        # Includes game-info in the configuration for reference
+        sourced_configuration["!game_info"] = runtime_configuration.game_info.__dict__
         if game_config is None:
             # Create game-specific configuration file if it doesn't exist with empty config
             self.config_storage.save_game_config(
-                {}, game_id, runtime_configuration.loaded_global_configuration
+                sourced_configuration,
+                game_id,
+                runtime_configuration.loaded_global_configuration,
             )
-        sourced_configuration.update(game_config or {})
         self.logger.info("Game-specific configuration loaded and applied.")
         return sourced_configuration

@@ -13,7 +13,6 @@ GENERAL_LOG_INDIVIDUAL_EXE_PROPERTY = ConfigurationProperty(
     default=False,
 )
 
-
 class GeneralRuntime(FeatureProvider):
     """
     A feature provider that applies general runtime configurations.
