@@ -153,6 +153,8 @@ class ProtonSelection(FeatureProvider):
                 PROTON_DISABLE_NVAPI_PROPERTY,
                 PROTON_HIDE_NVIDIA_GPU_PROPERTY,
                 PROTON_DXVK_D3D8_PROPERTY,
+                PROTON_LAST_COMPATIBILITY_TOOL_PROPERTY,
+                PROTON_LAST_COMPATIBILITY_TOOL_PATH_PROPERTY,
             ],
             "Proton",
         )

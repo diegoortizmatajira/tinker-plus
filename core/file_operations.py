@@ -5,10 +5,8 @@ import os
 import shutil
 from os.path import islink
 from pathlib import Path
-from typing import List
 
 from core.defaults import (
-    GAME_CONFIG_DIR,
     GAME_CONFIG_FILE_TEMPLATE,
     GAME_LOGS_DIR_TEMPLATE,
     GAME_SCRIPT_TEMPLATE,
@@ -19,19 +17,6 @@ from core.defaults import (
 from core.game_info import GameInfo
 
 
-def get_game_configuration_files() -> List[Path]:
-    """
-    Retrieves all game configuration files based on the GAME_CONFIG_FILE_TEMPLATE.
-
-    Returns:
-        List[Path]: A list of Paths to the game configuration files.
-    """
-    config_files = []
-    config_dir = Path(GAME_CONFIG_DIR)
-    for file in config_dir.glob("*.json"):
-        if file.is_file():
-            config_files.append(file)
-    return config_files
 
 
 def delete_folder_tree(folder_path: str, logger: logging.Logger, *, dry_run: bool):

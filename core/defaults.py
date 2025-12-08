@@ -11,6 +11,7 @@ def timestamped_log(folder: str, base: str) -> str:
     return f"{folder}/{base}-{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.log"
 
 
+GAME_INFO_KEY = "!game_info"
 ACTUAL_TPLUS_LOCATION = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 DEFAULT_STEAM_FOLDER = os.path.expandvars("$HOME/.local/share/Steam")
 DEFAULT_STEAM_COMMON_FOLDER = "{}/steamapps/common"

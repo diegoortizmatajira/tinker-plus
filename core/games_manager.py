@@ -2,7 +2,7 @@
 
 from typing import List
 
-from core.file_operations import get_game_configuration_files
+from core.config_storage import ConfigStorage
 from core.game_info import GameInfo
 from core.log_storage import LogFactory
 
@@ -15,9 +15,10 @@ class GamesManager:
     game configuration files.
     """
 
-    def __init__(self):
+    def __init__(self, config_storage: ConfigStorage):
         self.__logger = LogFactory.singleton().get_logger(self.__class__.__name__)
         self.__games: List[GameInfo] = []
+        self.__config_storage = config_storage
         self.get_configured_games()
 
     def get_configured_games(self):
@@ -28,7 +29,7 @@ class GamesManager:
         resulting list of games by their names in a case-insensitive manner.
         """
         self.__logger.info("Retrieving configured games...")
-        files = get_game_configuration_files()
+        files = self.__config_storage.get_game_configuration_files()
         self.__logger.debug("Found %d game configuration files.", len(files))
         # Get the game_id from file names and create GameInfo objects
         self.__games = [

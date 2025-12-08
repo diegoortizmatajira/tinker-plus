@@ -30,33 +30,17 @@ class ReadConfig(FeatureProvider):
             sourced_configuration, runtime_configuration
         )
         # At this point, sourced_configuration contains all default configurations
-
-        global_config = self.config_storage.get_global_config() or {}
-        sourced_configuration.update(global_config)
-        # Persist the global configuration back to storage
-        # Applies any new defaults that were not present before
-        self.config_storage.save_global_config(sourced_configuration)
-        # Update the runtime configuration with the loaded global configuration
+        sourced_configuration = self.config_storage.build_global_configuration(
+            sourced_configuration
+        )
+        # Update the runtime configuration with a copy of the loaded global configuration
         runtime_configuration.loaded_global_configuration = sourced_configuration.copy()
-
         self.logger.info("Global configuration loaded and applied.")
 
-        game_id = (
-            runtime_configuration.steam_game_id
-            or runtime_configuration.steam_app_id
-            or "unknown"
+        sourced_configuration = self.config_storage.build_game_configuration(
+            runtime_configuration.game_info,
+            sourced_configuration,
+            runtime_configuration.loaded_global_configuration,
         )
-        # Check for game-specific configuration file
-        game_config = self.config_storage.get_game_config(game_id)
-        sourced_configuration.update(game_config or {})
-        # Includes game-info in the configuration for reference
-        sourced_configuration["!game_info"] = runtime_configuration.game_info.__dict__
-        if game_config is None:
-            # Create game-specific configuration file if it doesn't exist with empty config
-            self.config_storage.save_game_config(
-                sourced_configuration,
-                game_id,
-                runtime_configuration.loaded_global_configuration,
-            )
         self.logger.info("Game-specific configuration loaded and applied.")
         return sourced_configuration
