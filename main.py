@@ -14,6 +14,7 @@ from handlers.execute_action_handler import ExecuteActionHandler
 from handlers.generate_documentation_handler import GenerateDocumentationHandler
 from handlers.install_handler import InstallHandler
 from handlers.list_actions_handler import ListActionsHandler
+from handlers.list_games_handler import ListGamesHandler
 from handlers.run_handler import RunHandler
 
 
@@ -41,6 +42,7 @@ def main():
     GenerateDocumentationHandler(subparsers, command_handlers)
     ListActionsHandler(subparsers, command_handlers)
     ExecuteActionHandler(subparsers, command_handlers)
+    ListGamesHandler(subparsers, command_handlers)
 
     if len(sys.argv) == 1:
         parser.print_help()
