@@ -14,6 +14,7 @@ from core.defaults import (
     GLOBAL_COMPAT_TOOL_CACHE_FILE,
     LOG_SEARCHING,
 )
+from core.file_operations import dump_as_json
 from core.runtime_configuration import RuntimeConfiguration
 
 
@@ -41,7 +42,9 @@ class CompatToolInfo:
     _cache: ClassVar[Optional[dict[str, "CompatToolInfo"]]] = None
 
     @classmethod
-    def get_cache(cls, logger: logging.Logger) -> dict[str, "CompatToolInfo"]:
+    def get_cache(
+        cls, logger: logging.Logger, dry_run: bool = False
+    ) -> dict[str, "CompatToolInfo"]:
         """
         Retrieve the cached compatibility tool information.
 
@@ -64,7 +67,7 @@ class CompatToolInfo:
                 logger.info(
                     "Compatibility tool info cache file does not exist. Creating a new one."
                 )
-                CompatToolInfo.save_cache({}, logger)
+                CompatToolInfo.save_cache({}, logger, dry_run)
                 return {}
 
             with open(
@@ -81,7 +84,12 @@ class CompatToolInfo:
             return {}
 
     @classmethod
-    def save_cache(cls, cache: dict[str, "CompatToolInfo"], logger: logging.Logger):
+    def save_cache(
+        cls,
+        cache: dict[str, "CompatToolInfo"],
+        logger: logging.Logger,
+        dry_run: bool,
+    ):
         """
         Save the compatibility tool information cache to a file.
 
@@ -95,15 +103,9 @@ class CompatToolInfo:
             logger (logging.Logger): The logger instance used for logging messages.
         """
         cls._cache = cache
-        try:
-            raw_cache = {name: asdict(info) for name, info in cache.items()}
-            with open(
-                GLOBAL_COMPAT_TOOL_CACHE_FILE, "w", encoding="utf-8"
-            ) as cache_file:
-                json.dump(raw_cache, cache_file, indent=4)
-            logger.info("Compatibility tool info cache saved successfully.")
-        except Exception as e:
-            logger.warning("Failed to save compatibility tool info cache: %s", e)
+        raw_cache = {name: asdict(info) for name, info in cache.items()}
+        dump_as_json(raw_cache, GLOBAL_COMPAT_TOOL_CACHE_FILE, dry_run, logger)
+        logger.info("Compatibility tool info cache saved successfully.")
 
     @staticmethod
     def empty() -> "CompatToolInfo":
@@ -142,7 +144,10 @@ class CompatToolInfo:
 
     @classmethod
     def scan_and_populate_cache(
-        cls, logger: logging.Logger, configuration: RuntimeConfiguration
+        cls,
+        logger: logging.Logger,
+        configuration: RuntimeConfiguration,
+        dry_run: bool = False,
     ) -> dict[str, "CompatToolInfo"]:
         """
         Scan the compatibility tools directory for available tools.
@@ -192,10 +197,10 @@ class CompatToolInfo:
                             folder.name, folder.parent.as_posix()
                         )
                         seen_directories.add(folder.name)
-        cls.save_cache(new_cache, logger)
+        cls.save_cache(new_cache, logger, dry_run)
         return cls.get_cache(logger)
 
-    def put_in_cache(self, logger: logging.Logger):
+    def put_in_cache(self, logger: logging.Logger, dry_run: bool = False):
         """
         Add the current CompatToolInfo object to the cache.
 
@@ -208,5 +213,5 @@ class CompatToolInfo:
         """
         cache = CompatToolInfo.get_cache(logger)
         cache[self.name] = self
-        CompatToolInfo.save_cache(cache, logger)
+        CompatToolInfo.save_cache(cache, logger, dry_run)
         logger.info("Compatibility tool info for '%s' added to cache.", self.name)

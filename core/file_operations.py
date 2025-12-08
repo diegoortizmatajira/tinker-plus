@@ -1,6 +1,7 @@
 """Module for file operations such as creating symbolic links."""
 
 import logging
+import json
 import os
 import shutil
 from os.path import islink
@@ -15,8 +16,6 @@ from core.defaults import (
     LOG_EXECUTING,
 )
 from core.game_info import GameInfo
-
-
 
 
 def delete_folder_tree(folder_path: str, logger: logging.Logger, *, dry_run: bool):
@@ -139,3 +138,27 @@ def remove_tplus_game_files(game_id: str, logger: logging.Logger):
         except Exception as e:
             logger.error("Error removing TPlus file %s: %s", item_path, e)
             raise RuntimeError(f"Error removing TPlus file {item_path}") from e
+
+
+def dump_as_json(data: dict, file_path: str, dry_run: bool, logger: logging.Logger):
+    """
+    Dumps a dictionary as a JSON file.
+
+    Args:
+        data (dict): The data to be dumped as JSON.
+        file_path (str): The path of the file where the JSON data will be saved.
+        logger (logging.Logger): The logger instance for logging progress and errors.
+    """
+    if dry_run:
+        logger.info(
+            LOG_DRY_RUN.format("Dry run: would dump data to JSON file at %s"),
+            file_path,
+        )
+        return
+    try:
+        with open(file_path, "w", encoding="utf-8") as json_file:
+            json.dump(data, json_file, indent=4, sort_keys=True)
+        logger.debug("Data persisted to a JSON file at %s", file_path)
+    except Exception as e:
+        logger.error("Error dumping data to JSON file at %s: %s", file_path, e)
+        raise RuntimeError(f"Error dumping data to JSON file at {file_path}") from e
