@@ -69,7 +69,7 @@ class RunHandler(BaseHandler):
 
         try:
             runtime = self.get_runtime_provider(game_command, dry_run)
-            runtime.build_configuration()
+            runtime.build_configuration(True)
             if runtime.runtime_configuration is None:
                 raise RuntimeError("Failed to build runtime configuration.")
             runtime.runtime_configuration.execute_trainers = execute_trainer

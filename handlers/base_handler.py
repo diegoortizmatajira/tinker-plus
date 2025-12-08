@@ -51,6 +51,7 @@ class BaseHandler(ABC):
             # how the command pipeline is built)
             [
                 GeneralRuntime(),
+                CURRENT_GUI_OPTIONS,
                 # Features that run before game launch
                 CompatDataFolders(),
                 GameFilesBackup(),
@@ -70,7 +71,6 @@ class BaseHandler(ABC):
                 # ReadConfig and CURRENT_GUI_OPTIONS have to be the last ones
                 # to ensure default configs are read first, then overridden by user configs
                 ReadConfig(storage),
-                CURRENT_GUI_OPTIONS,
             ],
             storage,
         )

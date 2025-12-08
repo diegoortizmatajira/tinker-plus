@@ -38,6 +38,7 @@ def unquote(s: Optional[str]) -> Optional[str]:
         return s[1:-1]
     return s
 
+
 class RuntimeProvider:
     """
     The RuntimeProvider is responsible for managing the runtime configuration and operations.
@@ -198,7 +199,7 @@ class RuntimeProvider:
                 f"{self.runtime_configuration.steam_compat_data_path}/pfx"
             )
 
-    def build_configuration(self):
+    def build_configuration(self, pre_apply_configuration: bool = False):
         """
         Builds the runtime configuration by merging global and game-specific configurations,
         and applies feature-specific customizations.
@@ -218,6 +219,8 @@ class RuntimeProvider:
                 self.configuration,
                 self.runtime_configuration,
             )
+        if pre_apply_configuration:
+            self.__apply_feature_configurations()
 
     def __apply_feature_configurations(self):
         for feature in self.features:
