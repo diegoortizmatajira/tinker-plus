@@ -58,6 +58,21 @@ class FeatureProvider(ABC):
         )
         return sourced_configuration
 
+    def override_configuration(
+        self, sourced_configuration: dict, _runtime_configuration: RuntimeConfiguration
+    ) -> dict:
+        """
+        Hook method to override configuration settings after reading from sources and before
+        applying.
+
+        Args:
+            sourced_configuration (dict): The initial configuration dictionary to be sourced.
+
+        Returns:
+            dict: The updated configuration dictionary with overrides applied.
+        """
+        return sourced_configuration
+
     def apply_configuration(
         self, _configuration: dict, runtime_configuration: RuntimeConfiguration
     ) -> RuntimeConfiguration:

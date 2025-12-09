@@ -219,6 +219,12 @@ class RuntimeProvider:
                 self.configuration,
                 self.runtime_configuration,
             )
+        # Override configuration if needed
+        for feature in self.features:
+            self.configuration = feature.override_configuration(
+                self.configuration,
+                self.runtime_configuration,
+            )
         if pre_apply_configuration:
             self.__apply_feature_configurations()
 

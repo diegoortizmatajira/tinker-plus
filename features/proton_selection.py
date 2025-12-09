@@ -160,12 +160,9 @@ class ProtonSelection(FeatureProvider):
         )
 
     @override
-    def build_configuration(
+    def override_configuration(
         self, sourced_configuration: dict, runtime_configuration: RuntimeConfiguration
     ) -> dict:
-        sourced_configuration = super().build_configuration(
-            sourced_configuration, runtime_configuration
-        )
         if runtime_configuration.steam_compatibility_tools_path:
             PROTON_LAST_COMPATIBILITY_TOOL_PATH_PROPERTY.set(
                 sourced_configuration,
@@ -203,6 +200,10 @@ class ProtonSelection(FeatureProvider):
             runtime_configuration.steam_compatibility_tool
             or PROTON_LAST_COMPATIBILITY_TOOL_PROPERTY.get(configuration)
         )
+        runtime_configuration.steam_compatibility_tools_path = (
+            runtime_configuration.steam_compatibility_tools_path
+            or PROTON_LAST_COMPATIBILITY_TOOL_PATH_PROPERTY.get(configuration)
+        )
         custom_proton_version = PROTON_VERSION_PROPERTY.get(configuration)
         if custom_proton_version:
             # Get compatibility tool info from cache to verify it exists
@@ -230,14 +231,6 @@ class ProtonSelection(FeatureProvider):
             self.logger.error("No steam compatibility tool (proton) version selected.")
             raise RuntimeError("There is no proton version selected.")
 
-        if not runtime_configuration.steam_compatibility_tools_path:
-            runtime_configuration.steam_compatibility_tools_path = (
-                PROTON_LAST_COMPATIBILITY_TOOL_PATH_PROPERTY.get(configuration)
-            )
-            self.logger.info(
-                "Restored last used steam compatibility tools path as "
-                "it was not set by runtime provider."
-            )
         self.logger.info(
             "Using Steam Compatibility Tool: %s",
             runtime_configuration.steam_compatibility_tool,
