@@ -4,6 +4,7 @@ runtime configuration. It manages the merging of global and game-specific settin
 as well as feature-specific customizations to build a comprehensive runtime environment.
 """
 
+import json
 import os
 
 from typing import List, Optional
@@ -75,6 +76,7 @@ class RuntimeProvider:
         self.runtime_configuration.game_info = get_game_info(
             self.runtime_configuration, self.logger
         )
+        self.last_applied_configuration: dict = {}
 
     def parse_command(self):
         """
@@ -226,13 +228,25 @@ class RuntimeProvider:
                 self.runtime_configuration,
             )
         if pre_apply_configuration:
+            self.logger.info(
+                LOG_STAGE_STARTED.format("Pre-Applying Configuration Stage.")
+            )
             self.__apply_feature_configurations()
 
     def __apply_feature_configurations(self):
+        # Compare with last applied configuration to avoid re-applying
+        if json.dumps(self.last_applied_configuration, sort_keys=True) == json.dumps(
+            self.configuration, sort_keys=True
+        ):
+            self.logger.info("No configuration changes detected, skipping re-application.")
+            return
+
+        self.runtime_configuration.reset()
         for feature in self.features:
             feature.try_apply_configuration(
                 self.configuration, self.runtime_configuration
             )
+        self.last_applied_configuration = self.configuration.copy()
 
     def run(self, run_with_trainers: bool = True):
         """
@@ -246,7 +260,6 @@ class RuntimeProvider:
             run_with_trainers (bool): A flag indicating whether trainers should be
                 executed as part of the runtime environment. Defaults to True.
         """
-        self.runtime_configuration.reset()
         self.logger.info(LOG_STAGE_STARTED.format("Apply Configuration Stage."))
         # Apply configurations to runtime
         self.__apply_feature_configurations()
