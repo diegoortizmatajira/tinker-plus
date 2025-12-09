@@ -127,6 +127,42 @@ PROTON_HIDE_NVIDIA_GPU_PROPERTY = ConfigurationProperty(
     generated_environment_variable="PROTON_HIDE_NVIDIA_GPU",
 )
 
+PROTON_DLSS_INDICATOR_PROPERTY = ConfigurationProperty(
+    bool,
+    "PROTON_DLSS_INDICATOR",
+    "PROTON_DLSS_INDICATOR (Proton 10.26 or later)",
+    "Enables an on-screen indicator when DLSS is active in Proton games.",
+    generated_environment_variable="PROTON_DLSS_INDICATOR",
+)
+PROTON_FSR4_INDICATOR_PROPERTY = ConfigurationProperty(
+    bool,
+    "PROTON_FSR4_INDICATOR",
+    "PROTON_FSR4_INDICATOR (Proton 10.26 or later)",
+    "Enables an on-screen indicator when FSR 4 is active in Proton games.",
+    generated_environment_variable="PROTON_FSR4_INDICATOR",
+)
+PROTON_ENABLE_WAYLAND_PROPERTY = ConfigurationProperty(
+    bool,
+    "PROTON_ENABLE_WAYLAND",
+    "PROTON_ENABLE_WAYLAND (Proton 10.1 or later)",
+    "Enable Wayland support in Proton",
+    generated_environment_variable="PROTON_ENABLE_WAYLAND",
+)
+PROTON_ENABLE_HDR_PROPERTY = ConfigurationProperty(
+    bool,
+    "PROTON_ENABLE_HDR",
+    "PROTON_ENABLE_HDR (Proton 10.1 or later)",
+    "Enable HDR support in Proton",
+    generated_environment_variable="PROTON_ENABLE_HDR",
+)
+
+PROTON_PREFER_SDL_PROPERTY = ConfigurationProperty(
+    bool,
+    "PROTON_PREFER_SDL",
+    "PROTON_PREFER_SDL",
+    "Expose SDL video driver along with Hidraw (Can fix input issues in some games)",
+    generated_environment_variable="PROTON_PREFER_SDL",
+)
 
 class ProtonSelection(FeatureProvider):
     """
@@ -143,16 +179,21 @@ class ProtonSelection(FeatureProvider):
             [
                 PROTON_VERSION_PROPERTY,
                 PROTON_LOG_PROPERTY,
+                PROTON_ENABLE_WAYLAND_PROPERTY,
+                PROTON_ENABLE_HDR_PROPERTY,
+                PROTON_ENABLE_NVAPI_PROPERTY,
+                PROTON_DISABLE_NVAPI_PROPERTY,
+                PROTON_HIDE_NVIDIA_GPU_PROPERTY,
+                PROTON_DLSS_INDICATOR_PROPERTY,
+                PROTON_FSR4_INDICATOR_PROPERTY,
                 PROTON_NO_D3D10_PROPERTY,
                 PROTON_NO_D3D11_PROPERTY,
                 PROTON_NO_ESYNC_PROPERTY,
                 PROTON_NO_FSYNC_PROPERTY,
-                PROTON_FORCE_LARGE_ADDRESS_AWARE_PROPERTY,
                 PROTON_USE_WINED3D_PROPERTY,
-                PROTON_ENABLE_NVAPI_PROPERTY,
-                PROTON_DISABLE_NVAPI_PROPERTY,
-                PROTON_HIDE_NVIDIA_GPU_PROPERTY,
                 PROTON_DXVK_D3D8_PROPERTY,
+                PROTON_FORCE_LARGE_ADDRESS_AWARE_PROPERTY,
+                PROTON_PREFER_SDL_PROPERTY,
                 PROTON_LAST_COMPATIBILITY_TOOL_PROPERTY,
                 PROTON_LAST_COMPATIBILITY_TOOL_PATH_PROPERTY,
             ],
