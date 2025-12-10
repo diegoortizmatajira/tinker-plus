@@ -18,7 +18,7 @@ WINE_DLLOVERRIDES_PROPERTY = ConfigurationProperty(
 
 WINE_FULLSCREEN_FSR_PROPERTY = ConfigurationProperty(
     bool,
-    "WINE_FULLSCREEN_FSR_MODE",
+    "WINE_FULLSCREEN_FSR",
     "Enable Fullscreen FSR Mode",
     "Enables Fullscreen FSR (FidelityFX Super Resolution) mode in Wine",
     generated_environment_variable="WINE_FULLSCREEN_FSR_MODE",
