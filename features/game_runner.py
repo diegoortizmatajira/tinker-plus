@@ -6,6 +6,7 @@ from typing import override
 
 from core import FeatureProvider, RuntimeConfiguration
 from core.configuration_property import ConfigurationProperty
+from core.defaults import CWD_DIR_NAME
 from core.process_runner import run_game_and_forks_with_compatibility_tool
 
 
@@ -21,6 +22,13 @@ GAME_CUSTOM_ARGS_PROPERTY = ConfigurationProperty(
     "GAME_CUSTOM_ARGS",
     "Custom Game Arguments",
     "Allows specifying additional arguments for the game executable.",
+    None,
+)
+GAME_CUSTOM_CWD_PROPERTY = ConfigurationProperty(
+    str,
+    "GAME_CUSTOM_CWD",
+    "Custom Game Working Directory",
+    "Allows specifying a custom working directory for the game executable.",
     None,
 )
 GAME_RUN_FORKS_ONLY_PROPERTY = ConfigurationProperty(
@@ -44,6 +52,7 @@ class GameRunner(FeatureProvider):
             [
                 GAME_CUSTOM_EXE_PROPERTY,
                 GAME_CUSTOM_ARGS_PROPERTY,
+                GAME_CUSTOM_CWD_PROPERTY,
                 GAME_RUN_FORKS_ONLY_PROPERTY,
             ],
             "Game Execution",
@@ -69,6 +78,13 @@ class GameRunner(FeatureProvider):
         if custom_args:
             runtime_configuration.steam_game_args = custom_args
             self.logger.info("Using custom game arguments: %s", custom_args)
+        custom_cwd = GAME_CUSTOM_CWD_PROPERTY.get(configuration)
+        runtime_configuration.steam_game_cwd = (
+            custom_cwd
+            or runtime_configuration.steam_compat_install_path
+            or f"{runtime_configuration.prefix_path}/{CWD_DIR_NAME}"
+        )
+        self.logger.info("Using game working directory: %s", runtime_configuration.steam_game_cwd)
         return runtime_configuration
 
     @override

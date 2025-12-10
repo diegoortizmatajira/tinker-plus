@@ -224,10 +224,7 @@ def run_with_pipeline(
     command = __assemble_command_str(
         exe_command, runtime_configuration, is_global=True, override_log_to_file=False
     )
-    cwd = (
-        runtime_configuration.steam_compat_install_path
-        or f"{runtime_configuration.prefix_path}/{CWD_DIR_NAME}"
-    )
+    cwd = runtime_configuration.steam_game_cwd or "."
     os.makedirs(cwd, exist_ok=True)
     return run_command(
         command,
