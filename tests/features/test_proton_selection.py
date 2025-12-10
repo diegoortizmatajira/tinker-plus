@@ -29,8 +29,12 @@ class TestProtonSelection(unittest.TestCase):
         """
         # Mock input configuration and runtime configuration
         configuration = {"PROTON_VERSION": "PROTON7-21"}
+        logger = logging.getLogger("test_logger")
         runtime_configuration = RuntimeConfiguration.empty()
         runtime_configuration.steam_compatibility_tool = "DEFAULT_PROTON"
+        CompatToolInfo("PROTON7-21", "/mock/path_to_proton7-21").put_in_cache(
+            logger, dry_run=True
+        )
 
         # Apply configuration
         updated_runtime_config = self.proton_selection.apply_configuration(

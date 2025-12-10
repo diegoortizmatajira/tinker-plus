@@ -2,14 +2,18 @@
 
 import json
 import os
-from typing import Optional
+from pathlib import Path
+from typing import List, Optional
 
 from core.defaults import (
     CONFIG_LOCATION,
     GAME_CONFIG_DIR,
     GAME_CONFIG_FILE_TEMPLATE,
+    GAME_INFO_KEY,
     GLOBAL_CONFIG_FILE,
 )
+from core.feature_provider import FeatureProvider
+from core.game_info import GameInfo
 
 from .log_storage import LogFactory
 
@@ -26,6 +30,20 @@ class ConfigStorage:
 
     def __init__(self):
         self.logger = LogFactory.singleton().get_logger(self.__class__.__name__)
+
+    def get_game_configuration_files(self) -> List[Path]:
+        """
+        Retrieves all game configuration files based on the GAME_CONFIG_FILE_TEMPLATE.
+
+        Returns:
+            List[Path]: A list of Paths to the game configuration files.
+        """
+        config_files = []
+        config_dir = Path(GAME_CONFIG_DIR)
+        for file in config_dir.glob("*.json"):
+            if file.is_file():
+                config_files.append(file)
+        return config_files
 
     def get_global_config(self) -> Optional[dict]:
         """
@@ -147,3 +165,90 @@ class ConfigStorage:
             if key not in global_config or global_config[key] != value:
                 diff[key] = value
         return diff
+
+    def build_global_configuration(
+        self, sourced_configuration: dict, clone_configuration: bool = False
+    ) -> dict:
+        """
+        Build the global configuration.
+
+        This method constructs the global configuration by merging the provided
+        sourced configuration with the existing global configuration from storage.
+        The option to clone the sourced configuration ensures that the original
+        source remains unaltered during the update process. Once merged, the global
+        configuration is persisted back to storage, applying any new defaults added.
+
+        Args:
+            - sourced_configuration (dict): The configuration data to merge with the global
+              configuration.
+            - clone_configuration (bool): Whether to clone the sourced configuration before
+              updating.
+
+        Returns:
+            dict: The finalized global configuration after merging and persisting the changes.
+        """
+        global_config = self.get_global_config() or {}
+        target_configuration = sourced_configuration
+        if clone_configuration:
+            target_configuration = sourced_configuration.copy()
+        target_configuration.update(global_config)
+        # Persist the global configuration back to storage
+        # Applies any new defaults that were not present before
+        self.save_global_config(target_configuration)
+        return target_configuration
+
+    def build_game_configuration(
+        self,
+        game_info: GameInfo,
+        sourced_configuration: dict,
+        global_configuration_snapshot: dict,
+        clone_configuration: bool = False,
+    ) -> dict:
+        # Check for game-specific configuration file
+        game_config = self.get_game_config(game_info.game_id)
+        target_configuration = sourced_configuration
+        if clone_configuration:
+            target_configuration = sourced_configuration.copy()
+
+        target_configuration.update(game_config or {})
+        # Includes game-info in the configuration for reference
+        target_configuration[GAME_INFO_KEY] = game_info.__dict__
+        if game_config is None:
+            # Create game-specific configuration file if it doesn't exist with empty config
+            self.save_game_config(
+                target_configuration,
+                game_info.game_id,
+                global_configuration_snapshot,
+            )
+        return target_configuration
+
+    def validate_config(
+        self, game: GameInfo, features: List[FeatureProvider]
+    ) -> List[str]:
+        expected_config_keys = [GAME_INFO_KEY]
+        for feature in features:
+            expected_config_keys.extend(
+                [property.name for property in feature.properties]
+            )
+        errors = []
+
+        global_config = self.build_global_configuration({})
+        game_specific_config = self.build_game_configuration(
+            game,
+            global_config,
+            global_config,
+            True,
+        )
+        for k, _ in game_specific_config.items():
+            if k not in expected_config_keys:
+                self.logger.warning(
+                    "Unexpected config key '%s' in game '%s' (%s).",
+                    k,
+                    game.name,
+                    game.game_id,
+                )
+                errors.append(f"Unexpected config key: {k}")
+
+        # Save an updated config file
+        self.save_game_config(game_specific_config, game.game_id, global_config)
+        return errors

@@ -76,8 +76,8 @@ class MainForm:
             f"Tinker-Plus: {runtime_provider.runtime_configuration.game_info.name}",
             themename="superhero",
         )
-        self.form.geometry("800x600")
-        self.form.minsize(800, 600)
+        self.form.geometry("1024x768")
+        self.form.minsize(1024, 768)
         # Create the main Notebook (tabbed control)
         self.default_font = tkfont.nametofont("TkDefaultFont")
         self.game_image: Optional[ImageTk.PhotoImage] = None
