@@ -2,46 +2,49 @@
 This module defines a ConfigurationProperty class
 """
 
-from dataclasses import dataclass
+from collections.abc import Sequence
 import logging
-from typing import Callable, List, Optional, Type, Union, cast, overload
+from dataclasses import dataclass
+from typing import Any, Callable, cast, get_args, get_origin, overload
 
 
+from core.configuration_types import AcceptedPropertyTypes, ConfigurationDictionary
 from core.runtime_configuration import RuntimeConfiguration
-
-# Type alias for the optional value type in the get method
-ConfigurationValueType = Union[str, List[str], bool]
 
 
 @dataclass
-class ListItem[T]:
+class ListItem[T: AcceptedPropertyTypes]:
     """
     Represents an item in a list with a name and value.
     """
 
     name: str
-    value: Optional[T]
+    value: T | None
 
 
 @dataclass
-class ConfigurationProperty[T]:
+class ConfigurationProperty[T_co: AcceptedPropertyTypes]:
     """
     The ConfigurationProperty class represents a property in a configuration
     with an associated name, description, and an optional default value.
     """
 
-    type_ref: Type[T]
+    type_ref: type[T_co]
     name: str
     display_name: str
     description: str
-    default: Optional[T] = None
-    values_provider: Optional[
-        Callable[[RuntimeConfiguration, logging.Logger], List[ListItem[T]]]
-    ] = None
-    values_cache: Optional[List[ListItem[T]]] = None
-    generated_environment_variable: Optional[str] = None
+    default: T_co | None = None
+    values_provider: (
+        Callable[[RuntimeConfiguration, logging.Logger], list[ListItem[T_co]]] | None
+    ) = None
+    values_cache: list[ListItem[T_co]] | None = None
+    generated_environment_variable: str | None = None
 
-    def set(self, configuration: dict, value: Optional[T]):
+    def set(
+        self,
+        configuration: ConfigurationDictionary,
+        value: T_co | None,
+    ):
         """
         Sets the value of the configuration property in the given configuration dictionary.
 
@@ -52,14 +55,45 @@ class ConfigurationProperty[T]:
         configuration[self.name] = value
 
     @overload
-    def get(self, configuration: dict) -> Optional[T]:
+    def get(self, configuration: ConfigurationDictionary) -> T_co | None:
         pass
 
     @overload
-    def get(self, configuration: dict, default: T) -> T:
+    def get(self, configuration: ConfigurationDictionary, default: T_co) -> T_co:
         pass
 
-    def get(self, configuration: dict, default: Optional[T] = None) -> Optional[T]:
+    def __is_list_type_property(self) -> bool:
+        """
+        Checks if the property is of list type.
+
+        Returns:
+            bool: True if the property is of list type, False otherwise.
+        """
+        expected_origin = get_origin(self.type_ref)
+        return expected_origin is list
+
+    def __advanced_type_check(self, value: object) -> bool:
+        """
+        Performs an advanced type check on the given value to verify
+        if it matches the expected type reference of the property.
+
+        Args:
+            value (object): The value to be type-checked.
+
+        Returns:
+            bool: True if the value matches the expected type reference, False otherwise.
+        """
+        expected_args = get_args(self.type_ref)
+        if len(expected_args) == 0:
+            return isinstance(value, self.type_ref)
+        expected_origin = cast(type, get_origin(self.type_ref))
+        return isinstance(value, expected_origin)
+
+    def get(
+        self,
+        configuration: ConfigurationDictionary,
+        default: T_co | None = None,
+    ) -> T_co | None:
         """
         Retrieves the value of the configuration property.
 
@@ -67,20 +101,20 @@ class ConfigurationProperty[T]:
             configuration (dict): A dictionary representing the configuration.
 
         Returns:
-            Optional[str]: The value of the property from the configuration if it exists,
+            str | None: The value of the property from the configuration if it exists,
                            otherwise the default value.
         """
         value = configuration.get(self.name, self.default)
         # Validate if value is of type T or None
         if value is None:
             return value or default
-        if isinstance(value, self.type_ref):
-            return value
+        if self.__advanced_type_check(value):
+            return cast(T_co, value)
         raise TypeError(
-            f"Configuration value is not a {T} value: {self.name} = {value}"
+            f"Configuration value is not a {self.type_ref} value: {self.name} = {value} (type: {type(value)})"
         )
 
-    def get_or_fail(self, configuration: dict) -> T:
+    def get_or_fail(self, configuration: ConfigurationDictionary) -> T_co:
         """
         Retrieves the value of the configuration property or raises an error if not found.
 
@@ -97,17 +131,17 @@ class ConfigurationProperty[T]:
 
         raise KeyError(
             f"Configuration property '{self.name}' ({self.description})"
-            " is required and has no default."
+            + " is required and has no default."
         )
 
     def get_possible_values(
         self, runtime_configuration: RuntimeConfiguration, logger: logging.Logger
-    ) -> Optional[List[ListItem[T]]]:
+    ) -> list[ListItem[T_co]] | None:
         """
         Retrieves the possible values for the configuration property if a values provider is set.
 
         Returns:
-            Optional[List[ListItem]]: A list of possible values or None if no provider is set.
+            list[ListItem] | None: A list of possible values or None if no provider is set.
         """
         if not self.values_cache and self.values_provider:
             return self.values_provider(runtime_configuration, logger)
@@ -116,7 +150,7 @@ class ConfigurationProperty[T]:
     # pylint: disable=too-many-return-statements
     def translate_to_environment_variable(
         self,
-        configuration: dict,
+        configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
         logger: logging.Logger,
     ):
@@ -154,11 +188,11 @@ class ConfigurationProperty[T]:
             )
             logger.info('%s parameter set to "%s".', self.name, value)
             return
-        if self.type_ref is list:
+        if self.__is_list_type_property():
             value = self.get(configuration)
             if value is None:
                 return
-            value = [str(item) for item in cast(list, value)]
+            value = [str(item) for item in cast(list[str], value)]
             runtime_configuration.set_environment_variable(
                 self.generated_environment_variable, ",".join(value)
             )
@@ -174,8 +208,9 @@ class ConfigurationProperty[T]:
 
     @staticmethod
     def initialize_defaults(
-        configuration: dict, properties: list["ConfigurationProperty"]
-    ) -> dict:
+        configuration: ConfigurationDictionary,
+        properties: Sequence["AnyConfigurationProperty"],
+    ) -> ConfigurationDictionary:
         """
         Initializes the configuration dictionary with default values for properties
         that are not already present.
@@ -190,3 +225,6 @@ class ConfigurationProperty[T]:
             if prop.name not in configuration:
                 configuration[prop.name] = prop.default
         return configuration
+
+
+AnyConfigurationProperty = ConfigurationProperty[Any]  # pyright: ignore[reportExplicitAny]

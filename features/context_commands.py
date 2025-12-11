@@ -2,6 +2,7 @@
 
 from typing import override
 from core.configuration_property import ConfigurationProperty
+from core.configuration_types import ConfigurationDictionary
 from core.feature_provider import FeatureProvider
 from core.process_runner import run_command
 from core.runtime_configuration import RuntimeConfiguration
@@ -52,7 +53,9 @@ class ContextCommands(FeatureProvider):
 
     @override
     def before_execution(
-        self, configuration: dict, _runtime_configuration: RuntimeConfiguration
+        self,
+        configuration: ConfigurationDictionary,
+        _runtime_configuration: RuntimeConfiguration,
     ):
         before_command = CONTEXT_COMMAND_BEFORE_STARTUP_PROPERTY.get(configuration)
         if not before_command:
@@ -76,7 +79,9 @@ class ContextCommands(FeatureProvider):
 
     @override
     def after_execution(
-        self, _configuration: dict, _runtime_configuration: RuntimeConfiguration
+        self,
+        _configuration: ConfigurationDictionary,
+        _runtime_configuration: RuntimeConfiguration,
     ):
         after_command = CONTEXT_COMMAND_AFTER_EXIT_PROPERTY.get(_configuration)
         if not after_command:

@@ -1,11 +1,10 @@
 """Main Form with Tabs GUI Module"""
 
+from tkinter import Event, Widget
 import tkinter.font as tkfont
+from typing import final
 import webbrowser
 from pathlib import Path
-
-# pylint: disable=import-error
-from typing import Optional
 
 import ttkbootstrap as ttk
 from PIL import Image, ImageTk
@@ -31,6 +30,7 @@ from gui.generator import Generator
 
 
 # pylint: disable=too-many-instance-attributes
+@final
 class MainForm:
     """
     The MainForm class represents the primary graphical user interface (GUI) component
@@ -80,7 +80,7 @@ class MainForm:
         self.form.minsize(1024, 768)
         # Create the main Notebook (tabbed control)
         self.default_font = tkfont.nametofont("TkDefaultFont")
-        self.game_image: Optional[ImageTk.PhotoImage] = None
+        self.game_image: ImageTk.PhotoImage | None = None
         self.notebook = ttk.Notebook(self.form)
         self.notebook.pack(fill="both", expand=True, padx=10, pady=5)
         self.__generate_main_tab()
@@ -128,22 +128,22 @@ class MainForm:
             bootstyle=(DANGER, OUTLINE),
         ).pack(side="left", padx=5, pady=5)
         # Bind all mouse and keyboard events to root
-        self.form.bind_all("<Button>", self.on_user_interaction)  # any mouse click
-        self.form.bind_all("<Key>", self.on_user_interaction)  # any key press
+        _ = self.form.bind_all("<Button>", self.on_user_interaction)  # any mouse click
+        _ = self.form.bind_all("<Key>", self.on_user_interaction)  # any key press
         # Binding
         self.generator.display_values(self.runtime_provider.configuration)
 
     def __display_property(
         self,
-        root,
+        root: Widget,
         property_name: str,
-        property_value: Optional[str],
-        link_text: Optional[str] = None,
+        property_value: str | None,
+        link_text: str | None = None,
     ):
         frame = ttk.Frame(root)
         frame.pack(fill="x", pady=2, padx=5)
         bold_font = self.default_font.copy()
-        bold_font.configure(weight=tkfont.BOLD)
+        _ = bold_font.configure(weight=tkfont.BOLD)
         ttk.Label(
             frame,
             text=f"{property_name}:",
@@ -161,7 +161,7 @@ class MainForm:
         if link_text:
             # Make it look like a hyperlink
             underlined_font = self.default_font.copy()
-            underlined_font.configure(underline=True)
+            _ = underlined_font.configure(underline=True)
             value_label.configure(
                 text=link_text,
                 font=underlined_font,
@@ -169,7 +169,7 @@ class MainForm:
                 anchor="w",
                 bootstyle=INFO,
             )
-            value_label.bind(
+            _ = value_label.bind(
                 "<Button-1>",
                 lambda _: webbrowser.open_new(property_value or ""),
             )
@@ -179,7 +179,7 @@ class MainForm:
         main_tab = ttk.Frame(self.notebook)
         self.notebook.add(main_tab, text="Main Tab")
         title_font = self.default_font.copy()
-        title_font.configure(size=16, weight=tkfont.BOLD)
+        _ = title_font.configure(size=16, weight=tkfont.BOLD)
         ttk.Label(
             main_tab,
             text=self.runtime_provider.runtime_configuration.game_info.name,
@@ -246,7 +246,7 @@ class MainForm:
             link_text="Search on Fling Trainer",
         )
 
-    def on_user_interaction(self, _):
+    def on_user_interaction(self, _event: Event) -> object:
         """
         Handles user interaction events such as mouse clicks or key presses.
 
@@ -277,7 +277,7 @@ class MainForm:
         if self.timer_running and self.remaining_seconds > 0:
             self.remaining_seconds -= 1
             self.progress_bar["value"] = self.remaining_seconds
-            self.form.after(1000, self.on_timer_tick)
+            _ = self.form.after(1000, self.on_timer_tick)
         elif self.timer_running and self.remaining_seconds == 0:
             self.logger.info(
                 LOG_TIMER_ACTION.format("Countdown finished, game will start now")
@@ -285,7 +285,7 @@ class MainForm:
             self.timer_running = False
             self.__play(with_trainers=True)
 
-    def on_save_config_click(self):
+    def on_save_config_click(self, _event: Event) -> object:
         """
         Handles the click event for the "Save Config" button.
 
@@ -306,7 +306,7 @@ class MainForm:
         self.form.destroy()
         self.runtime_provider.run(with_trainers)
 
-    def on_play_with_trainer_click(self):
+    def on_play_with_trainer_click(self, _event: Event) -> object:
         """
         Handles the click event for the "Play with Trainer" button.
 
@@ -316,7 +316,7 @@ class MainForm:
         self.logger.info(LOG_USER_ACTION.format("Play with Trainer clicked"))
         self.__play(True)
 
-    def on_just_play_click(self):
+    def on_just_play_click(self, _event: Event) -> object:
         """
         Handles the click event for the "Just Play" button.
 
@@ -326,7 +326,7 @@ class MainForm:
         self.logger.info(LOG_USER_ACTION.format("Just Play clicked"))
         self.__play(False)
 
-    def on_close_click(self):
+    def on_close_click(self, _event: Event) -> object:
         """
         Handles the click event for the "Close" button.
 

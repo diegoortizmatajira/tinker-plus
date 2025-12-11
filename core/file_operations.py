@@ -6,6 +6,7 @@ import os
 import shutil
 from os.path import islink
 from pathlib import Path
+from typing import Any
 
 from core.defaults import (
     GAME_CONFIG_FILE_TEMPLATE,
@@ -140,7 +141,9 @@ def remove_tplus_game_files(game_id: str, logger: logging.Logger):
             raise RuntimeError(f"Error removing TPlus file {item_path}") from e
 
 
-def dump_as_json(data: dict, file_path: str, dry_run: bool, logger: logging.Logger):
+def dump_as_json(
+    data: dict[str, Any], file_path: str, dry_run: bool, logger: logging.Logger
+):
     """
     Dumps a dictionary as a JSON file.
 

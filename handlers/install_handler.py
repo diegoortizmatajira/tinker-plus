@@ -1,11 +1,10 @@
 """Module to handle installation as a Steam compatibility tool."""
 
-import argparse
 import logging
 import os
 from pathlib import Path
 import shutil
-from typing import override
+from typing import Any, override
 from core.defaults import (
     ACTUAL_TPLUS_LOCATION,
     TPLUS_BIN_LOCATION,
@@ -29,18 +28,18 @@ class InstallHandler(BaseHandler):
 
     def __init__(
         self,
-        subparser: argparse._SubParsersAction,
+        subparser: Any,  # pyright: ignore[reportExplicitAny, reportAny]
         handlers: dict[str, BaseHandler],
     ) -> None:
         handlers[INSTALL_COMMAND] = self
-        subparser.add_parser(
+        subparser.add_parser(  # pyright: ignore[reportAny]
             INSTALL_COMMAND, help="Install as Steam compatibility tool"
         )
 
     @override
     def handle(
         self,
-        _: argparse.Namespace,
+        _args: object,
         logger: logging.Logger,
     ) -> None:
         """
@@ -77,7 +76,7 @@ class InstallHandler(BaseHandler):
         for target, source in files_to_copy.items():
             target_path = compat_path.joinpath(target)
             # Copy the file
-            shutil.copy(source, target_path)
+            _ = shutil.copy(source, target_path)
         files_to_link = {
             "tplus": tinker_plus_sh_path,
         }

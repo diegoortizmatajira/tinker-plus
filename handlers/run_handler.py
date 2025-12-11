@@ -2,7 +2,7 @@
 
 import argparse
 import logging
-from typing import override
+from typing import Any, cast, override
 
 from features.gui_options import CURRENT_GUI_OPTIONS
 from gui.main_form import MainForm
@@ -21,33 +21,36 @@ class RunHandler(BaseHandler):
 
     def __init__(
         self,
-        subparser: argparse._SubParsersAction,
+        subparser: Any,  # pyright: ignore[reportAny, reportExplicitAny]
         handlers: dict[str, BaseHandler],
     ) -> None:
         handlers[RUN_COMMAND] = self
-        run_parser: argparse.ArgumentParser = subparser.add_parser(
-            RUN_COMMAND,
-            help="Run the main application process.",
-            description="This command starts the main application process"
-            " with the specified configurations.",
+        run_parser: argparse.ArgumentParser = cast(
+            argparse.ArgumentParser,
+            subparser.add_parser(  # pyright: ignore[reportAny]
+                RUN_COMMAND,
+                help="Run the main application process.",
+                description="This command starts the main application process"
+                + " with the specified configurations.",
+            ),
         )
-        run_parser.add_argument(
+        _ = run_parser.add_argument(
             "--gui",
             action="store_true",
             help="Run in GUI mode",
         )
-        run_parser.add_argument(
+        _ = run_parser.add_argument(
             "--nogui",
             action="store_true",
             help="Run in GUI mode",
         )
-        run_parser.add_argument(
+        _ = run_parser.add_argument(
             "--dry", action="store_true", help="Run in DRY mode (no game launch)"
         )
-        run_parser.add_argument(
+        _ = run_parser.add_argument(
             "--trainer", action="store_true", help="Run with trainer"
         )
-        run_parser.add_argument(
+        _ = run_parser.add_argument(
             "game_command",
             nargs="+",  # Accepts any number of arguments as a list
             help=(
@@ -59,7 +62,7 @@ class RunHandler(BaseHandler):
     @override
     def handle(
         self,
-        args: argparse.Namespace,
+        args: object,
         logger: logging.Logger,
     ) -> None:
         dry_run = getattr(args, "dry", False)
@@ -69,8 +72,6 @@ class RunHandler(BaseHandler):
         try:
             runtime = self.get_runtime_provider(game_command, dry_run)
             runtime.build_configuration(True)
-            if runtime.runtime_configuration is None:
-                raise RuntimeError("Failed to build runtime configuration.")
             runtime.runtime_configuration.execute_trainers = execute_trainer
             # Uses the read setting for GUI if not explicitly provided
             use_gui = not getattr(args, "nogui") and (

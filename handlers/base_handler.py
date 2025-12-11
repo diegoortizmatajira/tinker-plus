@@ -2,7 +2,6 @@
 
 from abc import ABC, abstractmethod
 import logging
-from typing import List
 
 from core.config_storage import ConfigStorage
 from core.runtime_provider import RuntimeProvider
@@ -31,13 +30,13 @@ class BaseHandler(ABC):
     """
 
     @abstractmethod
-    def handle(self, _args, _logger: logging.Logger):
+    def handle(self, _args: object, _logger: logging.Logger):
         """
         Handles the command with the given arguments and logger.
         """
 
     def get_runtime_provider(
-        self, game_command: List[str], dry_run: bool
+        self, game_command: list[str], dry_run: bool
     ) -> RuntimeProvider:
         """
         Creates and returns a RuntimeProvider instance configured with

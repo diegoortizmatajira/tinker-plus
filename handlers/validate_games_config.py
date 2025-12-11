@@ -1,6 +1,5 @@
-import argparse
 import logging
-from typing import override
+from typing import Any, override
 from core.config_storage import ConfigStorage
 from core.games_manager import GamesManager
 from handlers.base_handler import BaseHandler
@@ -11,14 +10,14 @@ VALIDATE_GAMES_COMMAND = "validate-games"
 class ValidateGamesConfig(BaseHandler):
     def __init__(
         self,
-        subparser: argparse._SubParsersAction,
+        subparser: Any,  # pyright: ignore[reportExplicitAny, reportAny]
         handlers: dict[str, BaseHandler],
     ) -> None:
         handlers[VALIDATE_GAMES_COMMAND] = self
-        subparser.add_parser(VALIDATE_GAMES_COMMAND, help="Validate configured games")
+        subparser.add_parser(VALIDATE_GAMES_COMMAND, help="Validate configured games")  # pyright: ignore[reportAny]
 
     @override
-    def handle(self, _args, logger: logging.Logger):
+    def handle(self, _args: object, logger: logging.Logger):
         logger.info("Listing configured games...")
         config_storage = ConfigStorage()
         manager = GamesManager(config_storage)

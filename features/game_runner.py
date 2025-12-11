@@ -6,6 +6,7 @@ from typing import override
 
 from core import FeatureProvider, RuntimeConfiguration
 from core.configuration_property import ConfigurationProperty
+from core.configuration_types import ConfigurationDictionary
 from core.defaults import CWD_DIR_NAME
 from core.process_runner import run_game_and_forks_with_compatibility_tool
 
@@ -60,7 +61,9 @@ class GameRunner(FeatureProvider):
 
     @override
     def apply_configuration(
-        self, configuration: dict, runtime_configuration: RuntimeConfiguration
+        self,
+        configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
     ) -> RuntimeConfiguration:
         runtime_configuration.execute_forks_only = GAME_RUN_FORKS_ONLY_PROPERTY.get(
             configuration, False
@@ -84,12 +87,16 @@ class GameRunner(FeatureProvider):
             or runtime_configuration.steam_compat_install_path
             or f"{runtime_configuration.prefix_path}/{CWD_DIR_NAME}"
         )
-        self.logger.info("Using game working directory: %s", runtime_configuration.steam_game_cwd)
+        self.logger.info(
+            "Using game working directory: %s", runtime_configuration.steam_game_cwd
+        )
         return runtime_configuration
 
     @override
     def execute_in_pipeline(
-        self, _configuration: dict, runtime_configuration: RuntimeConfiguration
+        self,
+        _configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
     ):
         for k, v in (runtime_configuration.environment_variables or {}).items():
             self.logger.info("Using environment:  %s=%s", k, v)

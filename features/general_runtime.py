@@ -2,6 +2,7 @@
 
 from typing import override
 from core.configuration_property import ConfigurationProperty
+from core.configuration_types import ConfigurationDictionary
 from core.feature_provider import FeatureProvider
 from core.runtime_configuration import RuntimeConfiguration
 
@@ -12,6 +13,7 @@ GENERAL_LOG_INDIVIDUAL_EXE_PROPERTY = ConfigurationProperty(
     "If set to True, logs each individual executable that is run in is own file.",
     default=False,
 )
+
 
 class GeneralRuntime(FeatureProvider):
     """
@@ -33,7 +35,9 @@ class GeneralRuntime(FeatureProvider):
 
     @override
     def apply_configuration(
-        self, _configuration: dict, runtime_configuration: RuntimeConfiguration
+        self,
+        _configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
     ) -> RuntimeConfiguration:
         runtime_configuration.log_executable_commands = (
             GENERAL_LOG_INDIVIDUAL_EXE_PROPERTY.get(_configuration, False)

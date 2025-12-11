@@ -4,6 +4,7 @@ Feature to link user folders to specified locations to manage saved games and se
 
 from typing import override
 from core import ConfigurationProperty, FeatureProvider, RuntimeConfiguration
+from core.configuration_types import ConfigurationDictionary
 from core.defaults import LOG_DRY_RUN, PUBLIC_USER_FOLDER_NAME, STEAM_USER_FOLDER_NAME
 from core.file_operations import create_symbolic_link
 
@@ -52,7 +53,9 @@ class LinkUserFolders(FeatureProvider):
 
     @override
     def before_execution(
-        self, configuration: dict, runtime_configuration: RuntimeConfiguration
+        self,
+        configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
     ):
         if not runtime_configuration.prefix_path:
             self.logger.warning(

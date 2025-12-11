@@ -1,5 +1,6 @@
 """Module for managing compatibility data folders."""
 
+from core.configuration_types import ConfigurationDictionary
 from core.feature_provider import FeatureAction, FeatureProvider
 from core.file_operations import delete_folder_tree
 from core.runtime_configuration import RuntimeConfiguration
@@ -30,8 +31,10 @@ class CompatDataFolders(FeatureProvider):
         )
 
     def delete_compat_folder(
-        self, _configuration: dict, runtime_configuration: RuntimeConfiguration
-    ):
+        self,
+        _configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
+    ) -> None:
         """Deletes the compatibility data folder.
 
         Args:
@@ -47,8 +50,10 @@ class CompatDataFolders(FeatureProvider):
             )
 
     def recreate_compat_folder(
-        self, _configuration: dict, runtime_configuration: RuntimeConfiguration
-    ):
+        self,
+        _configuration: ConfigurationDictionary,
+        _runtime_configuration: RuntimeConfiguration,
+    ) -> None:
         """Recreates the compatibility data folder.
 
         Args:

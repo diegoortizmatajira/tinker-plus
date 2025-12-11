@@ -4,7 +4,7 @@ from dataclasses import asdict, dataclass
 import logging
 import json
 import os
-from typing import ClassVar, Optional
+from typing import ClassVar, cast
 
 from core.defaults import GLOBAL_GAME_INFO_CACHE_FILE
 
@@ -24,7 +24,7 @@ class GameInfo:
     game_id: str
     name: str
 
-    _cache: ClassVar[Optional[dict[str, "GameInfo"]]] = None
+    _cache: ClassVar[dict[str, "GameInfo"] | None] = None
 
     @classmethod
     def get_cache(cls, logger: logging.Logger) -> dict[str, "GameInfo"]:
@@ -49,13 +49,15 @@ class GameInfo:
                 return {}
 
             with open(GLOBAL_GAME_INFO_CACHE_FILE, "r", encoding="utf-8") as cache_file:
-                raw_cache = json.load(cache_file)
+                raw_cache: dict[str, dict[str, str]] = cast(
+                    dict[str, dict[str, str]], json.load(cache_file)
+                )
                 cache = {
                     game_id: GameInfo(**info) for game_id, info in raw_cache.items()
                 }
                 cls._cache = cache
                 return cache
-        except Exception as e:
+        except (OSError, IOError, json.JSONDecodeError) as e:
             logger.warning("Failed to load game info cache: %s", e)
             return {}
 
@@ -78,7 +80,7 @@ class GameInfo:
             with open(GLOBAL_GAME_INFO_CACHE_FILE, "w", encoding="utf-8") as cache_file:
                 json.dump(raw_cache, cache_file, indent=4)
             logger.info("Game info cache saved successfully.")
-        except Exception as e:
+        except (OSError, IOError) as e:
             logger.warning("Failed to save game info cache: %s", e)
 
     @staticmethod
@@ -92,7 +94,7 @@ class GameInfo:
         return GameInfo(game_id="unknown", name="unknown")
 
     @staticmethod
-    def from_cache(game_id: str, logger: logging.Logger) -> Optional["GameInfo"]:
+    def from_cache(game_id: str, logger: logging.Logger) -> "GameInfo | None":
         """
         Retrieves a GameInfo object from the cache using the given game ID.
 

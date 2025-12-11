@@ -9,6 +9,7 @@ from core import (
     ConfigurationProperty,
     RuntimeConfiguration,
 )
+from core.configuration_types import ConfigurationDictionary
 from core.process_runner import run_command_with_compatibility_tool
 from core.runtime_configuration import ExecutableCommand
 
@@ -34,7 +35,9 @@ class PrefixSelection(FeatureProvider):
 
     @override
     def apply_configuration(
-        self, configuration: dict, runtime_configuration: RuntimeConfiguration
+        self,
+        configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
     ) -> RuntimeConfiguration:
         custom_prefix = PREFIX_CUSTOM_PATH_PROPERTY.get(configuration)
         if custom_prefix:
@@ -54,11 +57,13 @@ class PrefixSelection(FeatureProvider):
 
     @override
     def execute_in_pipeline(
-        self, _configuration: dict, runtime_configuration: RuntimeConfiguration
+        self,
+        _configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
     ):
         custom_prefix_path = Path(runtime_configuration.prefix_path or ".")
         if not custom_prefix_path.exists():
             self.logger.info("Executing mock command, to force prefix creation.")
-            run_command_with_compatibility_tool(
+            _ = run_command_with_compatibility_tool(
                 ExecutableCommand("/bin/echo", None), runtime_configuration, self.logger
             )

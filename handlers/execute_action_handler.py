@@ -1,8 +1,7 @@
 """Module for handling the 'execute' action command."""
 
-import argparse
 import logging
-from typing import override
+from typing import Any, override
 from handlers.base_handler import BaseHandler
 
 EXECUTE_ACTION_COMMAND = "execute"
@@ -18,22 +17,22 @@ class ExecuteActionHandler(BaseHandler):
 
     def __init__(
         self,
-        subparser: argparse._SubParsersAction,
+        subparser: Any,  # pyright: ignore[reportExplicitAny, reportAny]
         handlers: dict[str, BaseHandler],
     ) -> None:
         handlers[EXECUTE_ACTION_COMMAND] = self
-        execute_parser = subparser.add_parser(
+        execute_parser: Any = subparser.add_parser(  # pyright: ignore[reportExplicitAny, reportAny]
             EXECUTE_ACTION_COMMAND, help="Execute a specified action"
         )
-        execute_parser.add_argument(
+        execute_parser.add_argument(  # pyright: ignore[reportAny]
             "--dry", action="store_true", help="Run in DRY mode"
         )
-        execute_parser.add_argument(
+        execute_parser.add_argument(  # pyright: ignore[reportAny]
             "action_alias", type=str, help="The alias of the action to execute"
         )
 
     @override
-    def handle(self, args, logger: logging.Logger):
+    def handle(self, args: object, logger: logging.Logger):
         selected_action = getattr(args, "action_alias", "")
         dry_run = getattr(args, "dry", False)
         runtime_provider = self.get_runtime_provider([], dry_run)

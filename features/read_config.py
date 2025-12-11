@@ -2,12 +2,14 @@
 Module for reading and building configuration from default or config files.
 """
 
-from typing import override
+from typing import final, override
 from core import FeatureProvider
 from core.config_storage import ConfigStorage
+from core.configuration_types import ConfigurationDictionary
 from core.runtime_configuration import RuntimeConfiguration
 
 
+@final
 class ReadConfig(FeatureProvider):
     """
     Provides functionality to read and build the configuration from
@@ -24,8 +26,10 @@ class ReadConfig(FeatureProvider):
 
     @override
     def build_configuration(
-        self, sourced_configuration: dict, runtime_configuration: RuntimeConfiguration
-    ) -> dict:
+        self,
+        sourced_configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
+    ) -> ConfigurationDictionary:
         sourced_configuration = super().build_configuration(
             sourced_configuration, runtime_configuration
         )

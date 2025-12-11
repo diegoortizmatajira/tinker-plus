@@ -1,8 +1,9 @@
 """Feature provider for Wine configuration."""
 
-from typing import Any, Optional
+from typing import Callable
 from core import process_runner
 from core.configuration_property import ConfigurationProperty, ListItem
+from core.configuration_types import ConfigurationDictionary
 from core.feature_provider import FeatureAction, FeatureProvider
 from core.runtime_configuration import ExecutableCommand, RuntimeConfiguration
 
@@ -11,8 +12,8 @@ WINE_DLLOVERRIDES_PROPERTY = ConfigurationProperty(
     "WINE_DLLOVERRIDES",
     "Wine DLL Overrides",
     "Specifies custom DLL overrides for Wine. The value should be"
-    " a semicolon-separated list of DLL names and their override"
-    " settings (e.g., 'dll1,native;dll2,builtin').",
+    + " a semicolon-separated list of DLL names and their override"
+    + " settings (e.g., 'dll1,native;dll2,builtin').",
     generated_environment_variable="WINEDLLOVERRIDES",
 )
 
@@ -30,7 +31,7 @@ WINE_FULLSCREEN_FSR_MODE = ConfigurationProperty(
     "Fullscreen FSR Mode",
     "Sets the Fullscreen FSR mode for Wine.",
     generated_environment_variable="WINE_FULLSCREEN_FSR_MODE",
-    values_provider=lambda *_: [
+    values_provider=lambda _runtime_configuration, _logger: [
         ListItem("ultra", "ultra"),
         ListItem("quality", "quality"),
         ListItem("balanced", "balanced"),
@@ -43,8 +44,8 @@ WINE_FULLSCREEN_FSR_CUSTOM_MODE_PROPERTY = ConfigurationProperty(
     "WINE_FULLSCREEN_FSR_CUSTOM_MODE",
     "Custom Fullscreen FSR Mode",
     "Sets a custom Fullscreen FSR mode for Wine when 'custom' is selected"
-    " in the Fullscreen FSR Mode setting. The value should be a"
-    " resolution scale factor (e.g., '1.5' for 150% scaling).",
+    + " in the Fullscreen FSR Mode setting. The value should be a"
+    + " resolution scale factor (e.g., '1.5' for 150% scaling).",
     generated_environment_variable="WINE_FULLSCREEN_FSR_CUSTOM_MODE",
 )
 
@@ -87,8 +88,8 @@ class WineConfig(FeatureProvider):
     def __run(
         self,
         app: str,
-        args: Optional[str],
-        _configuration: dict[str, Any],
+        args: str | None,
+        _configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ):
         try:
@@ -106,7 +107,22 @@ class WineConfig(FeatureProvider):
             self.logger.error("Failed to run %s: %s", app, e)
             raise
 
-    def get_action_runner(self, command: str, args: Optional[str] = None):
+    def get_action_runner(
+        self, command: str, args: str | None = None
+    ) -> Callable[[ConfigurationDictionary, RuntimeConfiguration], None]:
+        """
+        Creates and returns a callable that runs a specified command with optional arguments
+        in the Wine runtime environment.
+
+        Args:
+            command (str): The Wine command to execute (e.g., 'winetricks', 'winecfg').
+            args (str | None): Additional arguments to pass to the command. Defaults to None.
+
+        Returns:
+            Callable[[ConfigurationDictionary, RuntimeConfiguration], None]:
+            A function that takes a configuration dictionary and runtime configuration
+            as parameters and executes the specified Wine command with the given arguments.
+        """
         return lambda config, runtime_config: self.__run(
             command, args, config, runtime_config
         )

@@ -6,6 +6,7 @@ import argparse
 import logging
 import os
 import sys
+from typing import Any
 
 
 from core import LogFactory
@@ -32,26 +33,28 @@ def main():
         SystemExit: If no command is provided by the user.
     """
     parser = argparse.ArgumentParser(description="Tinker-Plus Application")
-    parser.add_argument("--debug", action="store_true", help="Enable debug mode")
-    subparsers = parser.add_subparsers(title="Commands", dest="command")
+    _ = parser.add_argument("--debug", action="store_true", help="Enable debug mode")
+    subparsers: Any = parser.add_subparsers(  # pyright: ignore[reportExplicitAny]
+        title="Commands", dest="command"
+    )
     subparsers.required = True
 
     # Initialize command handlers (They register themselves)
     command_handlers: dict[str, BaseHandler] = {}
-    RunHandler(subparsers, command_handlers)
-    InstallHandler(subparsers, command_handlers)
-    GenerateDocumentationHandler(subparsers, command_handlers)
-    ListActionsHandler(subparsers, command_handlers)
-    ExecuteActionHandler(subparsers, command_handlers)
-    ListGamesHandler(subparsers, command_handlers)
-    ValidateGamesConfig(subparsers, command_handlers)
+    _ = RunHandler(subparsers, command_handlers)
+    _ = InstallHandler(subparsers, command_handlers)
+    _ = GenerateDocumentationHandler(subparsers, command_handlers)
+    _ = ListActionsHandler(subparsers, command_handlers)
+    _ = ExecuteActionHandler(subparsers, command_handlers)
+    _ = ListGamesHandler(subparsers, command_handlers)
+    _ = ValidateGamesConfig(subparsers, command_handlers)
 
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit(1)
 
     args = parser.parse_args()
-    handler = command_handlers.get(args.command)
+    handler = command_handlers.get(args.command)  # pyright: ignore[reportAny]
 
     debug_mode = getattr(args, "debug", False)
 

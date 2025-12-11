@@ -3,30 +3,30 @@
 import logging
 import os
 from pathlib import Path
-import sys
-from typing import Optional
+from typing import Any, final
 
 from core.defaults import APP_LAST_RUN_LOG_FILE, GAME_LOGS_DIR_TEMPLATE
 
 
+@final
 class LogFactory:
     """
     Factory class to set up logging for the application.
     """
 
-    _instance: Optional["LogFactory"] = None
+    _instance: "LogFactory | None" = None
 
     def __init__(
         self,
         game_id: str,
         *,
-        console_level: Optional[int] = logging.DEBUG,
-        file_level: Optional[int] = None,
+        console_level: int | None = logging.DEBUG,
+        file_level: int | None = None,
     ):
         logging.basicConfig(level=logging.DEBUG, handlers=[])
         self.game_id = game_id
-        self.logs_folder: Optional[str] = None
-        self.console_handler: Optional[logging.StreamHandler] = None
+        self.logs_folder: str | None = None
+        self.console_handler: logging.StreamHandler[Any] | None = None
         if console_level:
             self.console_handler = logging.StreamHandler()
             self.console_handler.setFormatter(
@@ -34,7 +34,7 @@ class LogFactory:
             )
             self.console_handler.setLevel(console_level)
 
-        self.file_handler: Optional[logging.FileHandler] = None
+        self.file_handler: logging.FileHandler | None = None
         if file_level:
             self.logs_folder = LogFactory.prepare_logs_folder(game_id)
             log_filename = self.get_log_filename(APP_LAST_RUN_LOG_FILE)
@@ -87,8 +87,8 @@ class LogFactory:
     def initialize(
         cls,
         game_id: str,
-        console_level: Optional[int] = logging.DEBUG,
-        file_level: Optional[int] = None,
+        console_level: int | None = logging.DEBUG,
+        file_level: int | None = None,
     ) -> "LogFactory":
         """
         Initializes and returns a singleton instance of LogFactory.
@@ -126,5 +126,5 @@ class LogFactory:
 
         for log_file in log_folder.glob("*.log"):
             old_log_file = log_file.with_suffix(".old")
-            log_file.replace(old_log_file)
+            _ = log_file.replace(old_log_file)
         return str(log_folder)

@@ -3,20 +3,38 @@ Feature Provider Base Class
 """
 
 from abc import ABC
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional
+import logging
+from typing import Callable
 
-from .configuration_property import ConfigurationProperty
+from core.configuration_types import ConfigurationDictionary
+
+from .configuration_property import (
+    AnyConfigurationProperty,
+    ConfigurationProperty,
+)
 from .log_storage import LogFactory
 from .runtime_configuration import RuntimeConfiguration
 
 
 @dataclass
 class FeatureAction:
+    """
+    Represents an action that can be performed as part of a feature.
+
+    Attributes:
+        alias (str): A shorthand or alias name for the action.
+        name (str): The formal name of the action.
+        description (str): A brief description of what the action does.
+        action (Callable): A callable that executes the action, taking a dictionary
+            of parameters and a runtime configuration as arguments.
+    """
+
     alias: str
     name: str
     description: str
-    action: Callable[[Dict[str, Any], RuntimeConfiguration], None]
+    action: Callable[[ConfigurationDictionary, RuntimeConfiguration], None]
 
 
 class FeatureProvider(ABC):
@@ -30,19 +48,23 @@ class FeatureProvider(ABC):
     def __init__(
         self,
         name: str,
-        properties: List[ConfigurationProperty],
+        properties: Sequence[AnyConfigurationProperty],
         category: str = "General",
-        actions: Optional[List[FeatureAction]] = None,
+        actions: Sequence[FeatureAction] | None = None,
     ):
-        self.properties = properties
-        self.name = name
-        self.category = category
-        self.actions = actions or []
-        self.logger = LogFactory.singleton().get_logger(self.__class__.__name__)
+        self.properties: Sequence[AnyConfigurationProperty] = properties
+        self.name: str = name
+        self.category: str = category
+        self.actions: Sequence[FeatureAction] = actions or []
+        self.logger: logging.Logger = LogFactory.singleton().get_logger(
+            self.__class__.__name__
+        )
 
     def build_configuration(
-        self, sourced_configuration: dict, _runtime_configuration: RuntimeConfiguration
-    ) -> dict:
+        self,
+        sourced_configuration: ConfigurationDictionary,
+        _runtime_configuration: RuntimeConfiguration,
+    ) -> ConfigurationDictionary:
         """
         Builds and returns the updated configuration dictionary with default
         values initialized based on the property definitions.
@@ -59,8 +81,10 @@ class FeatureProvider(ABC):
         return sourced_configuration
 
     def override_configuration(
-        self, sourced_configuration: dict, _runtime_configuration: RuntimeConfiguration
-    ) -> dict:
+        self,
+        sourced_configuration: ConfigurationDictionary,
+        _runtime_configuration: RuntimeConfiguration,
+    ) -> ConfigurationDictionary:
         """
         Hook method to override configuration settings after reading from sources and before
         applying.
@@ -74,7 +98,9 @@ class FeatureProvider(ABC):
         return sourced_configuration
 
     def apply_configuration(
-        self, _configuration: dict, runtime_configuration: RuntimeConfiguration
+        self,
+        _configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
     ) -> RuntimeConfiguration:
         """
         Abstract method to apply configuration settings to the runtime configuration.
@@ -90,21 +116,27 @@ class FeatureProvider(ABC):
         return runtime_configuration
 
     def before_execution(
-        self, _configuration: dict, _runtime_configuration: RuntimeConfiguration
+        self,
+        _configuration: ConfigurationDictionary,
+        _runtime_configuration: RuntimeConfiguration,
     ):
         """
         Hook method called before the execution of game pipeline.
         """
 
     def after_execution(
-        self, _configuration: dict, _runtime_configuration: RuntimeConfiguration
+        self,
+        _configuration: ConfigurationDictionary,
+        _runtime_configuration: RuntimeConfiguration,
     ):
         """
         Hook method called after the execution of game pipeline.
         """
 
     def execute_in_pipeline(
-        self, _configuration: dict, _runtime_configuration: RuntimeConfiguration
+        self,
+        _configuration: ConfigurationDictionary,
+        _runtime_configuration: RuntimeConfiguration,
     ):
         """
         Abstract method to execute the feature provider in the runtime pipeline.
@@ -116,7 +148,9 @@ class FeatureProvider(ABC):
         """
 
     def try_apply_configuration(
-        self, configuration: dict, runtime_configuration: RuntimeConfiguration
+        self,
+        configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
     ) -> RuntimeConfiguration:
         """
         Attempts to apply the configuration settings to the runtime configuration,
@@ -155,7 +189,9 @@ class FeatureProvider(ABC):
             ) from e
 
     def try_execute_in_pipeline(
-        self, configuration: dict, runtime_configuration: RuntimeConfiguration
+        self,
+        configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
     ):
         """
         Attempts to execute the feature provider in the runtime pipeline,
