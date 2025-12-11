@@ -3,14 +3,16 @@ Feature Provider Base Class
 """
 
 from abc import ABC
+from collections.abc import Sequence
 from dataclasses import dataclass
 import logging
 from typing import Callable
 
+from core.configuration_types import ConfigurationDictionary
+
 from .configuration_property import (
-    AcceptedPropertyTypes,
+    AnyConfigurationProperty,
     ConfigurationProperty,
-    NullableAcceptedPropertyTypes,
 )
 from .log_storage import LogFactory
 from .runtime_configuration import RuntimeConfiguration
@@ -32,7 +34,7 @@ class FeatureAction:
     alias: str
     name: str
     description: str
-    action: Callable[[dict[str, AcceptedPropertyTypes], RuntimeConfiguration], None]
+    action: Callable[[ConfigurationDictionary, RuntimeConfiguration], None]
 
 
 class FeatureProvider(ABC):
@@ -46,23 +48,23 @@ class FeatureProvider(ABC):
     def __init__(
         self,
         name: str,
-        properties: list[ConfigurationProperty[AcceptedPropertyTypes]],
+        properties: Sequence[AnyConfigurationProperty],
         category: str = "General",
-        actions: list[FeatureAction] | None = None,
+        actions: Sequence[FeatureAction] | None = None,
     ):
-        self.properties: list[ConfigurationProperty[AcceptedPropertyTypes]] = properties
+        self.properties: Sequence[AnyConfigurationProperty] = properties
         self.name: str = name
         self.category: str = category
-        self.actions: list[FeatureAction] = actions or []
+        self.actions: Sequence[FeatureAction] = actions or []
         self.logger: logging.Logger = LogFactory.singleton().get_logger(
             self.__class__.__name__
         )
 
     def build_configuration(
         self,
-        sourced_configuration: dict[str, NullableAcceptedPropertyTypes],
+        sourced_configuration: ConfigurationDictionary,
         _runtime_configuration: RuntimeConfiguration,
-    ) -> dict[str, NullableAcceptedPropertyTypes]:
+    ) -> ConfigurationDictionary:
         """
         Builds and returns the updated configuration dictionary with default
         values initialized based on the property definitions.
@@ -80,9 +82,9 @@ class FeatureProvider(ABC):
 
     def override_configuration(
         self,
-        sourced_configuration: dict[str, NullableAcceptedPropertyTypes],
+        sourced_configuration: ConfigurationDictionary,
         _runtime_configuration: RuntimeConfiguration,
-    ) -> dict[str, NullableAcceptedPropertyTypes]:
+    ) -> ConfigurationDictionary:
         """
         Hook method to override configuration settings after reading from sources and before
         applying.
@@ -97,7 +99,7 @@ class FeatureProvider(ABC):
 
     def apply_configuration(
         self,
-        _configuration: dict[str, NullableAcceptedPropertyTypes],
+        _configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ) -> RuntimeConfiguration:
         """
@@ -115,7 +117,7 @@ class FeatureProvider(ABC):
 
     def before_execution(
         self,
-        _configuration: dict[str, NullableAcceptedPropertyTypes],
+        _configuration: ConfigurationDictionary,
         _runtime_configuration: RuntimeConfiguration,
     ):
         """
@@ -124,7 +126,7 @@ class FeatureProvider(ABC):
 
     def after_execution(
         self,
-        _configuration: dict[str, NullableAcceptedPropertyTypes],
+        _configuration: ConfigurationDictionary,
         _runtime_configuration: RuntimeConfiguration,
     ):
         """
@@ -133,7 +135,7 @@ class FeatureProvider(ABC):
 
     def execute_in_pipeline(
         self,
-        _configuration: dict[str, NullableAcceptedPropertyTypes],
+        _configuration: ConfigurationDictionary,
         _runtime_configuration: RuntimeConfiguration,
     ):
         """
@@ -147,7 +149,7 @@ class FeatureProvider(ABC):
 
     def try_apply_configuration(
         self,
-        configuration: dict[str, NullableAcceptedPropertyTypes],
+        configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ) -> RuntimeConfiguration:
         """
@@ -188,7 +190,7 @@ class FeatureProvider(ABC):
 
     def try_execute_in_pipeline(
         self,
-        configuration: dict[str, NullableAcceptedPropertyTypes],
+        configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ):
         """

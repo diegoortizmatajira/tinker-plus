@@ -1,11 +1,11 @@
 """Handler for generating documentation for Tinker-Plus configuration values."""
 
-import argparse
 import logging
-from typing import override
+from typing import Any, override
 
 from jinja2 import Environment, FileSystemLoader
 
+from core.configuration_types import AcceptedPropertyTypes
 from handlers.base_handler import BaseHandler
 
 GENERATE_DOCUMENTATION_COMMAND = "generate_documentation"
@@ -24,12 +24,12 @@ class GenerateDocumentationHandler(BaseHandler):
 
     def __init__(
         self,
-        subparser: argparse._SubParsersAction,
+        subparser: Any,  # pyright: ignore[reportExplicitAny, reportAny]
         handlers: dict[str, BaseHandler],
     ) -> None:
         handlers[GENERATE_DOCUMENTATION_COMMAND] = self
 
-        subparser.add_parser(
+        subparser.add_parser(  # pyright: ignore[reportAny]
             GENERATE_DOCUMENTATION_COMMAND,
             help="Generate documentation for Tinker-Plus configuration values",
         )
@@ -37,7 +37,7 @@ class GenerateDocumentationHandler(BaseHandler):
     @override
     def handle(
         self,
-        _args: argparse.Namespace,
+        _args: object,
         logger: logging.Logger,
     ) -> None:
         """
@@ -49,7 +49,7 @@ class GenerateDocumentationHandler(BaseHandler):
         """
         logger.info("Generating documentation... (not yet implemented)")
         runtime = self.get_runtime_provider([], True)
-        properties = []
+        properties: list[dict[str, AcceptedPropertyTypes | None]] = []
         for feature in runtime.features:
             for prop in feature.properties:
                 properties.append(
@@ -60,7 +60,7 @@ class GenerateDocumentationHandler(BaseHandler):
                         "default": prop.default,
                     }
                 )
-        properties.sort(key=lambda x: x["name"])
+        properties.sort(key=lambda x: str(x["name"]))
         # Load templates from current directory
         env = Environment(loader=FileSystemLoader("./resources/"))
 
@@ -72,5 +72,5 @@ class GenerateDocumentationHandler(BaseHandler):
 
         # Save to a text file
         with open("configuration_reference.md", "w", encoding="utf-8") as f:
-            f.write(output_text)
+            _ = f.write(output_text)
         logger.info("Documentation generated: configuration_reference.md")

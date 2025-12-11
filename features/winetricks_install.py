@@ -7,6 +7,7 @@ from core import (
     RuntimeConfiguration,
     process_runner,
 )
+from core.configuration_types import ConfigurationDictionary
 from core.feature_provider import FeatureAction
 from core.runtime_configuration import ExecutableCommand
 
@@ -50,7 +51,9 @@ class WinetricksInstall(FeatureProvider):
         )
 
     def install_required_winetricks(
-        self, configuration: dict, runtime_configuration: RuntimeConfiguration
+        self,
+        configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
     ):
         """
         Installs the required Winetricks packages based on the provided configuration.
@@ -91,7 +94,9 @@ class WinetricksInstall(FeatureProvider):
 
     @override
     def before_execution(
-        self, configuration: dict, runtime_configuration: RuntimeConfiguration
+        self,
+        configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
     ):
         should_run_winetricks = WINETRICKS_RUN_PROPERTY.get(configuration)
         if not should_run_winetricks:

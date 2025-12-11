@@ -3,23 +3,29 @@ Unit tests for the ProtonSelection class.
 """
 
 import logging
+from typing import final, override
 import unittest
 from unittest.mock import MagicMock, patch
 
 from core.compat_tool_info import CompatToolInfo
+from core.configuration_types import ConfigurationDictionary
 from core.runtime_configuration import RuntimeConfiguration
 from features.proton_selection import ProtonSelection, get_proton_versions_list
 
 
+@final
 class TestProtonSelection(unittest.TestCase):
     """Unit tests for the ProtonSelection feature provider."""
 
+    mock_runtime_config: MagicMock = MagicMock(spec=RuntimeConfiguration)
+    proton_selection: ProtonSelection = ProtonSelection()
+
+    @override
     def setUp(self):
         """Prepare the test environment by initializing ProtonSelection."""
 
         # Initialize runtime configuration mock
         self.mock_runtime_config = MagicMock(spec=RuntimeConfiguration)
-
         self.proton_selection = ProtonSelection()
 
     def test_apply_configuration_with_valid_value(self):
@@ -28,7 +34,7 @@ class TestProtonSelection(unittest.TestCase):
         when provided with a valid value.
         """
         # Mock input configuration and runtime configuration
-        configuration = {"PROTON_VERSION": "PROTON7-21"}
+        configuration: ConfigurationDictionary = {"PROTON_VERSION": "PROTON7-21"}
         logger = logging.getLogger("test_logger")
         runtime_configuration = RuntimeConfiguration.empty()
         runtime_configuration.steam_compatibility_tool = "DEFAULT_PROTON"
@@ -50,12 +56,14 @@ class TestProtonSelection(unittest.TestCase):
         from the configuration dictionary.
         """
         # Mock input configuration and runtime configuration
-        configuration = {}  # USE_PROTON not included
+        configuration: ConfigurationDictionary = {}  # USE_PROTON not included
         runtime_configuration = RuntimeConfiguration.empty()
         runtime_configuration.steam_compatibility_tool = "DEFAULT_PROTON"
 
         # Apply configuration
-        self.proton_selection.apply_configuration(configuration, runtime_configuration)
+        _ = self.proton_selection.apply_configuration(
+            configuration, runtime_configuration
+        )
         # Verify the USE_PROTON is set to the default steam_compatibility_tool
         self.assertEqual(
             runtime_configuration.steam_compatibility_tool, "DEFAULT_PROTON"
@@ -67,7 +75,7 @@ class TestProtonSelection(unittest.TestCase):
         string when provided empty input.
         """
         # Mock input configuration and runtime configuration
-        configuration = {"USE_PROTON": ""}
+        configuration: ConfigurationDictionary = {"USE_PROTON": ""}
         runtime_configuration = RuntimeConfiguration.empty()
         runtime_configuration.steam_compatibility_tool = "DEFAULT_PROTON"
 
@@ -82,7 +90,7 @@ class TestProtonSelection(unittest.TestCase):
         )
 
     @patch("features.proton_selection.CompatToolInfo.get_cache")
-    def test_get_proton_versions_list(self, mock_get_cache):
+    def test_get_proton_versions_list(self, mock_get_cache: MagicMock):
         """
         Test that get_proton_versions_list correctly retrieves a list of proton
         versions from the mock runtime configuration.
@@ -92,7 +100,7 @@ class TestProtonSelection(unittest.TestCase):
         """
         # Arrange
         compat_tools_path = "/mock/path"
-        self.mock_runtime_config.steam_compatibility_tools_path = compat_tools_path
+        self.mock_runtime_config.steam_compatibility_tools_path = compat_tools_path  # pyright: ignore[reportAny]
 
         # Mock logger instance
         logger_instance = logging.getLogger("test_logger")
@@ -105,11 +113,11 @@ class TestProtonSelection(unittest.TestCase):
         mock_get_cache.return_value = mock_cache
 
         # Act
-        result = get_proton_versions_list(self.mock_runtime_config, logger_instance)
+        result = get_proton_versions_list(self.mock_runtime_config, logger_instance)  # pyright: ignore[reportAny]
 
         # Assert
         self.assertEqual([item.value for item in result], ["proton-1", "proton-2"])
 
 
 if __name__ == "__main__":
-    unittest.main()
+    _ = unittest.main()

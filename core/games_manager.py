@@ -1,7 +1,5 @@
 """Manages the collection of game configurations."""
 
-from typing import List
-
 from core.config_storage import ConfigStorage
 from core.game_info import GameInfo
 from core.log_storage import LogFactory
@@ -17,7 +15,7 @@ class GamesManager:
 
     def __init__(self, config_storage: ConfigStorage):
         self.__logger = LogFactory.singleton().get_logger(self.__class__.__name__)
-        self.__games: List[GameInfo] = []
+        self.__games: list[GameInfo] = []
         self.__config_storage = config_storage
         self.get_configured_games()
 
@@ -42,10 +40,10 @@ class GamesManager:
         self.__logger.info("Loaded %d valid game configurations.", len(self.__games))
         self.__games.sort(key=lambda game: game.name.lower())
 
-    def get_games(self) -> List[GameInfo]:
+    def get_games(self) -> list[GameInfo]:
         """Get the list of configured games.
 
         Returns:
-            List[GameInfo]: A list of configured games.
+            list[GameInfo]: A list of configured games.
         """
         return self.__games

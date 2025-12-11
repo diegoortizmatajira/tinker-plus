@@ -2,6 +2,7 @@
 
 from typing import override
 from core.configuration_property import ConfigurationProperty
+from core.configuration_types import ConfigurationDictionary
 from core.feature_provider import FeatureProvider
 from core.runtime_configuration import RuntimeConfiguration, PipelineWrapper
 
@@ -78,10 +79,12 @@ class SteamTools(FeatureProvider):
     @override
     def build_configuration(
         self,
-        sourced_configuration: dict,
+        sourced_configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
-    ) -> dict:
-        super().build_configuration(sourced_configuration, runtime_configuration)
+    ) -> ConfigurationDictionary:
+        sourced_configuration = super().build_configuration(
+            sourced_configuration, runtime_configuration
+        )
         if runtime_configuration.steam_reaper:
             STEAM_LAST_WRAPPER_COMMAND_PROPERTY.set(
                 sourced_configuration, runtime_configuration.steam_wrapper
@@ -98,7 +101,7 @@ class SteamTools(FeatureProvider):
 
     @override
     def apply_configuration(
-        self, configuration: dict, runtime_configuration: RuntimeConfiguration
+        self, configuration: ConfigurationDictionary, runtime_configuration: RuntimeConfiguration
     ) -> RuntimeConfiguration:
         # Load last used commands if not already set
         if not runtime_configuration.steam_wrapper:

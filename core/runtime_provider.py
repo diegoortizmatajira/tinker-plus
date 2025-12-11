@@ -6,11 +6,11 @@ as well as feature-specific customizations to build a comprehensive runtime envi
 
 import json
 import os
-
-from typing import List, Optional
+from typing import final
 
 from core.compat_tool_info import CompatToolInfo
 from core.config_storage import ConfigStorage
+from core.configuration_types import ConfigurationDictionary
 from core.defaults import LOG_STAGE_STARTED
 from core.game_info import GameInfo
 from core.steam import get_game_info, parse_steam_command
@@ -21,7 +21,7 @@ from .log_storage import LogFactory
 EMPTY = "(not provided)"
 
 
-def unquote(s: Optional[str]) -> Optional[str]:
+def unquote(s: str | None) -> str | None:
     """
     Removes surrounding quotes from a string, if present.
 
@@ -40,6 +40,7 @@ def unquote(s: Optional[str]) -> Optional[str]:
     return s
 
 
+@final
 class RuntimeProvider:
     """
     The RuntimeProvider is responsible for managing the runtime configuration and operations.
@@ -51,21 +52,21 @@ class RuntimeProvider:
     Attributes:
         configuration (dict): The merged runtime configuration containing global,
             game-specific, and feature-specific settings.
-        runtime_configuration (Optional[RuntimeConfiguration]): The active runtime
+        runtime_configuration (RuntimeConfiguration | None): The active runtime
             configuration used for executing the environment. Defaults to None.
-        features (List[FeatureProvider]): A list of feature providers that contribute
+        features (list[FeatureProvider]): A list of feature providers that contribute
             to building the runtime configuration.
     """
 
     def __init__(
         self,
-        game_command: List[str],
+        game_command: list[str],
         dry_run: bool,
-        features: List[FeatureProvider],
+        features: list[FeatureProvider],
         config_storage: ConfigStorage,
     ):
         self.logger = LogFactory.singleton().get_logger(self.__class__.__name__)
-        self.configuration: dict = {}
+        self.configuration: ConfigurationDictionary = {}
         self.features = features
         self.config_storage = config_storage
         self.runtime_configuration = RuntimeConfiguration(
@@ -76,7 +77,7 @@ class RuntimeProvider:
         self.runtime_configuration.game_info = get_game_info(
             self.runtime_configuration, self.logger
         )
-        self.last_applied_configuration: dict = {}
+        self.last_applied_configuration: ConfigurationDictionary = {}
 
     def parse_command(self):
         """
@@ -116,7 +117,7 @@ class RuntimeProvider:
                         or "",
                     )
                     compat_tool_info.put_in_cache(self.logger)
-            CompatToolInfo.scan_and_populate_cache(
+            _ = CompatToolInfo.scan_and_populate_cache(
                 self.logger, self.runtime_configuration
             )
         except RuntimeError as e:
@@ -238,12 +239,14 @@ class RuntimeProvider:
         if json.dumps(self.last_applied_configuration, sort_keys=True) == json.dumps(
             self.configuration, sort_keys=True
         ):
-            self.logger.info("No configuration changes detected, skipping re-application.")
+            self.logger.info(
+                "No configuration changes detected, skipping re-application."
+            )
             return
 
         self.runtime_configuration.reset()
         for feature in self.features:
-            feature.try_apply_configuration(
+            _ = feature.try_apply_configuration(
                 self.configuration, self.runtime_configuration
             )
         self.last_applied_configuration = self.configuration.copy()
@@ -297,7 +300,7 @@ class RuntimeProvider:
         action.action(self.configuration, self.runtime_configuration)
         self.logger.info("Action '%s' executed successfully.", action.name)
 
-    def get_available_actions(self) -> List[FeatureAction]:
+    def get_available_actions(self) -> list[FeatureAction]:
         """
         Lists all available actions provided by the feature providers.
 
@@ -305,9 +308,9 @@ class RuntimeProvider:
         their available actions into a single list.
 
         Returns:
-            List[FeatureProvider]: A list of all available feature providers.
+            list[FeatureProvider]: A list of all available feature providers.
         """
-        available_actions: List[FeatureAction] = []
+        available_actions: list[FeatureAction] = []
         for feature in self.features:
             available_actions.extend(feature.actions)
         return available_actions

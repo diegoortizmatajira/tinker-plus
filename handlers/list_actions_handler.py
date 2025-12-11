@@ -1,8 +1,7 @@
 """Module for handling the 'list-actions' command."""
 
-import argparse
 import logging
-from typing import override
+from typing import Any, override
 from handlers.base_handler import BaseHandler
 
 LIST_ACTIONS_COMMAND = "list-actions"
@@ -18,14 +17,16 @@ class ListActionsHandler(BaseHandler):
 
     def __init__(
         self,
-        subparser: argparse._SubParsersAction,
+        subparser: Any,  # pyright: ignore[reportExplicitAny, reportAny]
         handlers: dict[str, BaseHandler],
     ) -> None:
         handlers[LIST_ACTIONS_COMMAND] = self
-        subparser.add_parser(LIST_ACTIONS_COMMAND, help="List available actions")
+        subparser.add_parser(  # pyright: ignore[reportAny]
+            LIST_ACTIONS_COMMAND, help="List available actions"
+        )
 
     @override
-    def handle(self, _args, logger: logging.Logger):
+    def handle(self, _args: object, logger: logging.Logger):
         logger.info("Listing available actions...")
         runtime_provider = self.get_runtime_provider([], True)
         actions = runtime_provider.get_available_actions()

@@ -1,8 +1,9 @@
 """Feature to back up game files to a specified location."""
 
 from pathlib import Path
-from typing import Any, override
+from typing import override
 from core.configuration_property import ConfigurationProperty
+from core.configuration_types import ConfigurationDictionary
 from core.defaults import LOG_DRY_RUN
 from core.feature_provider import FeatureAction, FeatureProvider
 from core.process_runner import run_command
@@ -96,7 +97,9 @@ class GameFilesBackup(FeatureProvider):
         )
 
     def __get_backup_archive_name(
-        self, configuration: dict[str, Any], runtime_configuration: RuntimeConfiguration
+        self,
+        configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
     ):
         backup_location = BACKUP_LOCATION_PROPERTY.get_or_fail(configuration)
         backup_name_template = BACKUP_ARCHIVE_NAME_TEMPLATE_PROPERTY.get_or_fail(
@@ -110,8 +113,10 @@ class GameFilesBackup(FeatureProvider):
         return Path(f"{backup_location}/{archive_name}")
 
     def backup_game_files(
-        self, configuration: dict[str, Any], runtime_configuration: RuntimeConfiguration
-    ):
+        self,
+        configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
+    ) -> None:
         """Backs up game files to a specified location.
 
         Args:
@@ -151,14 +156,16 @@ class GameFilesBackup(FeatureProvider):
                     game_files_location,
                     archive_name,
                 )
-                process.wait()
+                _ = process.wait()
                 self.logger.info(
                     "Game files backed up to %s successfully.", archive_name
                 )
 
     def restore_game_files(
-        self, configuration: dict[str, Any], runtime_configuration: RuntimeConfiguration
-    ):
+        self,
+        configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
+    ) -> None:
         """Restores game files from the backup location.
 
         Args:
@@ -207,14 +214,16 @@ class GameFilesBackup(FeatureProvider):
                     archive_name,
                     game_files_location,
                 )
-                process.wait()
+                _ = process.wait()
                 self.logger.info(
                     "Game files restored up to %s successfully.", game_files_location
                 )
 
     @override
     def before_execution(
-        self, _configuration: dict, runtime_configuration: RuntimeConfiguration
+        self,
+        configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
     ):
         if not runtime_configuration.steam_game_exe:
             self.logger.info(
@@ -225,10 +234,10 @@ class GameFilesBackup(FeatureProvider):
         game_executable = Path(runtime_configuration.steam_game_exe)
         if (
             not game_executable.exists()
-            and BACKUP_RESTORE_IF_NOT_INSTALLED_PROPERTY.get(_configuration, False)
+            and BACKUP_RESTORE_IF_NOT_INSTALLED_PROPERTY.get(configuration, False)
         ):
             self.logger.info(
                 "Game executable '%s' not found. Initiating restoration from backup.",
                 game_executable,
             )
-            self.restore_game_files(_configuration, runtime_configuration)
+            self.restore_game_files(configuration, runtime_configuration)

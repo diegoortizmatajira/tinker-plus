@@ -1,18 +1,18 @@
 """Module for generating GUI components based on runtime features."""
 
-from typing import List
-
-# pylint: disable=import-error
+from typing import Any, cast, final
 import ttkbootstrap as ttk
 from ttkbootstrap.style import DANGER, INFO, PRIMARY, SUCCESS
 
-from core.configuration_property import ConfigurationProperty
+from core.configuration_property import AnyConfigurationProperty, ConfigurationProperty
+from core.configuration_types import AcceptedPropertyTypes, ConfigurationDictionary
 from core.feature_provider import FeatureAction
 from core.log_storage import LogFactory
 from core.runtime_provider import RuntimeProvider
 
 
-class PropertyWrapper:
+@final
+class PropertyWrapper[T_co: AcceptedPropertyTypes]:
     """
     A wrapper class for ConfigurationProperty to facilitate GUI generation.
 
@@ -20,45 +20,46 @@ class PropertyWrapper:
         property (ConfigurationProperty): The configuration property to be wrapped.
     """
 
-    map = {
+    map: dict[AcceptedPropertyTypes | None, str] = {
         True: "1",
         False: "0",
         None: "",
     }
 
-    def __init__(self, config_property: ConfigurationProperty):
+    def __init__(self, config_property: ConfigurationProperty[T_co]):
         self.config_property = config_property
-        self.variable = ttk.Variable()
+        self.variable: ttk.StringVar = ttk.StringVar()
 
-    def recover_value(self, configuration: dict):
+    def recover_value(self, configuration: ConfigurationDictionary):
         """Recovers the value from the GUI variable."""
-        value = self.variable.get()
+        value: str = self.variable.get()
+        mapped_value: AcceptedPropertyTypes | None
         if self.config_property.type_ref is bool:
             reverse_map = {v: k for k, v in self.map.items()}
             mapped_value = reverse_map.get(value)
-        elif self.config_property.type_ref is list and isinstance(value, str):
+        elif self.config_property.type_ref is list:
             mapped_value = value.split(",") if value != "" else []
         elif self.config_property.type_ref is int:
             mapped_value = int(value) if value != "" else None
         else:
             mapped_value = value if value != "" else None
+        self.config_property.set(configuration, cast(T_co, mapped_value))
 
-        self.config_property.set(configuration, mapped_value)
-
-    def set_value(self, configuration: dict):
+    def set_value(self, configuration: ConfigurationDictionary):
         """Sets the GUI variable from the configuration property."""
         value = self.config_property.get(configuration)
         if self.config_property.type_ref is bool:
-            mapped_value = self.map.get(value, value)
+            mapped_value = self.map.get(value, f"{value}")
         elif self.config_property.type_ref is list and isinstance(value, list):
             mapped_value = ",".join(str(item) for item in value)
         elif self.config_property.type_ref is int:
             mapped_value = f"{value}" if value is not None else "0"
         else:
-            mapped_value = value if value is not None else ""
+            mapped_value = f"{value}" if value is not None else ""
         self.variable.set(mapped_value)
 
 
+@final
 class Generator:
     """
     A class responsible for generating GUI components based on runtime features.
@@ -68,13 +69,13 @@ class Generator:
         and features for categorization.
 
     Methods:
-        __get_categorized_properties() -> dict[str, dict[str, List[ConfigurationProperty]]]:
+        __get_categorized_properties() -> dict[str, dict[str, list[ConfigurationProperty]]]:
             Categorizes properties based on their features and returns a nested dictionary.
 
         generate_tabs(notebook: Notebook):
             Creates tabs within a notebook widget based on categorized properties.
 
-        generate_tab_content(tab: ttk.Frame, categories: dict[str, List[ConfigurationProperty]]):
+        generate_tab_content(tab: ttk.Frame, categories: dict[str, list[ConfigurationProperty]]):
             Populates a given tab with categorized properties and the corresponding GUI components.
     """
 
@@ -82,18 +83,20 @@ class Generator:
         if not runtime_provider.runtime_configuration:
             raise ValueError("Runtime configuration is required")
         self.runtime_provider = runtime_provider
-        self.property_wrappers: List[PropertyWrapper] = []
+        self.property_wrappers: list[PropertyWrapper[Any]] = []  # pyright: ignore[reportExplicitAny]
         self.logger = LogFactory.singleton().get_logger(self.__class__.__name__)
 
-    def __add_wrapper(self, config_property: ConfigurationProperty) -> ttk.Variable:
+    def __add_wrapper(self, config_property: AnyConfigurationProperty) -> ttk.Variable:
         wrapper = PropertyWrapper(config_property)
         self.property_wrappers.append(wrapper)
         return wrapper.variable
 
     def __get_categorized_properties(
         self,
-    ) -> dict[str, dict[str, List[ConfigurationProperty]]]:
-        categorized_properties = {}
+    ) -> dict[str, dict[str, list[AnyConfigurationProperty]]]:
+        categorized_properties: dict[
+            str, dict[str, list[AnyConfigurationProperty]]
+        ] = {}
         for feature in self.runtime_provider.features:
             tab = categorized_properties.get(feature.category, {})
             category = tab.get(feature.name, [])
@@ -152,7 +155,7 @@ class Generator:
                     ).pack(side="left", padx=5, pady=5)
 
     def generate_tab_content(
-        self, tab: ttk.Frame, categories: dict[str, List[ConfigurationProperty]]
+        self, tab: ttk.Frame, categories: dict[str, list[AnyConfigurationProperty]]
     ):
         """
         Populates the given tab with categorized configuration properties.
@@ -163,7 +166,7 @@ class Generator:
 
         Args:
             - tab (ttk.Frame): The tab frame where the categorized properties will be added.
-            - categories (dict[str, List[ConfigurationProperty]]): A dictionary where keys
+            - categories (dict[str, list[ConfigurationProperty]]): A dictionary where keys
             represent category names and values are the list of configuration properties
             for each category.
         """
@@ -171,8 +174,8 @@ class Generator:
             # Create a labeled frame for each category
             category_frame = ttk.Labelframe(tab, text=category_name)
             category_frame.pack(fill="both", expand=True, padx=10, pady=10)
-            category_frame.grid_columnconfigure(0, minsize=350)
-            category_frame.grid_columnconfigure(1, weight=1)
+            _ = category_frame.grid_columnconfigure(0, minsize=350)
+            _ = category_frame.grid_columnconfigure(1, weight=1)
             row = 0
             for prop in props:
                 # Create a variable wrapper for the property
@@ -239,12 +242,12 @@ class Generator:
                     )
                 row += 1
 
-    def display_values(self, configuration: dict):
+    def display_values(self, configuration: ConfigurationDictionary):
         """Sets the GUI variables from the configuration properties."""
         for wrapper in self.property_wrappers:
             wrapper.set_value(configuration)
 
-    def recover_values(self, configuration: dict):
+    def recover_values(self, configuration: ConfigurationDictionary):
         """Recovers the values from the GUI variables to the configuration properties."""
         for wrapper in self.property_wrappers:
             wrapper.recover_value(configuration)

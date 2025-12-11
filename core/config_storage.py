@@ -1,10 +1,12 @@
 """Module for managing configuration storage, including global and game-specific"""
 
+from collections.abc import Sequence
 import json
 import os
 from pathlib import Path
-from typing import List, Optional
+from typing import cast, final
 
+from core.configuration_types import ConfigurationDictionary
 from core.defaults import (
     CONFIG_LOCATION,
     GAME_CONFIG_DIR,
@@ -18,6 +20,7 @@ from core.game_info import GameInfo
 from .log_storage import LogFactory
 
 
+@final
 class ConfigStorage:
     """
     A class for handling storage and management of configuration files, including
@@ -31,21 +34,21 @@ class ConfigStorage:
     def __init__(self):
         self.logger = LogFactory.singleton().get_logger(self.__class__.__name__)
 
-    def get_game_configuration_files(self) -> List[Path]:
+    def get_game_configuration_files(self) -> list[Path]:
         """
         Retrieves all game configuration files based on the GAME_CONFIG_FILE_TEMPLATE.
 
         Returns:
-            List[Path]: A list of Paths to the game configuration files.
+            list[Path]: A list of Paths to the game configuration files.
         """
-        config_files = []
+        config_files: list[Path] = []
         config_dir = Path(GAME_CONFIG_DIR)
         for file in config_dir.glob("*.json"):
             if file.is_file():
                 config_files.append(file)
         return config_files
 
-    def get_global_config(self) -> Optional[dict]:
+    def get_global_config(self) -> ConfigurationDictionary | None:
         """
         Retrieve the global configuration.
 
@@ -60,9 +63,9 @@ class ConfigStorage:
             return None
         self.logger.info("Loading global configuration from: %s", GLOBAL_CONFIG_FILE)
         with open(GLOBAL_CONFIG_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
+            return cast(ConfigurationDictionary, json.load(f))
 
-    def get_game_config(self, game_id: str) -> Optional[dict]:
+    def get_game_config(self, game_id: str) -> ConfigurationDictionary | None:
         """
         Retrieve the game-specific configuration for a given game ID.
 
@@ -73,7 +76,7 @@ class ConfigStorage:
             game_id (str): The unique identifier of the game whose configuration is to be retrieved.
 
         Returns:
-            Optional[dict]: The contents of the game-specific configuration file if it exists,
+            dict | None: The contents of the game-specific configuration file if it exists,
             otherwise None.
         """
         game_configuration_file = str.format(GAME_CONFIG_FILE_TEMPLATE, game_id)
@@ -84,9 +87,9 @@ class ConfigStorage:
             game_configuration_file,
         )
         with open(game_configuration_file, "r", encoding="utf-8") as f:
-            return json.load(f)
+            return cast(ConfigurationDictionary, json.load(f))
 
-    def save_global_config(self, config: dict):
+    def save_global_config(self, config: ConfigurationDictionary):
         """
         Save the global configuration.
 
@@ -107,10 +110,13 @@ class ConfigStorage:
         # Convert sourced_configuration to json and save to GLOBAL_CONFIG_FILE
         global_json_content = json.dumps(config, indent=4, sort_keys=True)
         with open(GLOBAL_CONFIG_FILE, "w", encoding="utf-8") as f:
-            f.write(global_json_content)
+            _ = f.write(global_json_content)
 
     def save_game_config(
-        self, config: dict, game_id: Optional[str], global_config: Optional[dict]
+        self,
+        config: ConfigurationDictionary,
+        game_id: str | None,
+        global_config: ConfigurationDictionary | None,
     ):
         """
         Save the game-specific configuration for a given game ID.
@@ -142,9 +148,13 @@ class ConfigStorage:
         # Convert sourced_configuration to json and save to game_configuration_file
         game_json_content = json.dumps(config, indent=4, sort_keys=True)
         with open(game_configuration_file, "w", encoding="utf-8") as f:
-            f.write(game_json_content)
+            _ = f.write(game_json_content)
 
-    def __diff_configs(self, global_config: dict, game_config: dict) -> dict:
+    def __diff_configs(
+        self,
+        global_config: ConfigurationDictionary,
+        game_config: ConfigurationDictionary,
+    ) -> ConfigurationDictionary:
         """
         Compute the difference between global and game-specific configurations.
 
@@ -160,15 +170,17 @@ class ConfigStorage:
             dict: A dictionary containing only the differing key-value pairs from
             the game-specific configuration.
         """
-        diff = {}
+        diff: ConfigurationDictionary = {}
         for key, value in game_config.items():
             if key not in global_config or global_config[key] != value:
                 diff[key] = value
         return diff
 
     def build_global_configuration(
-        self, sourced_configuration: dict, clone_configuration: bool = False
-    ) -> dict:
+        self,
+        sourced_configuration: ConfigurationDictionary,
+        clone_configuration: bool = False,
+    ) -> ConfigurationDictionary:
         """
         Build the global configuration.
 
@@ -200,10 +212,32 @@ class ConfigStorage:
     def build_game_configuration(
         self,
         game_info: GameInfo,
-        sourced_configuration: dict,
-        global_configuration_snapshot: dict,
+        sourced_configuration: ConfigurationDictionary,
+        global_configuration_snapshot: ConfigurationDictionary,
         clone_configuration: bool = False,
-    ) -> dict:
+    ) -> ConfigurationDictionary:
+        """
+        Build the game-specific configuration.
+
+        This method constructs the game-specific configuration by merging the provided
+        sourced configuration with any existing configuration for the given game. If no
+        configuration exists for the game, a new one is created and saved.
+
+        The option to clone the sourced configuration ensures that the original source
+        remains unaltered during the update process. The game information is included
+        in the configuration under a designated key for reference.
+
+        Args:
+            game_info (GameInfo): The game information object containing the unique game ID.
+            sourced_configuration (dict): The source configuration data to be merged with
+                                           the game's specific configuration.
+            global_configuration_snapshot (dict): A snapshot of the global configuration,
+                                                  used to calculate configuration differences.
+            clone_configuration (bool): Whether to clone the sourced configuration before merging.
+
+        Returns:
+            dict: The finalized game-specific configuration after merging and saving the changes.
+        """
         # Check for game-specific configuration file
         game_config = self.get_game_config(game_info.game_id)
         target_configuration = sourced_configuration
@@ -223,14 +257,28 @@ class ConfigStorage:
         return target_configuration
 
     def validate_config(
-        self, game: GameInfo, features: List[FeatureProvider]
-    ) -> List[str]:
+        self, game: GameInfo, features: Sequence[FeatureProvider]
+    ) -> list[str]:
+        """
+        Validate the configuration for the provided game and features.
+
+        This method ensures that the game-specific configuration contains all expected keys
+        based on the provided features and warns about any unexpected keys.
+
+        Args:
+            game (GameInfo): The game information object for which the configuration is validated.
+            features (list[FeatureProvider]): A list of feature providers whose properties
+                                              determine the expected configuration keys.
+
+        Returns:
+            list[str]: A list of error messages indicating unexpected configuration keys.
+        """
         expected_config_keys = [GAME_INFO_KEY]
         for feature in features:
             expected_config_keys.extend(
                 [property.name for property in feature.properties]
             )
-        errors = []
+        errors: list[str] = []
 
         global_config = self.build_global_configuration({})
         game_specific_config = self.build_game_configuration(

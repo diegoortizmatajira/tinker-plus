@@ -1,9 +1,11 @@
 """Defines the Runtime configuration for the application."""
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 import logging
-from typing import Any, Callable, List, Optional
+from typing import Callable
 
+from core.configuration_types import ConfigurationDictionary
 from core.game_info import GameInfo
 
 
@@ -18,13 +20,13 @@ class ExecutableCommand:
 
     Attributes:
         command (str): The command to execute.
-        args (Optional[str]): Optional arguments for the command.
-        category (Optional[str]): An optional category to classify the command.
+        args (str | None): Optional arguments for the command.
+        category (str | None): An optional category to classify the command.
     """
 
     command: str
-    args: Optional[str] = None
-    category: Optional[str] = None
+    args: str | None = None
+    category: str | None = None
 
     def get_full_command(self) -> str:
         """
@@ -48,8 +50,8 @@ class PipelineWrapper:
         command (str): The command to execute within the pipeline wrapper.
     """
 
-    command: Optional[str] = None
-    wrapper: Optional[Callable[[str, "RuntimeConfiguration"], str]] = None
+    command: str | None = None
+    wrapper: Callable[[str, "RuntimeConfiguration"], str] | None = None
     is_global_wrapper: bool = True
     is_fork_wrapper: bool = False
 
@@ -100,38 +102,38 @@ class RuntimeConfiguration:
 
     Attributes:
         use_proton (str): Specifies whether Proton is used. Defaults to an empty string.
-        fork_commands (Optional[List[ExecutableCommand]]): A list of forked commands to execute.
+        fork_commands (list[ExecutableCommand] | None): A list of forked commands to execute.
         command (str): The primary command to execute. Defaults to an empty string.
-        winetricks (Optional[List[str]]): A list of winetricks to apply. Defaults to None.
+        winetricks (list[str] | None): A list of winetricks to apply. Defaults to None.
         prefix_path (str): The path to the runtime prefix. Defaults to an empty string.
     """
 
-    original_command: List[str]
+    original_command: Sequence[str]
     game_info: GameInfo
     dry_run: bool = False
-    steam_app_id: Optional[str] = None
-    steam_game_id: Optional[str] = None
-    steam_base_folder: Optional[str] = None
-    steam_compat_install_path: Optional[str] = None
-    steam_compat_data_path: Optional[str] = None
-    steam_wrapper: Optional[str] = None
-    steam_reaper: Optional[str] = None
-    steam_sniper: Optional[str] = None
-    steam_compatibility_command: Optional[str] = None
-    steam_compatibility_tool: Optional[str] = None
-    steam_compatibility_tools_path: Optional[str] = None
-    steam_game_exe: Optional[str] = None
-    steam_game_args: Optional[str] = None
-    steam_game_cwd: Optional[str] = None
-    wine: Optional[str] = None
-    fork_commands: Optional[List[ExecutableCommand]] = None
-    prefix_path: Optional[str] = None
+    steam_app_id: str | None = None
+    steam_game_id: str | None = None
+    steam_base_folder: str | None = None
+    steam_compat_install_path: str | None = None
+    steam_compat_data_path: str | None = None
+    steam_wrapper: str | None = None
+    steam_reaper: str | None = None
+    steam_sniper: str | None = None
+    steam_compatibility_command: str | None = None
+    steam_compatibility_tool: str | None = None
+    steam_compatibility_tools_path: str | None = None
+    steam_game_exe: str | None = None
+    steam_game_args: str | None = None
+    steam_game_cwd: str | None = None
+    wine: str | None = None
+    fork_commands: list[ExecutableCommand] | None = None
+    prefix_path: str | None = None
     execute_trainers: bool = True
     execute_forks_only: bool = False
-    environment_variables: Optional[dict[str, str]] = None
-    pipeline_wrappers: Optional[List[PipelineWrapper]] = None
+    environment_variables: dict[str, str] | None = None
+    pipeline_wrappers: list[PipelineWrapper] | None = None
     log_executable_commands: bool = False
-    loaded_global_configuration: Optional[dict[str, Any]] = None
+    loaded_global_configuration: ConfigurationDictionary | None = None
 
     @staticmethod
     def empty() -> "RuntimeConfiguration":

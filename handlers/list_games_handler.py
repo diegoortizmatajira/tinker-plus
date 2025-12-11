@@ -1,6 +1,5 @@
-import argparse
 import logging
-from typing import override
+from typing import Any, override
 from core.config_storage import ConfigStorage
 from core.games_manager import GamesManager
 from handlers.base_handler import BaseHandler
@@ -9,16 +8,28 @@ LIST_GAMES_COMMAND = "list-games"
 
 
 class ListGamesHandler(BaseHandler):
+    """
+    Handles the "list-games" command to display a list of configured games.
+
+    This class integrates with the command-line parser and provides the necessary
+    functionality to handle and display configured games using the GamesManager.
+
+    Methods:
+        handle: Lists and prints available games to the logger and console.
+    """
+
     def __init__(
         self,
-        subparser: argparse._SubParsersAction,
+        subparser: Any,  # pyright: ignore[reportExplicitAny, reportAny]
         handlers: dict[str, BaseHandler],
     ) -> None:
         handlers[LIST_GAMES_COMMAND] = self
-        subparser.add_parser(LIST_GAMES_COMMAND, help="List configured games")
+        subparser.add_parser(  # pyright: ignore[reportAny]
+            LIST_GAMES_COMMAND, help="List configured games"
+        )
 
     @override
-    def handle(self, _args, logger: logging.Logger):
+    def handle(self, _args: object, logger: logging.Logger):
         logger.info("Listing configured games...")
         manager = GamesManager(ConfigStorage())
         logger.info("Available Games: %s", [game.name for game in manager.get_games()])

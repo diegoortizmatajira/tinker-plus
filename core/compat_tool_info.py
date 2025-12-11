@@ -5,7 +5,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Any, ClassVar, cast
+from typing import ClassVar, cast
 
 from core.defaults import (
     DEFAULT_STEAM_COMMON_FOLDER,
@@ -14,6 +14,7 @@ from core.defaults import (
     GLOBAL_COMPAT_TOOL_CACHE_FILE,
     LOG_SEARCHING,
 )
+
 from core.file_operations import dump_as_json
 from core.runtime_configuration import RuntimeConfiguration
 
@@ -54,6 +55,7 @@ class CompatToolInfo:
 
         Args:
             logger (logging.Logger): The logger instance used for logging messages.
+            dry_run (bool): If True, the function will simulate changes without saving.
 
         Returns:
             dict[str, CompatToolInfo]: A dictionary containing the cached compatibility
@@ -62,24 +64,27 @@ class CompatToolInfo:
         """
         if cls._cache is not None:
             return cls._cache
+
         try:
             if not os.path.exists(GLOBAL_COMPAT_TOOL_CACHE_FILE):
                 logger.info(
                     "Compatibility tool info cache file does not exist. Creating a new one."
                 )
-                CompatToolInfo.save_cache({}, logger, dry_run)
+                cls.save_cache({}, logger, dry_run)
                 return {}
 
             with open(
                 GLOBAL_COMPAT_TOOL_CACHE_FILE, "r", encoding="utf-8"
             ) as cache_file:
-                raw_cache: dict[str, Any] = cast(dict[str, Any], json.load(cache_file))
-                cache = {
+                raw_cache: dict[str, dict[str, str]] = cast(
+                    dict[str, dict[str, str]], json.load(cache_file)
+                )
+                cache: dict[str, CompatToolInfo] = {
                     name: CompatToolInfo(**info) for name, info in raw_cache.items()
                 }
                 cls._cache = cache
                 return cache
-        except Exception as e:
+        except (OSError, IOError, json.JSONDecodeError) as e:
             logger.warning("Failed to load compatibility tool info cache: %s", e)
             return {}
 

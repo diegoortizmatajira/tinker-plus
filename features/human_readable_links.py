@@ -4,6 +4,7 @@ import os
 from typing import override
 
 from core import log_storage
+from core.configuration_types import ConfigurationDictionary
 from core.defaults import (
     APP_LAST_RUN_LOG_FILE,
     GAME_CONFIG_FILE_TEMPLATE,
@@ -28,7 +29,9 @@ class HumanReadableLinks(FeatureProvider):
 
     @override
     def before_execution(
-        self, _configuration: dict, runtime_configuration: RuntimeConfiguration
+        self,
+        _configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
     ):
         if not runtime_configuration.steam_game_exe:
             return

@@ -4,7 +4,6 @@ import logging
 import os
 from pathlib import Path
 import re
-from typing import Optional
 from core.defaults import DEFAULT_STEAM_APP_CACHE_FOLDER, STEAM_MANIFESTS_TEMPLATE
 from core.game_info import GameInfo
 from core.runtime_configuration import RuntimeConfiguration
@@ -12,7 +11,7 @@ from core.runtime_configuration import RuntimeConfiguration
 
 def get_steam_header_image_path(
     runtime_configuration: RuntimeConfiguration,
-) -> Optional[str]:
+) -> str | None:
     """
     Constructs the file path for the Steam header image of a given game.
 
@@ -140,7 +139,7 @@ def parse_steam_command(runtime_configuration: RuntimeConfiguration):
         - Logs the identified components or warnings if the pattern does not match.
     """
 
-    def evaluate_match(input_str: str, pattern: str, group) -> Optional[str]:
+    def evaluate_match(input_str: str, pattern: str, group: str) -> str | None:
         match = re.search(pattern, input_str)
         if match:
             return match.group(group)

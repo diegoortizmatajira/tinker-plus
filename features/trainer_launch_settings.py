@@ -1,12 +1,13 @@
 """Module for enabling and configuring custom trainers or WeMod integration."""
 
-from typing import Any, override
+from typing import override
 from core import (
     FeatureProvider,
     ConfigurationProperty,
     RuntimeConfiguration,
     process_runner,
 )
+from core.configuration_types import ConfigurationDictionary
 from core.defaults import ACTUAL_TPLUS_LOCATION
 from core.feature_provider import FeatureAction
 from core.runtime_configuration import COMMAND_TRAINER, ExecutableCommand
@@ -106,7 +107,9 @@ class TrainerLaunchSettings(FeatureProvider):
 
     @override
     def apply_configuration(
-        self, configuration: dict, runtime_configuration: RuntimeConfiguration
+        self,
+        configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
     ) -> RuntimeConfiguration:
         execute_trainer = False
 
@@ -161,7 +164,7 @@ class TrainerLaunchSettings(FeatureProvider):
 
     def prepare_prefix_for_wemod(
         self,
-        configuration: dict[str, Any],
+        configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ):
         # pylint: disable=line-too-long

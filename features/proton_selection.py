@@ -4,9 +4,10 @@ Module for selecting proton version.
 
 import logging
 
-from typing import List, override
+from typing import override
 from core import FeatureProvider, ConfigurationProperty, RuntimeConfiguration, ListItem
 from core.compat_tool_info import CompatToolInfo
+from core.configuration_types import ConfigurationDictionary
 from core.log_storage import LogFactory
 from core.runtime_configuration import PipelineWrapper
 from core.steam import get_wine
@@ -14,7 +15,7 @@ from core.steam import get_wine
 
 def get_proton_versions_list(
     _configuration: RuntimeConfiguration, logger: logging.Logger
-) -> List[ListItem]:
+) -> list[ListItem[str]]:
     """
     Retrieves a list of available proton versions from the specified
     steam compatibility tools path.
@@ -164,6 +165,7 @@ PROTON_PREFER_SDL_PROPERTY = ConfigurationProperty(
     generated_environment_variable="PROTON_PREFER_SDL",
 )
 
+
 class ProtonSelection(FeatureProvider):
     """
     A feature provider for selecting the proton version.
@@ -202,8 +204,10 @@ class ProtonSelection(FeatureProvider):
 
     @override
     def override_configuration(
-        self, sourced_configuration: dict, runtime_configuration: RuntimeConfiguration
-    ) -> dict:
+        self,
+        sourced_configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
+    ) -> ConfigurationDictionary:
         if runtime_configuration.steam_compatibility_tools_path:
             PROTON_LAST_COMPATIBILITY_TOOL_PATH_PROPERTY.set(
                 sourced_configuration,
@@ -218,7 +222,9 @@ class ProtonSelection(FeatureProvider):
 
     @override
     def apply_configuration(
-        self, configuration: dict, runtime_configuration: RuntimeConfiguration
+        self,
+        configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
     ) -> RuntimeConfiguration:
         """
         Applies the given configuration to the runtime configuration.

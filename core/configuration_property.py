@@ -8,11 +8,8 @@ from dataclasses import dataclass
 from typing import Any, Callable, cast, get_args, get_origin, overload
 
 
+from core.configuration_types import AcceptedPropertyTypes, ConfigurationDictionary
 from core.runtime_configuration import RuntimeConfiguration
-
-# Type alias for the optional value type in the get method
-AcceptedPropertyTypes = str | int | bool | list[str]
-NullableAcceptedPropertyTypes = AcceptedPropertyTypes | None
 
 
 @dataclass
@@ -45,7 +42,7 @@ class ConfigurationProperty[T_co: AcceptedPropertyTypes]:
 
     def set(
         self,
-        configuration: dict[str, NullableAcceptedPropertyTypes],
+        configuration: ConfigurationDictionary,
         value: T_co | None,
     ):
         """
@@ -58,15 +55,11 @@ class ConfigurationProperty[T_co: AcceptedPropertyTypes]:
         configuration[self.name] = value
 
     @overload
-    def get(
-        self, configuration: dict[str, NullableAcceptedPropertyTypes]
-    ) -> T_co | None:
+    def get(self, configuration: ConfigurationDictionary) -> T_co | None:
         pass
 
     @overload
-    def get(
-        self, configuration: dict[str, NullableAcceptedPropertyTypes], default: T_co
-    ) -> T_co:
+    def get(self, configuration: ConfigurationDictionary, default: T_co) -> T_co:
         pass
 
     def __is_list_type_property(self) -> bool:
@@ -98,7 +91,7 @@ class ConfigurationProperty[T_co: AcceptedPropertyTypes]:
 
     def get(
         self,
-        configuration: dict[str, NullableAcceptedPropertyTypes],
+        configuration: ConfigurationDictionary,
         default: T_co | None = None,
     ) -> T_co | None:
         """
@@ -121,9 +114,7 @@ class ConfigurationProperty[T_co: AcceptedPropertyTypes]:
             f"Configuration value is not a {self.type_ref} value: {self.name} = {value} (type: {type(value)})"
         )
 
-    def get_or_fail(
-        self, configuration: dict[str, NullableAcceptedPropertyTypes]
-    ) -> T_co:
+    def get_or_fail(self, configuration: ConfigurationDictionary) -> T_co:
         """
         Retrieves the value of the configuration property or raises an error if not found.
 
@@ -159,7 +150,7 @@ class ConfigurationProperty[T_co: AcceptedPropertyTypes]:
     # pylint: disable=too-many-return-statements
     def translate_to_environment_variable(
         self,
-        configuration: dict[str, NullableAcceptedPropertyTypes],
+        configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
         logger: logging.Logger,
     ):
@@ -217,9 +208,9 @@ class ConfigurationProperty[T_co: AcceptedPropertyTypes]:
 
     @staticmethod
     def initialize_defaults(
-        configuration: dict[str, NullableAcceptedPropertyTypes],
-        properties: Sequence["ConfigurationProperty[Any]"],
-    ) -> dict[str, NullableAcceptedPropertyTypes]:
+        configuration: ConfigurationDictionary,
+        properties: Sequence["AnyConfigurationProperty"],
+    ) -> ConfigurationDictionary:
         """
         Initializes the configuration dictionary with default values for properties
         that are not already present.
@@ -234,3 +225,6 @@ class ConfigurationProperty[T_co: AcceptedPropertyTypes]:
             if prop.name not in configuration:
                 configuration[prop.name] = prop.default
         return configuration
+
+
+AnyConfigurationProperty = ConfigurationProperty[Any]  # pyright: ignore[reportExplicitAny]

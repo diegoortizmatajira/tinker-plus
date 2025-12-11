@@ -4,10 +4,9 @@ import logging
 import os
 import subprocess
 from pathlib import Path
-from typing import Optional, Union
+from typing import Any
 
 from core.defaults import (
-    CWD_DIR_NAME,
     GAME_SCRIPT_TEMPLATE,
     LOG_DRY_RUN,
     LOG_EXECUTING,
@@ -85,7 +84,7 @@ def __assemble_command_str(
     runtime_configuration: RuntimeConfiguration,
     is_global: bool = True,
     is_fork: bool = False,
-    override_log_to_file: Optional[bool] = None,
+    override_log_to_file: bool | None = None,
 ) -> str:
     command = exe_command.get_full_command()
     # Takes the pipeline wrappers in reverse order
@@ -152,13 +151,13 @@ def run_command_with_compatibility_tool(
 
 
 def run_command(
-    exe_command: Union[str, ExecutableCommand],
+    exe_command: str | ExecutableCommand,
     logger: logging.Logger,
     *,
-    environment_variables: Optional[dict] = None,
-    cwd: Optional[str] = None,
+    environment_variables: dict[str, str] | None = None,
+    cwd: str | None = None,
     dry_run: bool = False,
-) -> Optional[subprocess.Popen]:
+) -> subprocess.Popen[Any] | None:
     """
     Executes a given command using subprocess.Popen.
 
@@ -167,13 +166,13 @@ def run_command(
           either as a string or an ExecutableCommand object.
         - logger (logging.Logger): The logger instance for logging execution
           details.
-        - environment_variables (Optional[dict], optional): A dictionary of
+        - environment_variables (dict | None, optional): A dictionary of
           environment variables to override for the command. Defaults to None.
-        - cwd (Optional[str], optional): The working directory to set for the
+        - cwd (str | None, optional): The working directory to set for the
           command execution. Defaults to None.
 
     Returns:
-        Optional[subprocess.Popen]: The subprocess.Popen object for the
+        subprocess.Popen | None: The subprocess.Popen object for the
         executed command, or None if the execution fails.
     """
     try:
@@ -211,7 +210,7 @@ def run_with_pipeline(
     exe_command: ExecutableCommand,
     runtime_configuration: RuntimeConfiguration,
     logger: logging.Logger,
-) -> Optional[subprocess.Popen]:
+) -> subprocess.Popen[Any] | None:
     """
     Executes a given command using subprocess.
 
@@ -286,7 +285,7 @@ def run_game_and_forks_with_compatibility_tool(
     if added_forks == 0 and runtime_configuration.execute_forks_only:
         logger.warning(
             "No fork commands were added, and 'forks only' mode is enabled. "
-            "The launcher script will not execute any commands."
+            + "The launcher script will not execute any commands."
         )
         raise RuntimeError("No fork commands to execute in 'forks only' mode.")
     if not runtime_configuration.execute_forks_only:
@@ -313,7 +312,7 @@ def run_game_and_forks_with_compatibility_tool(
     script_filename = GAME_SCRIPT_TEMPLATE.format(runtime_configuration.steam_game_id)
     # Write the launcher script to a file
     with open(script_filename, "w", encoding="utf-8") as script_file:
-        script_file.write(launcher_script_content)
+        _ = script_file.write(launcher_script_content)
     os.chmod(script_filename, 0o755)  # Make the script executable
     game_process = run_with_pipeline(
         ExecutableCommand(script_filename, None),

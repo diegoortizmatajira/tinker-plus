@@ -2,11 +2,10 @@ import logging
 import unittest
 
 from core.configuration_property import (
-    AcceptedPropertyTypes,
     ConfigurationProperty,
     ListItem,
-    NullableAcceptedPropertyTypes,
 )
+from core.configuration_types import AcceptedPropertyTypes, ConfigurationDictionary
 from core.runtime_configuration import RuntimeConfiguration
 
 
@@ -24,7 +23,7 @@ class TestConfigurationProperty(unittest.TestCase):
             ),
             ConfigurationProperty(list, "LIST_PROPERTY", "A list", "A list property"),
         ]
-        configuration: dict[str, NullableAcceptedPropertyTypes] = {
+        configuration: ConfigurationDictionary = {
             "STRING_PROPERTY": "test_string",
             "INT_PROPERTY": 42,
             "BOOL_PROPERTY": True,
@@ -62,7 +61,7 @@ class TestConfigurationProperty(unittest.TestCase):
                 list, "LIST_PROPERTY", "A list", "A list property", []
             ),
         ]
-        configuration: dict[str, NullableAcceptedPropertyTypes] = {}
+        configuration: ConfigurationDictionary = {}
         for prop in properties:
             value = prop.get(configuration)
             if prop.default is None:
@@ -84,7 +83,7 @@ class TestConfigurationProperty(unittest.TestCase):
             ),
             ConfigurationProperty(list, "LIST_PROPERTY", "A list", "A list property"),
         ]
-        configuration: dict[str, NullableAcceptedPropertyTypes] = {}
+        configuration: ConfigurationDictionary = {}
         for prop in properties:
             with self.assertRaises(KeyError):
                 _ = prop.get_or_fail(configuration)
@@ -98,7 +97,7 @@ class TestConfigurationProperty(unittest.TestCase):
         logger = logging.getLogger("test_logger")
 
         def values_provider(
-            _: RuntimeConfiguration, __: logging.Logger
+            _runtime_configuration: RuntimeConfiguration, _logger: logging.Logger
         ) -> list[ListItem[AcceptedPropertyTypes]]:
             return values
 
@@ -134,7 +133,7 @@ class TestConfigurationProperty(unittest.TestCase):
             description="Test binary key",
             generated_environment_variable="TEST_BINARY",
         )
-        configuration: dict[str, NullableAcceptedPropertyTypes] = {"binary_key": True}
+        configuration: ConfigurationDictionary = {"binary_key": True}
         prop.translate_to_environment_variable(
             configuration, runtime_configuration, logger
         )
@@ -182,7 +181,7 @@ class TestConfigurationProperty(unittest.TestCase):
             description="A boolean key",
             default=True,
         )
-        configuration: dict[str, NullableAcceptedPropertyTypes] = {}
+        configuration: ConfigurationDictionary = {}
         updated_config = ConfigurationProperty.initialize_defaults(
             configuration, [prop1, prop2, prop3]
         )
