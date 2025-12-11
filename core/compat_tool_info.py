@@ -5,7 +5,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import ClassVar, Optional
+from typing import Any, ClassVar, cast
 
 from core.defaults import (
     DEFAULT_STEAM_COMMON_FOLDER,
@@ -26,7 +26,7 @@ class CompatToolInfo:
     Attributes:
         name (str): The name of the compatibility tool.
         dir (str): The directory where the compatibility tool is located.
-        _cache (ClassVar[Optional[dict[str, "CompatToolInfo"]]]): A class-level cache
+        _cache (ClassVar[dict[str, "CompatToolInfo"]] | None): A class-level cache
             to store compatibility tool information.
 
     Methods:
@@ -39,7 +39,7 @@ class CompatToolInfo:
 
     name: str
     dir: str
-    _cache: ClassVar[Optional[dict[str, "CompatToolInfo"]]] = None
+    _cache: ClassVar[dict[str, "CompatToolInfo"] | None] = None
 
     @classmethod
     def get_cache(
@@ -73,7 +73,7 @@ class CompatToolInfo:
             with open(
                 GLOBAL_COMPAT_TOOL_CACHE_FILE, "r", encoding="utf-8"
             ) as cache_file:
-                raw_cache = json.load(cache_file)
+                raw_cache: dict[str, Any] = cast(dict[str, Any], json.load(cache_file))
                 cache = {
                     name: CompatToolInfo(**info) for name, info in raw_cache.items()
                 }
@@ -122,9 +122,7 @@ class CompatToolInfo:
         return CompatToolInfo(name="unknown", dir=".")
 
     @classmethod
-    def from_cache(
-        cls, name: str, logger: logging.Logger
-    ) -> Optional["CompatToolInfo"]:
+    def from_cache(cls, name: str, logger: logging.Logger) -> "CompatToolInfo | None":
         """
         Retrieve a CompatToolInfo object from the cache by its name.
 
@@ -136,7 +134,7 @@ class CompatToolInfo:
             logger (logging.Logger): The logger instance used for logging messages.
 
         Returns:
-            Optional[CompatToolInfo]: The CompatToolInfo object corresponding to the
+            CompatToolInfo | None: The CompatToolInfo object corresponding to the
             given name if it exists in the cache, otherwise None.
         """
         cache = cls.get_cache(logger)
@@ -181,8 +179,8 @@ class CompatToolInfo:
             if cache_value_path not in compat_dirs:
                 compat_dirs.append(cache_value_path)
 
-        seen_directories = set()
-        new_cache = {}
+        seen_directories: set[str] = set()
+        new_cache: dict[str, CompatToolInfo] = {}
         for compat_dir in compat_dirs:
             logger.info(
                 LOG_SEARCHING.format("Searching for proton versions in: %s"), compat_dir

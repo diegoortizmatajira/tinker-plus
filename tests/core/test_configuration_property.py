@@ -1,17 +1,18 @@
 import logging
-from typing import List
 import unittest
 
 from core.configuration_property import (
+    AcceptedPropertyTypes,
     ConfigurationProperty,
     ListItem,
+    NullableAcceptedPropertyTypes,
 )
 from core.runtime_configuration import RuntimeConfiguration
 
 
 class TestConfigurationProperty(unittest.TestCase):
     def test_get(self):
-        properties: List[ConfigurationProperty] = [
+        properties: list[ConfigurationProperty[AcceptedPropertyTypes]] = [
             ConfigurationProperty(
                 str, "STRING_PROPERTY", "A string", "A string property"
             ),
@@ -23,7 +24,7 @@ class TestConfigurationProperty(unittest.TestCase):
             ),
             ConfigurationProperty(list, "LIST_PROPERTY", "A list", "A list property"),
         ]
-        configuration = {
+        configuration: dict[str, NullableAcceptedPropertyTypes] = {
             "STRING_PROPERTY": "test_string",
             "INT_PROPERTY": 42,
             "BOOL_PROPERTY": True,
@@ -35,7 +36,7 @@ class TestConfigurationProperty(unittest.TestCase):
             self.assertEqual(value, configuration[prop.name])
 
     def test_get_defaults(self):
-        properties: List[ConfigurationProperty] = [
+        properties: list[ConfigurationProperty[AcceptedPropertyTypes]] = [
             # Properties without defaults should return None
             ConfigurationProperty(
                 str, "STRING_PROPERTY", "A string", "A string property"
@@ -61,7 +62,7 @@ class TestConfigurationProperty(unittest.TestCase):
                 list, "LIST_PROPERTY", "A list", "A list property", []
             ),
         ]
-        configuration = {}
+        configuration: dict[str, NullableAcceptedPropertyTypes] = {}
         for prop in properties:
             value = prop.get(configuration)
             if prop.default is None:
@@ -71,7 +72,7 @@ class TestConfigurationProperty(unittest.TestCase):
             self.assertEqual(value, prop.default)
 
     def test_get_or_fail(self):
-        properties: List[ConfigurationProperty] = [
+        properties: list[ConfigurationProperty[AcceptedPropertyTypes]] = [
             ConfigurationProperty(
                 str, "STRING_PROPERTY", "A string", "A string property"
             ),
@@ -83,17 +84,22 @@ class TestConfigurationProperty(unittest.TestCase):
             ),
             ConfigurationProperty(list, "LIST_PROPERTY", "A list", "A list property"),
         ]
-        configuration = {}
+        configuration: dict[str, NullableAcceptedPropertyTypes] = {}
         for prop in properties:
             with self.assertRaises(KeyError):
-                prop.get_or_fail(configuration)
+                _ = prop.get_or_fail(configuration)
 
     def test_get_possible_values(self):
         # Scenario: values provider is set and returns values
-        values = [ListItem("value1", "value1"), ListItem("value2", "value2")]
+        values: list[ListItem[AcceptedPropertyTypes]] = [
+            ListItem("value1", "value1"),
+            ListItem("value2", "value2"),
+        ]
         logger = logging.getLogger("test_logger")
 
-        def values_provider(*_):
+        def values_provider(
+            _: RuntimeConfiguration, __: logging.Logger
+        ) -> list[ListItem[AcceptedPropertyTypes]]:
             return values
 
         prop = ConfigurationProperty(
@@ -128,7 +134,7 @@ class TestConfigurationProperty(unittest.TestCase):
             description="Test binary key",
             generated_environment_variable="TEST_BINARY",
         )
-        configuration = {"binary_key": True}
+        configuration: dict[str, NullableAcceptedPropertyTypes] = {"binary_key": True}
         prop.translate_to_environment_variable(
             configuration, runtime_configuration, logger
         )
@@ -140,7 +146,7 @@ class TestConfigurationProperty(unittest.TestCase):
 
         # Scenario: Multivalue list property
         prop = ConfigurationProperty(
-            list,
+            list[str],
             name="list_key",
             display_name="list_key",
             description="Testing multi-value list key",
@@ -169,20 +175,30 @@ class TestConfigurationProperty(unittest.TestCase):
             description="Another key",
             default="value2",
         )
-        configuration = {}
+        prop3 = ConfigurationProperty(
+            bool,
+            name="key3",
+            display_name="key3",
+            description="A boolean key",
+            default=True,
+        )
+        configuration: dict[str, NullableAcceptedPropertyTypes] = {}
         updated_config = ConfigurationProperty.initialize_defaults(
-            configuration, [prop1, prop2]
+            configuration, [prop1, prop2, prop3]
         )
         self.assertEqual(updated_config["key1"], "value1")
         self.assertEqual(updated_config["key2"], "value2")
+        self.assertEqual(updated_config["key3"], True)
 
         # Scenario: property already in the config remains unchanged
-        configuration = {"key1": "overridden_value"}
+        configuration = {"key1": "overridden_value", "key3": False}
         updated_config = ConfigurationProperty.initialize_defaults(
-            configuration, [prop1]
+            configuration, [prop1, prop2, prop3]
         )
         self.assertEqual(updated_config["key1"], "overridden_value")
+        self.assertEqual(updated_config["key2"], "value2")
+        self.assertEqual(updated_config["key3"], False)
 
 
 if __name__ == "__main__":
-    unittest.main()
+    _ = unittest.main()
