@@ -285,7 +285,7 @@ class MainForm:
             self.timer_running = False
             self.__play(with_trainers=True)
 
-    def on_save_config_click(self, _event: Event) -> object:
+    def on_save_config_click(self):
         """
         Handles the click event for the "Save Config" button.
 
@@ -306,7 +306,7 @@ class MainForm:
         self.form.destroy()
         self.runtime_provider.run(with_trainers)
 
-    def on_play_with_trainer_click(self, _event: Event) -> object:
+    def on_play_with_trainer_click(self):
         """
         Handles the click event for the "Play with Trainer" button.
 
@@ -316,7 +316,7 @@ class MainForm:
         self.logger.info(LOG_USER_ACTION.format("Play with Trainer clicked"))
         self.__play(True)
 
-    def on_just_play_click(self, _event: Event) -> object:
+    def on_just_play_click(self):
         """
         Handles the click event for the "Just Play" button.
 
@@ -326,7 +326,7 @@ class MainForm:
         self.logger.info(LOG_USER_ACTION.format("Just Play clicked"))
         self.__play(False)
 
-    def on_close_click(self, _event: Event) -> object:
+    def on_close_click(self):
         """
         Handles the click event for the "Close" button.
 
