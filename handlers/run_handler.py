@@ -79,7 +79,11 @@ class RunHandler(BaseHandler):
             )
             if use_gui:
                 logger.info("💡 Using Graphical User Interface Display")
-                main_form = MainForm(runtime, CURRENT_GUI_OPTIONS.autorun_timeout)
+                main_form = MainForm(
+                    runtime,
+                    CURRENT_GUI_OPTIONS.autorun_timeout,
+                    CURRENT_GUI_OPTIONS.close_after_running_game,
+                )
                 main_form.show()
             else:
                 runtime.run()

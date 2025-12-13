@@ -206,7 +206,7 @@ class Generator:
                     ).pack(side="left", padx=5)
                     ttk.Radiobutton(
                         radio_frame,
-                        text="Default",
+                        text=f"Default ({'Enabled' if prop.default else 'Disabled'})",
                         variable=prop_var,
                         value="",
                         bootstyle=PRIMARY,

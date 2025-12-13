@@ -1,11 +1,12 @@
 """Feature provider for Wine configuration."""
 
-from typing import Callable
+from typing import Callable, override
 from core import process_runner
 from core.configuration_property import ConfigurationProperty, ListItem
 from core.configuration_types import ConfigurationDictionary
 from core.feature_provider import FeatureAction, FeatureProvider
 from core.runtime_configuration import ExecutableCommand, RuntimeConfiguration
+from core.wine import get_win_version, get_windows_list_items, set_win_version
 
 WINE_DLLOVERRIDES_PROPERTY = ConfigurationProperty(
     str,
@@ -49,6 +50,15 @@ WINE_FULLSCREEN_FSR_CUSTOM_MODE_PROPERTY = ConfigurationProperty(
     generated_environment_variable="WINE_FULLSCREEN_FSR_CUSTOM_MODE",
 )
 
+WINE_WINDOWS_VERSION_PROPERTY = ConfigurationProperty(
+    str,
+    "WINE_WINDOWS_VERSION",
+    "Wine Windows Version",
+    "Specifies the Windows version that Wine should emulate."
+    + " Common values include 'win7', 'win10', etc.",
+    values_provider=get_windows_list_items,
+)
+
 
 class WineConfig(FeatureProvider):
     """Provides Wine configuration features, including custom DLL overrides."""
@@ -57,6 +67,7 @@ class WineConfig(FeatureProvider):
         super().__init__(
             "Wine Configuration",
             [
+                WINE_WINDOWS_VERSION_PROPERTY,
                 WINE_DLLOVERRIDES_PROPERTY,
                 WINE_FULLSCREEN_FSR_PROPERTY,
                 WINE_FULLSCREEN_FSR_MODE,
@@ -126,3 +137,17 @@ class WineConfig(FeatureProvider):
         return lambda config, runtime_config: self.__run(
             command, args, config, runtime_config
         )
+
+    @override
+    def before_execution(
+        self,
+        _configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
+    ):
+        windows_version = WINE_WINDOWS_VERSION_PROPERTY.get(_configuration)
+        current_windows_version = get_win_version(runtime_configuration, self.logger)
+        if windows_version and windows_version != current_windows_version:
+            self.logger.info(
+                "Setting Custom Wine Windows version to: %s", windows_version
+            )
+            set_win_version(windows_version, runtime_configuration, self.logger)

@@ -24,6 +24,14 @@ GUI_AUTORUN_TIMEOUT_PROPERTY = ConfigurationProperty(
     3,
 )
 
+GUI_CLOSE_AFTER_RUNNING_GAME_PROPERTY = ConfigurationProperty(
+    bool,
+    "GUI_CLOSE_AFTER_RUNNING_GAME",
+    "Close GUI After Running Game",
+    "If true, closes the GUI after launching a game",
+    True,
+)
+
 
 class GuiOptions(FeatureProvider):
     """Provides GUI-related options such as showing the interface on startup
@@ -34,12 +42,14 @@ class GuiOptions(FeatureProvider):
             "GUI Options",
             [
                 GUI_SHOW_UI_PROPERTY,
+                GUI_CLOSE_AFTER_RUNNING_GAME_PROPERTY,
                 GUI_AUTORUN_TIMEOUT_PROPERTY,
             ],
             "UI",
         )
         self.use_ui: bool = True
         self.autorun_timeout: int = 3
+        self.close_after_running_game: bool = True
 
     @override
     def apply_configuration(
@@ -48,6 +58,9 @@ class GuiOptions(FeatureProvider):
         runtime_configuration: RuntimeConfiguration,
     ) -> RuntimeConfiguration:
         self.use_ui = GUI_SHOW_UI_PROPERTY.get_or_fail(configuration)
+        self.close_after_running_game = (
+            GUI_CLOSE_AFTER_RUNNING_GAME_PROPERTY.get_or_fail(configuration)
+        )
         self.logger.info(
             f"Configuration for displaying the Graphical User Interface is set to: {self.use_ui}"
         )

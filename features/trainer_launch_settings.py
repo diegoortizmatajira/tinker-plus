@@ -11,6 +11,7 @@ from core.configuration_types import ConfigurationDictionary
 from core.defaults import ACTUAL_TPLUS_LOCATION
 from core.feature_provider import FeatureAction
 from core.runtime_configuration import COMMAND_TRAINER, ExecutableCommand
+from core.wine import get_win_version, set_win_version
 
 DOTNET48_OFFLINE_INSTALLER = (
     f"{ACTUAL_TPLUS_LOCATION}/redist/NDP48-x86-x64-AllOS-ENU.exe"
@@ -175,20 +176,14 @@ class TrainerLaunchSettings(FeatureProvider):
         winetricks = WEMOD_WINETRICKS_REQUIREMENTS.get(configuration, [])
         self.logger.info("WeMod trainer winetricks: %s", ",".join(winetricks))
 
-        def set_win_version(version: str, description: str):
-            succeed = process_runner.run_in_wine_prefix(
-                ExecutableCommand("winecfg", f"/v {version}"),
-                runtime_configuration,
-                self.logger,
-            )
-            if succeed:
-                self.logger.info("%s mode set successfully.", description)
-            else:
-                self.logger.error("%s mode setting failed.", description)
-                raise RuntimeError("Winecfg failed")
-
         try:
-            set_win_version("win7", "Use Windows 7")
+            original_win_version = get_win_version(runtime_configuration, self.logger)
+            if original_win_version is None:
+                self.logger.error(
+                    "Could not determine original Windows version in Wine prefix."
+                )
+                return
+            set_win_version("win7", runtime_configuration, self.logger)
             # Install required Winetricks packages
             succeed = process_runner.run_in_wine_prefix(
                 ExecutableCommand("wine", DOTNET48_OFFLINE_INSTALLER),
@@ -200,7 +195,7 @@ class TrainerLaunchSettings(FeatureProvider):
             else:
                 self.logger.error("Dotnet 4.8 installation failed.")
                 raise RuntimeError("Dotnet 4.8 installation failed")
-            set_win_version("win10", "Use Windows 10")
+            set_win_version(original_win_version, runtime_configuration, self.logger)
         except RuntimeError as e:
             self.logger.error("Failed to prepare Wine prefix for WeMod: %s", e)
             raise

@@ -60,7 +60,10 @@ class MainForm:
     """
 
     def __init__(
-        self, runtime_provider: RuntimeProvider, countdown_in_seconds: int = 3
+        self,
+        runtime_provider: RuntimeProvider,
+        countdown_in_seconds: int = 3,
+        close_after_run: bool = True,
     ):
         self.logger = LogFactory.singleton().get_logger(self.__class__.__name__)
         if not runtime_provider.runtime_configuration:
@@ -70,6 +73,7 @@ class MainForm:
         self.logger.info("Initializing application main form")
         self.countdown_in_seconds = countdown_in_seconds
         self.remaining_seconds = countdown_in_seconds
+        self.close_after_run = close_after_run
         self.timer_running = False
         self.generator = Generator(runtime_provider)
         self.form = ttk.Window(
@@ -303,7 +307,8 @@ class MainForm:
     def __play(self, with_trainers: bool):
         self.logger.info("Starting play mode, with_trainers=%s", with_trainers)
         self.generator.recover_values(self.runtime_provider.configuration)
-        self.form.destroy()
+        if self.close_after_run:
+            self.form.destroy()
         self.runtime_provider.run(with_trainers)
 
     def on_play_with_trainer_click(self):

@@ -4,7 +4,7 @@ import logging
 import os
 import subprocess
 from pathlib import Path
-from typing import Any
+from typing import Any, overload
 
 from core.defaults import (
     GAME_SCRIPT_TEMPLATE,
@@ -19,16 +19,102 @@ from core.runtime_configuration import (
 )
 
 
+@overload
 def run_in_wine_prefix(
     exe_command: ExecutableCommand,
     runtime_configuration: RuntimeConfiguration,
     logger: logging.Logger,
 ) -> bool:
     """
-    Executes a given command within a specified Wine prefix using subprocess.
+    Executes the given command in a Wine prefix environment.
+
+    This function sets the necessary environment variables for Wine,
+    constructs the command with optional logging or dry-run behaviors,
+    and executes it using the subprocess module. The execution can also
+    capture output if explicitly enabled.
 
     Args:
-        command (str): The command to execute.
+        exe_command (ExecutableCommand): The command to be executed.
+        runtime_configuration (RuntimeConfiguration): The runtime configuration
+            containing Wine-related settings, environment variables, and execution
+            options such as logging and dry-run.
+        logger (logging.Logger): Logger instance for logging messages, including
+            command execution details and errors.
+
+    Returns:
+        bool: True if the command executes successfully
+
+    Raises:
+        RuntimeError: If the WINEPREFIX environment variable is not set or if the command
+        execution fails due to unhandled errors.
+    """
+
+
+@overload
+def run_in_wine_prefix(
+    exe_command: ExecutableCommand,
+    runtime_configuration: RuntimeConfiguration,
+    logger: logging.Logger,
+    capture_output: bool,
+) -> tuple[bool, str]:
+    """
+    Executes the given command in a Wine prefix environment.
+
+    This function sets up the necessary environment variables for Wine,
+    constructs the command with optional logging or dry-run behaviors, and
+    executes it using the subprocess module. It can also capture output if this
+    option is explicitly enabled.
+
+    Args:
+        exe_command (ExecutableCommand): The command to be executed in the Wine
+            environment.
+        runtime_configuration (RuntimeConfiguration): Configuration specifying
+            environment variables, Wine path, and other execution details.
+        logger (logging.Logger): Instance used for logging execution details.
+        capture_output bool: Whether to capture the command's
+            standard output. If True, the output is captured and returned along
+            with the execution status.
+
+    Returns:
+        tuple[bool, str]: returns a boolean indicating whether the command
+        executed successfully. If `capture_output` is True, returns a tuple
+        (success, output) where the output is the captured command output as a
+        string.
+
+    Raises:
+        RuntimeError: If the WINEPREFIX is not properly set or command execution fails.
+    """
+
+
+def run_in_wine_prefix(
+    exe_command: ExecutableCommand,
+    runtime_configuration: RuntimeConfiguration,
+    logger: logging.Logger,
+    capture_output: bool | None = None,
+) -> bool | tuple[bool, str]:
+    """
+    Executes the given command in a Wine prefix environment.
+
+    This function sets the necessary environment variables for Wine,
+    constructs the command with optional logging or dry-run behaviors,
+    and executes it using the subprocess module. The execution can also
+    capture output if explicitly enabled.
+
+    Args:
+        exe_command (ExecutableCommand): The command to be executed.
+        runtime_configuration (RuntimeConfiguration): The runtime configuration
+            containing Wine-related settings and environment variables.
+        logger (logging.Logger): Logger instance for logging messages.
+        capture_output (bool | None, optional): Whether to capture the command's output.
+            If not specified, the output won't be captured. Defaults to None.
+
+    Returns:
+        bool | tuple[bool, str]: True if the command executes successfully, or
+        (True, captured_output) if output capturing is enabled. False otherwise.
+
+    Raises:
+        RuntimeError: If the WINEPREFIX variable is not set, or if the command
+        execution fails.
     """
     wine_prefix = runtime_configuration.prefix_path
     if not wine_prefix:
@@ -51,13 +137,20 @@ def run_in_wine_prefix(
         logger.info(
             LOG_DRY_RUN.format("Would execute command in Wine prefix: %s"), command
         )
-        return True
+        if capture_output is None:
+            return True
+        return True, "win10"
     try:
         logger.info(
             LOG_EXECUTING.format("Executing command in Wine prefix: %s"), command
         )
         result = subprocess.run(
-            command, env=environment_variables, shell=True, check=True
+            command,
+            env=environment_variables,
+            shell=True,
+            check=True,
+            capture_output=capture_output or False,
+            text=capture_output,
         )
         if result.returncode != 0:
             logger.error(
@@ -71,7 +164,9 @@ def run_in_wine_prefix(
                 command,
                 result.returncode,
             )
-        return result.returncode == 0
+        if capture_output is None:
+            return result.returncode == 0
+        return result.returncode == 0, result.stdout
     except Exception as e:
         logger.error("Error while running command in Wine prefix: %s", e)
         raise RuntimeError(

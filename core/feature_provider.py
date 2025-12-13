@@ -215,3 +215,22 @@ class FeatureProvider(ABC):
             raise RuntimeError(
                 f"Failed to execute in pipeline in {self.__class__.__name__}"
             ) from e
+
+    def validate(
+        self,
+        _configuration: ConfigurationDictionary,
+        _runtime_configuration: RuntimeConfiguration,
+    ) -> Sequence[str]:
+        """
+        Validates the current configuration and runtime setup.
+
+        Args:
+            _configuration (ConfigurationDictionary): The configuration settings to validate.
+            _runtime_configuration (RuntimeConfiguration): The runtime
+            environment to validate against.
+
+        Returns:
+            Sequence[str]: A list of validation error messages, or an empty
+            list if no issues are found.
+        """
+        return []
