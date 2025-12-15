@@ -5,6 +5,7 @@ from core.configuration_property import ConfigurationProperty
 from core.configuration_types import ConfigurationDictionary
 from core.feature_provider import FeatureProvider
 from core.runtime_configuration import RuntimeConfiguration
+from core.steam_environment_data import SteamEnvironmentData
 
 GENERAL_LOG_INDIVIDUAL_EXE_PROPERTY = ConfigurationProperty(
     bool,
@@ -32,6 +33,25 @@ class GeneralRuntime(FeatureProvider):
             ],
             "General",
         )
+
+    @override
+    def build_configuration(
+        self,
+        sourced_configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
+    ) -> ConfigurationDictionary:
+        result = super().build_configuration(
+            sourced_configuration, runtime_configuration
+        )
+        data = SteamEnvironmentData()
+        data.parse(" ".join(runtime_configuration.original_command), self.logger)
+        if data.has_valid_data():
+            data.save(
+                runtime_configuration.dry_run,
+                self.logger,
+            )
+        runtime_configuration.environment_data = data
+        return result
 
     @override
     def apply_configuration(
