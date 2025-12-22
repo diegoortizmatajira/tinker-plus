@@ -175,29 +175,34 @@ def run_in_wine_prefix(
 
 
 def __assemble_command_str(
-    exe_command: ExecutableCommand,
+    exe_command: str | ExecutableCommand,
     runtime_configuration: RuntimeConfiguration,
     is_global: bool = True,
     is_fork: bool = False,
     override_log_to_file: bool | None = None,
 ) -> str:
-    command = exe_command.get_full_command()
+    actual_command = (
+        exe_command if isinstance(exe_command, str) else exe_command.get_full_command()
+    )
     # Takes the pipeline wrappers in reverse order
     for wrapper in reversed(runtime_configuration.pipeline_wrappers or []):
-        command = wrapper.wrap(
-            command,
+        actual_command = wrapper.wrap(
+            actual_command,
             runtime_configuration,
             is_global=is_global,
             is_fork=is_fork,
             logger=logging.getLogger(),
         )
-    if runtime_configuration.log_executable_commands and (
-        override_log_to_file is not False
+    # Only log to file if the command is an ExecutableCommand and logging is enabled
+    if (
+        runtime_configuration.log_executable_commands
+        and not isinstance(exe_command, str)
+        and (override_log_to_file is not False)
     ):
         exe_path = Path(exe_command.command)
         log_file = LogFactory.singleton().get_log_filename(f"{exe_path.stem}.log")
-        command = f"{command} >> {log_file} 2>&1"
-    return command
+        actual_command = f"{actual_command} >> {log_file} 2>&1"
+    return actual_command
 
 
 def run_command_with_compatibility_tool(
@@ -302,7 +307,7 @@ def run_command(
 
 
 def run_with_pipeline(
-    exe_command: ExecutableCommand,
+    exe_command: str | ExecutableCommand,
     runtime_configuration: RuntimeConfiguration,
     logger: logging.Logger,
 ) -> subprocess.Popen[Any] | None:
@@ -346,48 +351,86 @@ def run_game_and_forks_with_compatibility_tool(
             and compatibility tools.
         logger (logging.Logger): The logger instance for logging progress and errors.
     """
-    launcher_script_content = "#!/bin/bash\n"
-    added_forks = 0
-    if runtime_configuration.fork_commands:
-        last_index = len(runtime_configuration.fork_commands) - 1
-        for index, command in enumerate(runtime_configuration.fork_commands):
-            if (
-                command.category == COMMAND_TRAINER
-                and not runtime_configuration.execute_trainers
-            ):
-                continue  # Skip trainer commands if trainers are disabled
+    forks_to_include = [
+        fork
+        for fork in runtime_configuration.fork_commands or []
+        if (
+            fork.category == COMMAND_TRAINER
+            and not runtime_configuration.execute_trainers
+        )
+        is False
+    ]
+
+    added_forks = len(forks_to_include)
+
+    if (
+        not runtime_configuration.execute_forks_only
+        and not runtime_configuration.steam_game_exe
+    ):
+        logger.error("No game executable specified to run.")
+        raise RuntimeError("No game executable specified to run.")
+
+    if added_forks == 0 and runtime_configuration.execute_forks_only:
+        logger.error("No fork commands were added, and 'forks only' mode is enabled.")
+        raise RuntimeError("No fork commands to execute in 'forks only' mode.")
+
+    if added_forks > 0:
+        logger.info("Using launcher script to run forks and game executable.")
+
+        launcher_script_content = "#!/bin/bash\n"
+        launcher_command_lines: list[str] = []
+        for command in forks_to_include:
             command_category = command.category or "fork"
             logger.info(
                 "Including %s command in launcher script: '%s'",
                 command_category,
                 command.get_full_command(),
             )
-            launcher_script_content += f"# {command_category} command\n"
+            command_line = f"# {command_category} command\n"
             assembled_command_str = __assemble_command_str(
                 command,
                 runtime_configuration,
                 is_global=False,
                 is_fork=True,
             )
-            # Determine if we need to add '&' to run in background
-            suffix = (
-                "&"
-                if (index < last_index) or not runtime_configuration.execute_forks_only
-                else ""
+            command_line += f"{assembled_command_str}"
+            launcher_command_lines.append(command_line)
+
+        launcher_script_content += " & \n".join(launcher_command_lines)
+
+        if (
+            not runtime_configuration.execute_forks_only
+            and runtime_configuration.steam_game_exe
+        ):
+            launcher_script_content += " & \n"
+            game_command = ExecutableCommand(
+                runtime_configuration.steam_game_exe,
+                runtime_configuration.steam_game_args,
             )
-            launcher_script_content += f"{assembled_command_str} {suffix}\n"
-            added_forks += 1
-    if added_forks == 0 and runtime_configuration.execute_forks_only:
-        logger.warning(
-            "No fork commands were added, and 'forks only' mode is enabled. "
-            + "The launcher script will not execute any commands."
+            logger.info(
+                "Including game command in launcher script: '%s'.",
+                game_command.get_full_command(),
+            )
+            launcher_script_content += "# main game command\n"
+
+            assembled_command_str = __assemble_command_str(
+                game_command,
+                runtime_configuration,
+                is_global=False,
+            )
+            launcher_script_content += f"{assembled_command_str}\n"
+        script_filename = GAME_SCRIPT_TEMPLATE.format(
+            runtime_configuration.steam_game_id
         )
-        raise RuntimeError("No fork commands to execute in 'forks only' mode.")
-    if not runtime_configuration.execute_forks_only:
+        # Write the launcher script to a file
+        with open(script_filename, "w", encoding="utf-8") as script_file:
+            _ = script_file.write(launcher_script_content)
+        os.chmod(script_filename, 0o755)  # Make the script executable
+    else:
         if not runtime_configuration.steam_game_exe:
             logger.error("No game executable specified to run.")
             raise RuntimeError("No game executable specified to run.")
-
+        # No forks to include; run the game executable directly
         game_command = ExecutableCommand(
             runtime_configuration.steam_game_exe,
             runtime_configuration.steam_game_args,
@@ -396,21 +439,14 @@ def run_game_and_forks_with_compatibility_tool(
             "Including game command in launcher script: '%s'.",
             game_command.get_full_command(),
         )
-        launcher_script_content += "# main game command\n"
-
-        assembled_command_str = __assemble_command_str(
+        script_filename = __assemble_command_str(
             game_command,
             runtime_configuration,
             is_global=False,
         )
-        launcher_script_content += f"{assembled_command_str}\n"
-    script_filename = GAME_SCRIPT_TEMPLATE.format(runtime_configuration.steam_game_id)
-    # Write the launcher script to a file
-    with open(script_filename, "w", encoding="utf-8") as script_file:
-        _ = script_file.write(launcher_script_content)
-    os.chmod(script_filename, 0o755)  # Make the script executable
+
     game_process = run_with_pipeline(
-        ExecutableCommand(script_filename, None),
+        script_filename,
         runtime_configuration,
         logger,
     )
