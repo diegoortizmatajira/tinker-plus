@@ -1,6 +1,7 @@
 """General runtime feature provider."""
 
 from typing import override
+from core.compat_tool_info import CompatToolInfo
 from core.configuration_property import ConfigurationProperty
 from core.configuration_types import ConfigurationDictionary
 from core.feature_provider import FeatureProvider
@@ -43,6 +44,7 @@ class GeneralRuntime(FeatureProvider):
         result = super().build_configuration(
             sourced_configuration, runtime_configuration
         )
+        # Parse Steam Environment Variables and original command line
         data = SteamEnvironmentData()
         data.parse(" ".join(runtime_configuration.original_command), self.logger)
         if data.has_valid_data():
@@ -51,6 +53,21 @@ class GeneralRuntime(FeatureProvider):
                 self.logger,
             )
         runtime_configuration.environment_data = data
+        # Handle Steam Compatibility Tool caching
+        if data.cmd_steam_compatibility_tool:
+            compat_tool_info = CompatToolInfo.from_cache(
+                data.cmd_steam_compatibility_tool, self.logger
+            )
+            if not compat_tool_info:
+                compat_tool_info = CompatToolInfo(
+                    name=data.cmd_steam_compatibility_tool,
+                    dir=data.cmd_steam_compatibility_tools_path or "",
+                )
+                compat_tool_info.put_in_cache(self.logger)
+        _ = CompatToolInfo.scan_and_populate_cache(self.logger, runtime_configuration)
+        # Sets the default prefix path if Steam compatibility data path is available
+        if data.steam_compat_data_path:
+            runtime_configuration.prefix_path = f"{data.steam_compat_data_path}/pfx"
         return result
 
     @override
