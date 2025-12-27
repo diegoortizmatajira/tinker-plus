@@ -8,6 +8,7 @@ from core.configuration_types import ConfigurationDictionary
 from core.defaults import (
     APP_LAST_RUN_LOG_FILE,
     GAME_CONFIG_FILE_TEMPLATE,
+    GAME_ENVIRONMENT_FILE_TEMPLATE,
     GAME_LOGS_DIR_TEMPLATE,
     GAME_SCRIPT_TEMPLATE,
     HUMAN_READABLE_LINKS_DIR_TEMPLATE,
@@ -50,6 +51,12 @@ class HumanReadableLinks(FeatureProvider):
             )
             create_symbolic_link(
                 config_file, f"{game_links_dir}/config.json", self.logger
+            )
+            environment_file = GAME_ENVIRONMENT_FILE_TEMPLATE.format(
+                runtime_configuration.get_game_identifier()
+            )
+            create_symbolic_link(
+                environment_file, f"{game_links_dir}/environment.json", self.logger
             )
 
             # Create link to Log Directory
