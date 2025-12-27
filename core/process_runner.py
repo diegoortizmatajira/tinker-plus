@@ -323,7 +323,11 @@ def run_with_pipeline(
     command = __assemble_command_str(
         exe_command, runtime_configuration, is_global=True, override_log_to_file=False
     )
-    cwd = runtime_configuration.steam_game_cwd or "."
+    cwd = (
+        runtime_configuration.game_executable_command
+        and runtime_configuration.game_executable_command.cwd
+        or "."
+    )
     os.makedirs(cwd, exist_ok=True)
     return run_command(
         command,
@@ -365,7 +369,7 @@ def run_game_and_forks_with_compatibility_tool(
 
     if (
         not runtime_configuration.execute_forks_only
-        and not runtime_configuration.steam_game_exe
+        and not runtime_configuration.game_executable_command
     ):
         logger.error("No game executable specified to run.")
         raise RuntimeError("No game executable specified to run.")
@@ -400,21 +404,17 @@ def run_game_and_forks_with_compatibility_tool(
 
         if (
             not runtime_configuration.execute_forks_only
-            and runtime_configuration.steam_game_exe
+            and runtime_configuration.game_executable_command
         ):
             launcher_script_content += " & \n"
-            game_command = ExecutableCommand(
-                runtime_configuration.steam_game_exe,
-                runtime_configuration.steam_game_args,
-            )
             logger.info(
                 "Including game command in launcher script: '%s'.",
-                game_command.get_full_command(),
+                runtime_configuration.game_executable_command.get_full_command(),
             )
             launcher_script_content += "# main game command\n"
 
             assembled_command_str = __assemble_command_str(
-                game_command,
+                runtime_configuration.game_executable_command,
                 runtime_configuration,
                 is_global=False,
             )
@@ -427,20 +427,16 @@ def run_game_and_forks_with_compatibility_tool(
             _ = script_file.write(launcher_script_content)
         os.chmod(script_filename, 0o755)  # Make the script executable
     else:
-        if not runtime_configuration.steam_game_exe:
+        if not runtime_configuration.game_executable_command:
             logger.error("No game executable specified to run.")
             raise RuntimeError("No game executable specified to run.")
         # No forks to include; run the game executable directly
-        game_command = ExecutableCommand(
-            runtime_configuration.steam_game_exe,
-            runtime_configuration.steam_game_args,
-        )
         logger.info(
             "Including game command in launcher script: '%s'.",
-            game_command.get_full_command(),
+            runtime_configuration.game_executable_command.get_full_command(),
         )
         script_filename = __assemble_command_str(
-            game_command,
+            runtime_configuration.game_executable_command,
             runtime_configuration,
             is_global=False,
         )

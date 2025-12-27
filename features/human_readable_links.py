@@ -33,7 +33,10 @@ class HumanReadableLinks(FeatureProvider):
         _configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ):
-        if not runtime_configuration.steam_game_exe:
+        if (
+            not runtime_configuration.game_executable_command
+            or not runtime_configuration.game_executable_command.command
+        ):
             return
         try:
             self.logger.info("Current game info: %s", runtime_configuration.game_info)

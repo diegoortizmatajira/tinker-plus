@@ -27,6 +27,7 @@ class ExecutableCommand:
 
     command: str
     args: str | None = None
+    cwd: str | None = None
     category: str | None = None
 
     def get_full_command(self) -> str:
@@ -113,15 +114,11 @@ class RuntimeConfiguration:
     game_info: GameInfo
     steam_environment_data: SteamEnvironmentData
     dry_run: bool = False
-    steam_wrapper: str | None = None
-    steam_reaper: str | None = None
-    steam_sniper: str | None = None
     steam_compatibility_command: str | None = None
     steam_compatibility_tool: str | None = None
     steam_compatibility_tools_path: str | None = None
-    steam_game_exe: str | None = None
-    steam_game_args: str | None = None
-    steam_game_cwd: str | None = None
+    game_executable_command: ExecutableCommand | None = None
+    game_executable_wrapper: PipelineWrapper | None = None
     wine: str | None = None
     fork_commands: list[ExecutableCommand] | None = None
     prefix_path: str | None = None
@@ -143,6 +140,7 @@ class RuntimeConfiguration:
         return RuntimeConfiguration(
             original_command=[],
             game_info=GameInfo.empty(),
+            steam_environment_data=SteamEnvironmentData.empty(),
             dry_run=True,
         )
 

@@ -5,7 +5,7 @@ from core.compat_tool_info import CompatToolInfo
 from core.configuration_property import ConfigurationProperty
 from core.configuration_types import ConfigurationDictionary
 from core.feature_provider import FeatureProvider
-from core.runtime_configuration import RuntimeConfiguration
+from core.runtime_configuration import ExecutableCommand, RuntimeConfiguration
 from core.steam import get_game_info
 from core.steam_environment_data import SteamEnvironmentData
 
@@ -72,6 +72,11 @@ class GeneralRuntime(FeatureProvider):
 
         runtime_configuration.game_info = get_game_info(
             runtime_configuration, self.logger
+        )
+        runtime_configuration.game_executable_command = ExecutableCommand(
+            runtime_configuration.steam_environment_data.cmd_steam_game_exe or "echo",
+            runtime_configuration.steam_environment_data.cmd_steam_game_args,
+            runtime_configuration.steam_environment_data.steam_compat_install_path,
         )
         return result
 

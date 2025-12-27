@@ -216,7 +216,9 @@ class MainForm:
             game_id,
         )
         relative_exe_path = Path(
-            self.runtime_provider.runtime_configuration.steam_game_exe or ""
+            self.runtime_provider.runtime_configuration.game_executable_command
+            and self.runtime_provider.runtime_configuration.game_executable_command.command
+            or ""
         ).relative_to(
             self.runtime_provider.runtime_configuration.steam_environment_data.steam_compat_install_path
             or "/"

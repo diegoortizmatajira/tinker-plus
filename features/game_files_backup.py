@@ -227,13 +227,16 @@ class GameFilesBackup(FeatureProvider):
         configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ):
-        if not runtime_configuration.steam_game_exe:
+        if (
+            not runtime_configuration.game_executable_command
+            or not runtime_configuration.game_executable_command.command
+        ):
             self.logger.info(
                 "Steam game executable not set. Skipping restoration check."
             )
             return
 
-        game_executable = Path(runtime_configuration.steam_game_exe)
+        game_executable = Path(runtime_configuration.game_executable_command.command)
         if (
             not game_executable.exists()
             and BACKUP_RESTORE_IF_NOT_INSTALLED_PROPERTY.get(configuration, False)
