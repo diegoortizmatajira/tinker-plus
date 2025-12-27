@@ -3,7 +3,6 @@
 import logging
 import os
 from pathlib import Path
-import re
 from core.defaults import DEFAULT_STEAM_APP_CACHE_FOLDER, STEAM_MANIFESTS_TEMPLATE
 from core.game_info import GameInfo
 from core.runtime_configuration import RuntimeConfiguration
@@ -23,8 +22,8 @@ def get_steam_header_image_path(
 
     cache_dir = Path(
         DEFAULT_STEAM_APP_CACHE_FOLDER.format(
-            runtime_configuration.steam_base_folder,
-            runtime_configuration.steam_game_id,
+            runtime_configuration.steam_environment_data.steam_base_folder,
+            runtime_configuration.get_game_identifier(),
         )
     )
     if not cache_dir.exists():
@@ -79,11 +78,10 @@ def get_game_info(
         str: The name of the game as extracted from the Steam manifest file,
         or the executable name as a fallback.
     """
-    game_id = (
-        runtime_configuration.steam_game_id
-        or runtime_configuration.steam_app_id
-        or "unknown"
-    )
+    if not runtime_configuration.steam_environment_data.has_valid_data():
+        return GameInfo.empty()
+
+    game_id = runtime_configuration.get_game_identifier()
     logger.debug("Getting game info for Game ID: %s", game_id)
     game_info = GameInfo.from_cache(game_id, logger)
     if game_info:
@@ -91,12 +89,16 @@ def get_game_info(
         return game_info
 
     manifest_path = STEAM_MANIFESTS_TEMPLATE.format(
-        runtime_configuration.steam_base_folder,
-        runtime_configuration.steam_game_id,
+        runtime_configuration.steam_environment_data.steam_base_folder,
+        runtime_configuration.get_game_identifier(),
     )
     game_info = GameInfo(
         game_id=game_id,
-        name=Path(runtime_configuration.steam_game_exe or "unknown").stem,
+        name=Path(
+            runtime_configuration.game_executable_command
+            and runtime_configuration.game_executable_command.command
+            or "unknown"
+        ).stem,
     )
     logger.debug("Looking for Steam manifest at: %s", manifest_path)
     if os.path.exists(manifest_path):
@@ -116,70 +118,3 @@ def get_game_info(
     game_info.put_in_cache(logger)
     # Fallback to using the executable name if manifest reading fails
     return game_info
-
-
-def parse_steam_command(runtime_configuration: RuntimeConfiguration):
-    """
-    Parses the game command line and extracts runtime configuration components.
-
-    This method analyzes the original command line for specific runtime components
-    such as the Steam Launch Wrapper, Reaper command, Sniper command, Compatibility
-    Tool, and Game Executable. If the parsed components match the expected pattern,
-    they are logged and assigned to the runtime configuration attributes. If the
-    parsing fails, a warning is logged.
-
-    Updates:
-        - runtime_configuration.steam_wrapper: The Steam Launch Wrapper command.
-        - runtime_configuration.steam_reaper: The Reaper command.
-        - runtime_configuration.steam_sniper: The Sniper command.
-        - runtime_configuration.steam_compatibility_tool: The Compatibility Tool command.
-        - runtime_configuration.steam_game_exe: The Game Executable command.
-
-    Logs:
-        - Logs the identified components or warnings if the pattern does not match.
-    """
-
-    def evaluate_match(input_str: str, pattern: str, group: str) -> str | None:
-        match = re.search(pattern, input_str)
-        if match:
-            return match.group(group)
-        return None
-
-    wrapper_regexp = r"(?P<stlwrapper>\/\S+\/steam-launch-wrapper)"
-    reaper_regexp = r"(?P<reaper>\/\S+\/reaper)"
-    sniper_regexp = r"(?P<sniper>\/\S+\/SteamLinuxRuntime_sniper\/\S+\s+--\w+=\w+)"
-    compatibility_regexp = (
-        r"(?P<compatibility>"
-        r"(?P<compatibility_dir>(?:\/[\w\.][\.\w\s\-']+\w)+)\/"
-        r"(?P<compatibility_tool>[\w\.\-\s]+)\/\S+\swaitforexitandrun)\s+"
-    )
-    exe_regexp = (
-        r"(^|\s)(?P<gameexe>(?:(?:\/[\w\.][\w\s\.\-\',]+\w)+\.exe))\s?(?P<gameargs>.*)$"
-    )
-
-    full_command = " ".join(runtime_configuration.original_command)
-    runtime_configuration.steam_wrapper = evaluate_match(
-        full_command, wrapper_regexp, "stlwrapper"
-    )
-    runtime_configuration.steam_reaper = evaluate_match(
-        full_command, reaper_regexp, "reaper"
-    )
-    runtime_configuration.steam_sniper = evaluate_match(
-        full_command, sniper_regexp, "sniper"
-    )
-    compatibility_match = re.search(compatibility_regexp, full_command)
-    if compatibility_match:
-        runtime_configuration.steam_compatibility_command = compatibility_match.group(
-            "compatibility"
-        )
-        runtime_configuration.steam_compatibility_tool = compatibility_match.group(
-            "compatibility_tool"
-        )
-        runtime_configuration.steam_compatibility_tools_path = (
-            compatibility_match.group("compatibility_dir")
-        )
-    exe_match = re.search(exe_regexp, full_command)
-    if not exe_match:
-        raise RuntimeError("Game executable pattern did not match the command line.")
-    runtime_configuration.steam_game_exe = exe_match.group("gameexe")
-    runtime_configuration.steam_game_args = exe_match.group("gameargs")

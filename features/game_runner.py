@@ -9,6 +9,7 @@ from core.configuration_property import ConfigurationProperty
 from core.configuration_types import ConfigurationDictionary
 from core.defaults import CWD_DIR_NAME
 from core.process_runner import run_game_and_forks_with_compatibility_tool
+from core.runtime_configuration import ExecutableCommand
 
 
 GAME_CUSTOM_EXE_PROPERTY = ConfigurationProperty(
@@ -72,23 +73,27 @@ class GameRunner(FeatureProvider):
             self.logger.info(
                 "Configured to run only forked commands, skipping main game."
             )
+        if not runtime_configuration.game_executable_command:
+            runtime_configuration.game_executable_command = ExecutableCommand("echo")
+
         custom_exe = GAME_CUSTOM_EXE_PROPERTY.get(configuration)
         if custom_exe:
-            runtime_configuration.steam_game_exe = custom_exe
+            runtime_configuration.game_executable_command.command = custom_exe
             self.logger.info("Using custom game executable: %s", custom_exe)
 
         custom_args = GAME_CUSTOM_ARGS_PROPERTY.get(configuration)
         if custom_args:
-            runtime_configuration.steam_game_args = custom_args
+            runtime_configuration.game_executable_command.args = custom_args
             self.logger.info("Using custom game arguments: %s", custom_args)
         custom_cwd = GAME_CUSTOM_CWD_PROPERTY.get(configuration)
-        runtime_configuration.steam_game_cwd = (
+        runtime_configuration.game_executable_command.cwd = (
             custom_cwd
-            or runtime_configuration.steam_compat_install_path
+            or runtime_configuration.steam_environment_data.steam_compat_install_path
             or f"{runtime_configuration.prefix_path}/{CWD_DIR_NAME}"
         )
         self.logger.info(
-            "Using game working directory: %s", runtime_configuration.steam_game_cwd
+            "Using game working directory: %s",
+            runtime_configuration.game_executable_command.cwd,
         )
         return runtime_configuration
 

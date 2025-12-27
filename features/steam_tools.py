@@ -85,75 +85,86 @@ class SteamTools(FeatureProvider):
         sourced_configuration = super().build_configuration(
             sourced_configuration, runtime_configuration
         )
-        if runtime_configuration.steam_reaper:
+        if runtime_configuration.steam_environment_data.cmd_steam_wrapper:
             STEAM_LAST_WRAPPER_COMMAND_PROPERTY.set(
-                sourced_configuration, runtime_configuration.steam_wrapper
+                sourced_configuration,
+                runtime_configuration.steam_environment_data.cmd_steam_wrapper,
             )
-        if runtime_configuration.steam_sniper:
+        if runtime_configuration.steam_environment_data.cmd_steam_sniper:
             STEAM_LAST_SNIPER_COMMAND_PROPERTY.set(
-                sourced_configuration, runtime_configuration.steam_sniper
+                sourced_configuration,
+                runtime_configuration.steam_environment_data.cmd_steam_sniper,
             )
-        if runtime_configuration.steam_reaper:
+        if runtime_configuration.steam_environment_data.cmd_steam_reaper:
             STEAM_LAST_REAPER_COMMAND_PROPERTY.set(
-                sourced_configuration, runtime_configuration.steam_reaper
+                sourced_configuration, runtime_configuration.steam_environment_data.cmd_steam_reaper
             )
         return sourced_configuration
 
     @override
     def apply_configuration(
-        self, configuration: ConfigurationDictionary, runtime_configuration: RuntimeConfiguration
+        self,
+        configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
     ) -> RuntimeConfiguration:
         # Load last used commands if not already set
-        if not runtime_configuration.steam_wrapper:
-            runtime_configuration.steam_wrapper = (
+        if not runtime_configuration.steam_environment_data.cmd_steam_wrapper:
+            runtime_configuration.steam_environment_data.cmd_steam_wrapper = (
                 STEAM_LAST_WRAPPER_COMMAND_PROPERTY.get(configuration)
             )
             self.logger.info(
                 "Restored last used Steam wrapper command as it was not set by runtime provider."
             )
         self.logger.info(
-            "Steam Launch Wrapper: %s", runtime_configuration.steam_wrapper
+            "Steam Launch Wrapper: %s",
+            runtime_configuration.steam_environment_data.cmd_steam_wrapper,
         )
-        if not runtime_configuration.steam_sniper:
-            runtime_configuration.steam_sniper = STEAM_LAST_SNIPER_COMMAND_PROPERTY.get(
-                configuration
+        if not runtime_configuration.steam_environment_data.cmd_steam_sniper:
+            runtime_configuration.steam_environment_data.cmd_steam_sniper = (
+                STEAM_LAST_SNIPER_COMMAND_PROPERTY.get(configuration)
             )
             self.logger.info(
                 "Restored last used Steam Sniper command as it was not set by runtime provider."
             )
-        self.logger.info("Steam Sniper Command: %s", runtime_configuration.steam_sniper)
-        if not runtime_configuration.steam_reaper:
-            runtime_configuration.steam_reaper = STEAM_LAST_REAPER_COMMAND_PROPERTY.get(
-                configuration
+        self.logger.info(
+            "Steam Sniper Command: %s",
+            runtime_configuration.steam_environment_data.cmd_steam_sniper,
+        )
+        if not runtime_configuration.steam_environment_data.cmd_steam_reaper:
+            runtime_configuration.steam_environment_data.cmd_steam_reaper = (
+                STEAM_LAST_REAPER_COMMAND_PROPERTY.get(configuration)
             )
             self.logger.info(
                 "Restored last used Steam Reaper command as it was not set by runtime provider."
             )
-        self.logger.info("Steam Reaper Command: %s", runtime_configuration.steam_reaper)
+        self.logger.info(
+            "Steam Reaper Command: %s",
+            runtime_configuration.steam_environment_data.cmd_steam_reaper,
+        )
         # Apply the Steam wrapper
         if (
             STEAM_USE_WRAPPER_PROPERTY.get(configuration)
-            and runtime_configuration.steam_wrapper
+            and runtime_configuration.steam_environment_data.cmd_steam_wrapper
         ):
             self.logger.info("Enabling Steam wrapper.")
             runtime_configuration.add_pipeline_wrapper(
                 PipelineWrapper(
-                    f"{runtime_configuration.steam_wrapper} --",
+                    f"{runtime_configuration.steam_environment_data.cmd_steam_wrapper} --",
                     is_global_wrapper=True,
                 )
             )
         # Apply the Reaper (After Wrapper)
         if (
             STEAM_USE_REAPER_PROPERTY.get(configuration)
-            and runtime_configuration.steam_reaper
+            and runtime_configuration.steam_environment_data.cmd_steam_reaper
         ):
             self.logger.info("Enabling Steam Reaper wrapper.")
 
             def reaper_wrapper(cmd: str, rtm_cfg: RuntimeConfiguration) -> str:
                 args = "--"
-                if rtm_cfg.steam_game_id:
-                    args = f"SteamLaunch AppId={rtm_cfg.steam_game_id} --"
-                return f"{rtm_cfg.steam_reaper} {args} {cmd}"
+                if rtm_cfg.get_game_identifier():
+                    args = f"SteamLaunch AppId={rtm_cfg.get_game_identifier()} --"
+                return f"{rtm_cfg.steam_environment_data.cmd_steam_reaper} {args} {cmd}"
 
             runtime_configuration.add_pipeline_wrapper(
                 PipelineWrapper(
@@ -165,12 +176,12 @@ class SteamTools(FeatureProvider):
         # Apply the Sniper (After Reaper)
         if (
             STEAM_USE_SNIPER_PROPERTY.get(configuration)
-            and runtime_configuration.steam_sniper
+            and runtime_configuration.steam_environment_data.cmd_steam_sniper
         ):
             self.logger.info("Enabling Steam Sniper wrapper.")
             runtime_configuration.add_pipeline_wrapper(
                 PipelineWrapper(
-                    f"{runtime_configuration.steam_sniper} --",
+                    f"{runtime_configuration.steam_environment_data.cmd_steam_sniper} --",
                     is_global_wrapper=False,
                 )
             )

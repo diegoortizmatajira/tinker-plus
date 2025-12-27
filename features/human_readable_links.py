@@ -33,7 +33,10 @@ class HumanReadableLinks(FeatureProvider):
         _configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ):
-        if not runtime_configuration.steam_game_exe:
+        if (
+            not runtime_configuration.game_executable_command
+            or not runtime_configuration.game_executable_command.command
+        ):
             return
         try:
             self.logger.info("Current game info: %s", runtime_configuration.game_info)
@@ -43,36 +46,38 @@ class HumanReadableLinks(FeatureProvider):
             os.makedirs(game_links_dir, exist_ok=True)
             # Create symbolic link to the game configuration file
             config_file = GAME_CONFIG_FILE_TEMPLATE.format(
-                runtime_configuration.steam_game_id
+                runtime_configuration.get_game_identifier()
             )
             create_symbolic_link(
                 config_file, f"{game_links_dir}/config.json", self.logger
             )
 
             # Create link to Log Directory
-            log_dir = GAME_LOGS_DIR_TEMPLATE.format(runtime_configuration.steam_game_id)
+            log_dir = GAME_LOGS_DIR_TEMPLATE.format(
+                runtime_configuration.get_game_identifier()
+            )
             create_symbolic_link(log_dir, f"{game_links_dir}/logs", self.logger)
 
             # Create link to Script File
             script_file = GAME_SCRIPT_TEMPLATE.format(
-                runtime_configuration.steam_game_id
+                runtime_configuration.get_game_identifier()
             )
             create_symbolic_link(
                 script_file, f"{game_links_dir}/launch_script.sh", self.logger
             )
 
             # Create link to the Game Files
-            if runtime_configuration.steam_compat_install_path:
+            if runtime_configuration.steam_environment_data.steam_compat_install_path:
                 create_symbolic_link(
-                    runtime_configuration.steam_compat_install_path,
+                    runtime_configuration.steam_environment_data.steam_compat_install_path,
                     f"{game_links_dir}/game_files",
                     self.logger,
                 )
 
             # Create link to the Game compat data folder
-            if runtime_configuration.steam_compat_data_path:
+            if runtime_configuration.steam_environment_data.steam_compat_data_path:
                 create_symbolic_link(
-                    runtime_configuration.steam_compat_data_path,
+                    runtime_configuration.steam_environment_data.steam_compat_data_path,
                     f"{game_links_dir}/compat_data",
                     self.logger,
                 )

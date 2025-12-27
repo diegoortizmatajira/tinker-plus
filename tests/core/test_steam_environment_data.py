@@ -1,8 +1,6 @@
 import unittest
 
-from core import RuntimeConfiguration
-from core.game_info import GameInfo
-from core.steam import parse_steam_command
+from core.steam_environment_data import SteamEnvironmentData
 
 
 PART_WRAPPER = "wrapper"
@@ -40,29 +38,27 @@ class TestParseCommand(unittest.TestCase):
     def parse_command_basic(self, command_dict: dict[str, str]):
         command_dict = EXAMPLE_COMMAND
         command = self.build_command(command_dict)
-        runtime_configuration = RuntimeConfiguration(
-            command, GameInfo.empty(), dry_run=True
-        )
-        parse_steam_command(runtime_configuration)
+        env_data = SteamEnvironmentData()
+        env_data.parse_steam_command(" ".join(command))
         self.assertEqual(
             command_dict.get(PART_WRAPPER),
-            runtime_configuration.steam_wrapper,
+            env_data.cmd_steam_wrapper,
         )
         self.assertEqual(
             command_dict.get(PART_REAPER),
-            runtime_configuration.steam_reaper,
+            env_data.cmd_steam_reaper,
         )
         self.assertEqual(
             command_dict.get(PART_SNIPER),
-            runtime_configuration.steam_sniper,
+            env_data.cmd_steam_sniper,
         )
         self.assertEqual(
             command_dict.get(PART_COMPATIBILITY_COMMAND),
-            runtime_configuration.steam_compatibility_command,
+            env_data.cmd_steam_compatibility_command,
         )
         self.assertEqual(
             command_dict.get(PART_GAME_EXE),
-            runtime_configuration.steam_game_exe,
+            env_data.cmd_steam_game_exe,
         )
 
     def test_parse_command_full(self):
@@ -85,7 +81,7 @@ class TestParseCommand(unittest.TestCase):
                 self.parse_command_basic(test_command)
 
     def test_parse_executables(self):
-        #pylint: disable=line-too-long
+        # pylint: disable=line-too-long
         test_executables = [
             "/home/steamuser/.local/share/Steam/steamapps/common/Assassin's Creed IV Black Flag/AC4BFSP.exe",
             "/home/steamuser/.local/share/Steam/steamapps/common/A Plague Tale Requiem/APlagueTaleRequiem_x64.exe",
@@ -98,13 +94,11 @@ class TestParseCommand(unittest.TestCase):
                 command_dict = EXAMPLE_COMMAND.copy()
                 command_dict[PART_GAME_EXE] = executable
                 command = self.build_command(command_dict)
-                runtime_configuration = RuntimeConfiguration(
-                    command, GameInfo.empty(), dry_run=True
-                )
-                parse_steam_command(runtime_configuration)
+                env_data = SteamEnvironmentData()
+                env_data.parse_steam_command(" ".join(command))
                 self.assertEqual(
                     executable,
-                    runtime_configuration.steam_game_exe,
+                    env_data.cmd_steam_game_exe,
                 )
 
     def test_parse_invalid_executables(self):
@@ -118,14 +112,12 @@ class TestParseCommand(unittest.TestCase):
                 command_dict = EXAMPLE_COMMAND.copy()
                 command_dict[PART_GAME_EXE] = executable
                 command = self.build_command(command_dict)
-                runtime_configuration = RuntimeConfiguration(
-                    command, GameInfo.empty(), dry_run=True
-                )
+                env_data = SteamEnvironmentData()
                 with self.assertRaises(RuntimeError):
-                    parse_steam_command(runtime_configuration)
+                    env_data.parse_steam_command(" ".join(command))
 
     def test_parse_compatibility_tools(self):
-        #pylint: disable=line-too-long
+        # pylint: disable=line-too-long
         test_compat_tools = [
             "/home/diegoortizmatajira/.local/share/Steam/steamapps/common/Proton 8.0/proton waitforexitandrun",
             "/home/diegoortizmatajira/.local/share/Steam/compatibilitytools.d/GE-Proton-10-25/proton waitforexitandrun",
@@ -135,11 +127,9 @@ class TestParseCommand(unittest.TestCase):
                 command_dict = EXAMPLE_COMMAND.copy()
                 command_dict[PART_COMPATIBILITY_COMMAND] = compat_tool
                 command = self.build_command(command_dict)
-                runtime_configuration = RuntimeConfiguration(
-                    command, GameInfo.empty(), dry_run=True
-                )
-                parse_steam_command(runtime_configuration)
+                env_data = SteamEnvironmentData()
+                env_data.parse_steam_command(" ".join(command))
                 self.assertEqual(
                     compat_tool,
-                    runtime_configuration.steam_compatibility_command,
+                    env_data.cmd_steam_compatibility_command,
                 )

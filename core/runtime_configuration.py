@@ -7,6 +7,7 @@ from typing import Callable
 
 from core.configuration_types import ConfigurationDictionary
 from core.game_info import GameInfo
+from core.steam_environment_data import SteamEnvironmentData
 
 
 COMMAND_TRAINER = "trainer"
@@ -26,6 +27,7 @@ class ExecutableCommand:
 
     command: str
     args: str | None = None
+    cwd: str | None = None
     category: str | None = None
 
     def get_full_command(self) -> str:
@@ -110,21 +112,13 @@ class RuntimeConfiguration:
 
     original_command: Sequence[str]
     game_info: GameInfo
+    steam_environment_data: SteamEnvironmentData
     dry_run: bool = False
-    steam_app_id: str | None = None
-    steam_game_id: str | None = None
-    steam_base_folder: str | None = None
-    steam_compat_install_path: str | None = None
-    steam_compat_data_path: str | None = None
-    steam_wrapper: str | None = None
-    steam_reaper: str | None = None
-    steam_sniper: str | None = None
     steam_compatibility_command: str | None = None
     steam_compatibility_tool: str | None = None
     steam_compatibility_tools_path: str | None = None
-    steam_game_exe: str | None = None
-    steam_game_args: str | None = None
-    steam_game_cwd: str | None = None
+    game_executable_command: ExecutableCommand | None = None
+    game_executable_wrapper: PipelineWrapper | None = None
     wine: str | None = None
     fork_commands: list[ExecutableCommand] | None = None
     prefix_path: str | None = None
@@ -146,7 +140,21 @@ class RuntimeConfiguration:
         return RuntimeConfiguration(
             original_command=[],
             game_info=GameInfo.empty(),
+            steam_environment_data=SteamEnvironmentData.empty(),
             dry_run=True,
+        )
+
+    def get_game_identifier(self) -> str:
+        """
+        Retrieves the game identifier from the steam environment data.
+
+        Returns:
+            str: The game identifier.
+        """
+        return (
+            self.steam_environment_data.steam_game_id
+            or self.steam_environment_data.steam_app_id
+            or "unknown"
         )
 
     def reset(self) -> None:
