@@ -420,7 +420,7 @@ def run_game_and_forks_with_compatibility_tool(
             )
             launcher_script_content += f"{assembled_command_str}\n"
         script_filename = GAME_SCRIPT_TEMPLATE.format(
-            runtime_configuration.steam_game_id
+            runtime_configuration.get_game_identifier()
         )
         # Write the launcher script to a file
         with open(script_filename, "w", encoding="utf-8") as script_file:

@@ -84,7 +84,7 @@ class GameRunner(FeatureProvider):
         custom_cwd = GAME_CUSTOM_CWD_PROPERTY.get(configuration)
         runtime_configuration.steam_game_cwd = (
             custom_cwd
-            or runtime_configuration.steam_compat_install_path
+            or runtime_configuration.steam_environment_data.steam_compat_install_path
             or f"{runtime_configuration.prefix_path}/{CWD_DIR_NAME}"
         )
         self.logger.info(

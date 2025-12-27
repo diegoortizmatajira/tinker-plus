@@ -5,7 +5,6 @@ as well as feature-specific customizations to build a comprehensive runtime envi
 """
 
 import json
-import os
 from typing import final
 
 from core.compat_tool_info import CompatToolInfo
@@ -14,6 +13,7 @@ from core.configuration_types import ConfigurationDictionary
 from core.defaults import LOG_STAGE_STARTED
 from core.game_info import GameInfo
 from core.steam import get_game_info, parse_steam_command
+from core.steam_environment_data import SteamEnvironmentData
 from .runtime_configuration import RuntimeConfiguration
 from .feature_provider import FeatureAction, FeatureProvider
 from .log_storage import LogFactory
@@ -70,13 +70,12 @@ class RuntimeProvider:
         self.features = features
         self.config_storage = config_storage
         self.runtime_configuration = RuntimeConfiguration(
-            game_command, GameInfo.empty(), dry_run
+            game_command,
+            GameInfo.empty(),
+            SteamEnvironmentData.empty(),
+            dry_run=dry_run,
         )
-        self.read_steam_environment()
         self.parse_command()
-        self.runtime_configuration.game_info = get_game_info(
-            self.runtime_configuration, self.logger
-        )
         self.last_applied_configuration: ConfigurationDictionary = {}
 
     def parse_command(self):
@@ -136,71 +135,6 @@ class RuntimeProvider:
             "Steam Original Game Executable: %s",
             self.runtime_configuration.steam_game_exe,
         )
-
-    def read_steam_environment(self):
-        """
-        Reads the Steam environment variables and updates the runtime configuration.
-
-        This method retrieves relevant environment variables such as `SteamAppId`,
-        `SteamGameId`, `STEAM_COMPAT_INSTALL_PATH`, and `STEAM_COMPAT_DATA_PATH`
-        to set up the runtime configuration. It populates missing values with the
-        defaults from the runtime configuration instance if the environment variables
-        are not available.
-
-        Updates:
-            - runtime_configuration.steam_app_id: The Steam application ID.
-            - runtime_configuration.steam_game_id: The Steam game ID.
-            - runtime_configuration.steam_compat_install_path: The installation path
-              for Steam compatibility tools.
-            - runtime_configuration.steam_compat_data_path: The data path for Steam
-              compatibility tools.
-            - runtime_configuration.prefix_path: Derived prefix path based on the
-              compatibility data path.
-
-        Logs:
-            - Logs the retrieved or default values for each updated configuration field.
-        """
-        self.runtime_configuration.steam_app_id = (
-            unquote(os.getenv("SteamAppId")) or self.runtime_configuration.steam_app_id
-        )
-        self.logger.info(
-            "Steam App ID: %s", self.runtime_configuration.steam_app_id or EMPTY
-        )
-        self.runtime_configuration.steam_game_id = (
-            unquote(os.getenv("SteamGameId"))
-            or self.runtime_configuration.steam_game_id
-        )
-        self.logger.info(
-            "Steam Game ID: %s", self.runtime_configuration.steam_game_id or EMPTY
-        )
-        self.runtime_configuration.steam_base_folder = (
-            unquote(os.getenv("STEAM_BASE_FOLDER"))
-            or self.runtime_configuration.steam_base_folder
-        )
-        self.logger.info(
-            "Steam Base Folder: %s",
-            self.runtime_configuration.steam_base_folder or EMPTY,
-        )
-        self.runtime_configuration.steam_compat_install_path = (
-            unquote(os.getenv("STEAM_COMPAT_INSTALL_PATH"))
-            or self.runtime_configuration.steam_compat_install_path
-        )
-        self.logger.info(
-            "Steam Compat Install Path: %s",
-            self.runtime_configuration.steam_compat_install_path or EMPTY,
-        )
-        self.runtime_configuration.steam_compat_data_path = (
-            unquote(os.getenv("STEAM_COMPAT_DATA_PATH"))
-            or self.runtime_configuration.steam_compat_data_path
-        )
-        self.logger.info(
-            "Steam Compat Data Path: %s",
-            self.runtime_configuration.steam_compat_data_path or EMPTY,
-        )
-        if self.runtime_configuration.steam_compat_data_path:
-            self.runtime_configuration.prefix_path = (
-                f"{self.runtime_configuration.steam_compat_data_path}/pfx"
-            )
 
     def build_configuration(self, pre_apply_configuration: bool = False):
         """

@@ -7,6 +7,7 @@ from typing import Callable
 
 from core.configuration_types import ConfigurationDictionary
 from core.game_info import GameInfo
+from core.steam_environment_data import SteamEnvironmentData
 
 
 COMMAND_TRAINER = "trainer"
@@ -110,12 +111,8 @@ class RuntimeConfiguration:
 
     original_command: Sequence[str]
     game_info: GameInfo
+    steam_environment_data: SteamEnvironmentData
     dry_run: bool = False
-    steam_app_id: str | None = None
-    steam_game_id: str | None = None
-    steam_base_folder: str | None = None
-    steam_compat_install_path: str | None = None
-    steam_compat_data_path: str | None = None
     steam_wrapper: str | None = None
     steam_reaper: str | None = None
     steam_sniper: str | None = None
@@ -147,6 +144,19 @@ class RuntimeConfiguration:
             original_command=[],
             game_info=GameInfo.empty(),
             dry_run=True,
+        )
+
+    def get_game_identifier(self) -> str:
+        """
+        Retrieves the game identifier from the steam environment data.
+
+        Returns:
+            str: The game identifier.
+        """
+        return (
+            self.steam_environment_data.steam_game_id
+            or self.steam_environment_data.steam_app_id
+            or "unknown"
         )
 
     def reset(self) -> None:

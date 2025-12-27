@@ -42,9 +42,9 @@ class CompatDataFolders(FeatureProvider):
             runtime_configuration (RuntimeConfiguration): The runtime
             configuration for the operation.
         """
-        if runtime_configuration.steam_compat_data_path:
+        if runtime_configuration.steam_environment_data.steam_compat_data_path:
             delete_folder_tree(
-                runtime_configuration.steam_compat_data_path,
+                runtime_configuration.steam_environment_data.steam_compat_data_path,
                 self.logger,
                 dry_run=runtime_configuration.dry_run,
             )

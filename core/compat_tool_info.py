@@ -166,10 +166,10 @@ class CompatToolInfo:
         """
         compat_dirs = [
             DEFAULT_STEAM_COMMON_FOLDER.format(
-                configuration.steam_base_folder or DEFAULT_STEAM_FOLDER
+                configuration.steam_environment_data.steam_base_folder or DEFAULT_STEAM_FOLDER
             ),
             DEFAULT_STEAM_COMPATIBILITY_TOOLS_FOLDER.format(
-                configuration.steam_base_folder or DEFAULT_STEAM_FOLDER
+                configuration.steam_environment_data.steam_base_folder or DEFAULT_STEAM_FOLDER
             ),
         ]
         if configuration.steam_compatibility_tools_path:

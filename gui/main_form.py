@@ -209,7 +209,7 @@ class MainForm:
         game_name_for_search = (
             self.runtime_provider.runtime_configuration.game_info.name.replace(" ", "+")
         )
-        game_id = self.runtime_provider.runtime_configuration.steam_game_id
+        game_id = self.runtime_provider.runtime_configuration.get_game_identifier()
         self.__display_property(
             main_tab,
             "Game Id",
@@ -218,7 +218,8 @@ class MainForm:
         relative_exe_path = Path(
             self.runtime_provider.runtime_configuration.steam_game_exe or ""
         ).relative_to(
-            self.runtime_provider.runtime_configuration.steam_compat_install_path or "/"
+            self.runtime_provider.runtime_configuration.steam_environment_data.steam_compat_install_path
+            or "/"
         )
         self.__display_property(
             main_tab,
@@ -300,7 +301,7 @@ class MainForm:
         self.generator.recover_values(self.runtime_provider.configuration)
         self.runtime_provider.config_storage.save_game_config(
             self.runtime_provider.configuration,
-            self.runtime_provider.runtime_configuration.steam_game_id,
+            self.runtime_provider.runtime_configuration.get_game_identifier(),
             self.runtime_provider.runtime_configuration.loaded_global_configuration,
         )
 

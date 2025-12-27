@@ -151,8 +151,8 @@ class SteamTools(FeatureProvider):
 
             def reaper_wrapper(cmd: str, rtm_cfg: RuntimeConfiguration) -> str:
                 args = "--"
-                if rtm_cfg.steam_game_id:
-                    args = f"SteamLaunch AppId={rtm_cfg.steam_game_id} --"
+                if rtm_cfg.get_game_identifier():
+                    args = f"SteamLaunch AppId={rtm_cfg.get_game_identifier()} --"
                 return f"{rtm_cfg.steam_reaper} {args} {cmd}"
 
             runtime_configuration.add_pipeline_wrapper(

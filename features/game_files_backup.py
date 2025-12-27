@@ -108,7 +108,7 @@ class GameFilesBackup(FeatureProvider):
         # pylint: disable=line-too-long
         archive_name = backup_name_template.format(
             game_name=runtime_configuration.game_info.name,
-            steam_game_id=runtime_configuration.steam_game_id,
+            steam_game_id=runtime_configuration.get_game_identifier(),
         )
         return Path(f"{backup_location}/{archive_name}")
 
@@ -127,7 +127,9 @@ class GameFilesBackup(FeatureProvider):
         Returns:
             None
         """
-        game_files_location = runtime_configuration.steam_compat_install_path
+        game_files_location = (
+            runtime_configuration.steam_environment_data.steam_compat_install_path
+        )
         archive_name = self.__get_backup_archive_name(
             configuration, runtime_configuration
         )
@@ -177,14 +179,14 @@ class GameFilesBackup(FeatureProvider):
         Returns:
             None
         """
-        if not runtime_configuration.steam_compat_install_path:
+        if not runtime_configuration.steam_environment_data.steam_compat_install_path:
             self.logger.warning(
                 "Steam compatibility install path is not set. Cannot restore game files."
             )
             return
         # Get the parent directory of the Steam compatibility install path
         game_files_location = Path(
-            runtime_configuration.steam_compat_install_path
+            runtime_configuration.steam_environment_data.steam_compat_install_path
         ).parent
         archive_name = self.__get_backup_archive_name(
             configuration, runtime_configuration

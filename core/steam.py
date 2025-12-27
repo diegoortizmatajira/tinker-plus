@@ -23,8 +23,8 @@ def get_steam_header_image_path(
 
     cache_dir = Path(
         DEFAULT_STEAM_APP_CACHE_FOLDER.format(
-            runtime_configuration.steam_base_folder,
-            runtime_configuration.steam_game_id,
+            runtime_configuration.steam_environment_data.steam_base_folder,
+            runtime_configuration.get_game_identifier(),
         )
     )
     if not cache_dir.exists():
@@ -79,11 +79,10 @@ def get_game_info(
         str: The name of the game as extracted from the Steam manifest file,
         or the executable name as a fallback.
     """
-    game_id = (
-        runtime_configuration.steam_game_id
-        or runtime_configuration.steam_app_id
-        or "unknown"
-    )
+    if not runtime_configuration.steam_environment_data.has_valid_data():
+        return GameInfo.empty()
+
+    game_id = runtime_configuration.get_game_identifier()
     logger.debug("Getting game info for Game ID: %s", game_id)
     game_info = GameInfo.from_cache(game_id, logger)
     if game_info:
@@ -91,8 +90,8 @@ def get_game_info(
         return game_info
 
     manifest_path = STEAM_MANIFESTS_TEMPLATE.format(
-        runtime_configuration.steam_base_folder,
-        runtime_configuration.steam_game_id,
+        runtime_configuration.steam_environment_data.steam_base_folder,
+        runtime_configuration.get_game_identifier(),
     )
     game_info = GameInfo(
         game_id=game_id,

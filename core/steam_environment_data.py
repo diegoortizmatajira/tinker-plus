@@ -33,7 +33,20 @@ class SteamEnvironmentData:
     cmd_steam_game_exe: str | None = None
     cmd_steam_game_args: str | None = None
 
+    @staticmethod
+    def empty() -> "SteamEnvironmentData":
+        """
+        Creates and returns an instance of SteamEnvironmentData with all fields set to None.
+
+        Returns:
+            SteamEnvironmentData: An instance with all attributes initialized to None.
+        """
+        return SteamEnvironmentData()
+
     def has_valid_data(self) -> bool:
+        """
+        Checks if the Steam environment data contains valid identifiers.
+        """
         return self.steam_app_id is not None or self.steam_game_id is not None
 
     def parse_steam_command(

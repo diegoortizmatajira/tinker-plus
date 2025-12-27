@@ -6,6 +6,7 @@ from core.configuration_property import ConfigurationProperty
 from core.configuration_types import ConfigurationDictionary
 from core.feature_provider import FeatureProvider
 from core.runtime_configuration import RuntimeConfiguration
+from core.steam import get_game_info
 from core.steam_environment_data import SteamEnvironmentData
 
 GENERAL_LOG_INDIVIDUAL_EXE_PROPERTY = ConfigurationProperty(
@@ -52,7 +53,7 @@ class GeneralRuntime(FeatureProvider):
                 runtime_configuration.dry_run,
                 self.logger,
             )
-        runtime_configuration.environment_data = data
+        runtime_configuration.steam_environment_data = data
         # Handle Steam Compatibility Tool caching
         if data.cmd_steam_compatibility_tool:
             compat_tool_info = CompatToolInfo.from_cache(
@@ -68,6 +69,10 @@ class GeneralRuntime(FeatureProvider):
         # Sets the default prefix path if Steam compatibility data path is available
         if data.steam_compat_data_path:
             runtime_configuration.prefix_path = f"{data.steam_compat_data_path}/pfx"
+
+        runtime_configuration.game_info = get_game_info(
+            runtime_configuration, self.logger
+        )
         return result
 
     @override
