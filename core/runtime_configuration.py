@@ -146,7 +146,7 @@ class RuntimeConfiguration:
 
     def get_game_identifier(self) -> str:
         """
-        Retrieves the game identifier from the steam environment data.
+        Retrieves the game identifier
 
         Returns:
             str: The game identifier.
@@ -156,6 +156,24 @@ class RuntimeConfiguration:
             or self.steam_environment_data.steam_app_id
             or "unknown"
         )
+
+    def get_game_files_path(self) -> str | None:
+        """
+        Retrieves the path to the game files.
+
+        Returns:
+            str | None: The path to the game files, or None if not available.
+        """
+        return self.steam_environment_data.steam_compat_install_path
+
+    def get_compat_data_path(self) -> str | None:
+        """
+        Retrieves the path to the runtime prefix.
+
+        Returns:
+            str | None: The path to the runtime prefix, or None if not set.
+        """
+        return self.steam_environment_data.steam_compat_data_path
 
     def reset(self) -> None:
         """

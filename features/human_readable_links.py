@@ -74,17 +74,19 @@ class HumanReadableLinks(FeatureProvider):
             )
 
             # Create link to the Game Files
-            if runtime_configuration.steam_environment_data.steam_compat_install_path:
+            game_files_path = runtime_configuration.get_game_files_path()
+            if game_files_path:
                 create_symbolic_link(
-                    runtime_configuration.steam_environment_data.steam_compat_install_path,
+                    game_files_path,
                     f"{game_links_dir}/game_files",
                     self.logger,
                 )
 
             # Create link to the Game compat data folder
-            if runtime_configuration.steam_environment_data.steam_compat_data_path:
+            compat_data_path = runtime_configuration.get_compat_data_path()
+            if compat_data_path:
                 create_symbolic_link(
-                    runtime_configuration.steam_environment_data.steam_compat_data_path,
+                    compat_data_path,
                     f"{game_links_dir}/compat_data",
                     self.logger,
                 )

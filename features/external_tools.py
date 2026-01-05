@@ -32,6 +32,21 @@ GAMESCOPE_ARGS_PROPERTY = ConfigurationProperty(
     "Additional arguments to pass to Gamescope.",
 )
 
+MANGOHUD_ENABLED_PROPERTY = ConfigurationProperty(
+    bool,
+    "MANGOHUD_ENABLED",
+    "Enable MangoHUD",
+    "Enables MangoHUD when set to 'True'.",
+    default=False,
+)
+MANGOHUG_CONFIG_PROPERTY = ConfigurationProperty(
+    str,
+    "MANGOHUD_CONFIG",
+    "MangoHUD Configuration",
+    "Configuration string for MangoHUD.",
+    generated_environment_variable="MANGOHUD_CONFIG",
+)
+
 
 class ExternalTools(FeatureProvider):
     """
@@ -50,13 +65,17 @@ class ExternalTools(FeatureProvider):
                 GAMEMODERUN_ENABLED_PROPERTY,
                 GAMESCOPE_ENABLED_PROPERTY,
                 GAMESCOPE_ARGS_PROPERTY,
+                MANGOHUD_ENABLED_PROPERTY,
+                MANGOHUG_CONFIG_PROPERTY,
             ],
             "Additional Tools",
         )
 
     @override
     def apply_configuration(
-        self, configuration: ConfigurationDictionary, runtime_configuration: RuntimeConfiguration
+        self,
+        configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
     ) -> RuntimeConfiguration:
         if GAMEMODERUN_ENABLED_PROPERTY.get(configuration):
             self.logger.info("Enabling GameModeRun wrapper.")
@@ -72,4 +91,7 @@ class ExternalTools(FeatureProvider):
                     wrapper=lambda cmd, _: (f"{command.get_full_command()} -- {cmd}"),
                 )
             )
+        if MANGOHUD_ENABLED_PROPERTY.get(configuration):
+            self.logger.info("Enabling MangoHUD wrapper.")
+            runtime_configuration.add_pipeline_wrapper(PipelineWrapper("mangohud"))
         return runtime_configuration

@@ -28,20 +28,6 @@ def get_proton_versions_list(
     return result
 
 
-PROTON_LAST_COMPATIBILITY_TOOL_PATH_PROPERTY = ConfigurationProperty(
-    str,
-    "PROTON_LAST_COMPATIBILITY_TOOL_PATH",
-    "Last used steam compatibility tools path",
-    "The last used steam compatibility tools path.",
-)
-
-PROTON_LAST_COMPATIBILITY_TOOL_PROPERTY = ConfigurationProperty(
-    str,
-    "PROTON_LAST_COMPATIBILITY_TOOL",
-    "Last used steam compatibility tool",
-    "The last used steam compatibility tool.",
-)
-
 PROTON_VERSION_PROPERTY = ConfigurationProperty(
     str,
     "PROTON_VERSION",
@@ -196,29 +182,9 @@ class ProtonSelection(FeatureProvider):
                 PROTON_DXVK_D3D8_PROPERTY,
                 PROTON_FORCE_LARGE_ADDRESS_AWARE_PROPERTY,
                 PROTON_PREFER_SDL_PROPERTY,
-                PROTON_LAST_COMPATIBILITY_TOOL_PROPERTY,
-                PROTON_LAST_COMPATIBILITY_TOOL_PATH_PROPERTY,
             ],
             "Proton",
         )
-
-    @override
-    def override_configuration(
-        self,
-        sourced_configuration: ConfigurationDictionary,
-        runtime_configuration: RuntimeConfiguration,
-    ) -> ConfigurationDictionary:
-        if runtime_configuration.steam_compatibility_tools_path:
-            PROTON_LAST_COMPATIBILITY_TOOL_PATH_PROPERTY.set(
-                sourced_configuration,
-                runtime_configuration.steam_compatibility_tools_path,
-            )
-        if runtime_configuration.steam_compatibility_tool:
-            PROTON_LAST_COMPATIBILITY_TOOL_PROPERTY.set(
-                sourced_configuration,
-                runtime_configuration.steam_compatibility_tool,
-            )
-        return sourced_configuration
 
     @override
     def apply_configuration(
@@ -243,14 +209,14 @@ class ProtonSelection(FeatureProvider):
             RuntimeConfiguration: The updated runtime configuration object.
         """
 
-        runtime_configuration.steam_compatibility_tool = (
-            runtime_configuration.steam_compatibility_tool
-            or PROTON_LAST_COMPATIBILITY_TOOL_PROPERTY.get(configuration)
-        )
-        runtime_configuration.steam_compatibility_tools_path = (
-            runtime_configuration.steam_compatibility_tools_path
-            or PROTON_LAST_COMPATIBILITY_TOOL_PATH_PROPERTY.get(configuration)
-        )
+        # runtime_configuration.steam_compatibility_tool = (
+        #     runtime_configuration.steam_compatibility_tool
+        #     or PROTON_LAST_COMPATIBILITY_TOOL_PROPERTY.get(configuration)
+        # )
+        # runtime_configuration.steam_compatibility_tools_path = (
+        #     runtime_configuration.steam_compatibility_tools_path
+        #     or PROTON_LAST_COMPATIBILITY_TOOL_PATH_PROPERTY.get(configuration)
+        # )
         custom_proton_version = PROTON_VERSION_PROPERTY.get(configuration)
         if custom_proton_version:
             # Get compatibility tool info from cache to verify it exists

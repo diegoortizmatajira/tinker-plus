@@ -30,27 +30,6 @@ STEAM_USE_REAPER_PROPERTY = ConfigurationProperty(
     default=True,
 )
 
-STEAM_LAST_WRAPPER_COMMAND_PROPERTY = ConfigurationProperty(
-    str,
-    "STEAM_LAST_WRAPPER_COMMAND",
-    "Last used Steam wrapper command",
-    "Stores the last wrapper command used for Steam games.",
-)
-
-STEAM_LAST_REAPER_COMMAND_PROPERTY = ConfigurationProperty(
-    str,
-    "STEAM_LAST_REAPER_COMMAND",
-    "Last used Steam Reaper command",
-    "Stores the last Reaper command used for Steam games.",
-)
-
-STEAM_LAST_SNIPER_COMMAND_PROPERTY = ConfigurationProperty(
-    str,
-    "STEAM_LAST_SNIPER_COMMAND",
-    "Last used Steam Sniper command",
-    "Stores the last Sniper command used for Steam games.",
-)
-
 
 class SteamTools(FeatureProvider):
     """
@@ -69,37 +48,9 @@ class SteamTools(FeatureProvider):
                 STEAM_USE_WRAPPER_PROPERTY,
                 STEAM_USE_REAPER_PROPERTY,
                 STEAM_USE_SNIPER_PROPERTY,
-                STEAM_LAST_WRAPPER_COMMAND_PROPERTY,
-                STEAM_LAST_REAPER_COMMAND_PROPERTY,
-                STEAM_LAST_SNIPER_COMMAND_PROPERTY,
             ],
             "Pipeline",
         )
-
-    @override
-    def build_configuration(
-        self,
-        sourced_configuration: ConfigurationDictionary,
-        runtime_configuration: RuntimeConfiguration,
-    ) -> ConfigurationDictionary:
-        sourced_configuration = super().build_configuration(
-            sourced_configuration, runtime_configuration
-        )
-        if runtime_configuration.steam_environment_data.cmd_steam_wrapper:
-            STEAM_LAST_WRAPPER_COMMAND_PROPERTY.set(
-                sourced_configuration,
-                runtime_configuration.steam_environment_data.cmd_steam_wrapper,
-            )
-        if runtime_configuration.steam_environment_data.cmd_steam_sniper:
-            STEAM_LAST_SNIPER_COMMAND_PROPERTY.set(
-                sourced_configuration,
-                runtime_configuration.steam_environment_data.cmd_steam_sniper,
-            )
-        if runtime_configuration.steam_environment_data.cmd_steam_reaper:
-            STEAM_LAST_REAPER_COMMAND_PROPERTY.set(
-                sourced_configuration, runtime_configuration.steam_environment_data.cmd_steam_reaper
-            )
-        return sourced_configuration
 
     @override
     def apply_configuration(
@@ -109,9 +60,9 @@ class SteamTools(FeatureProvider):
     ) -> RuntimeConfiguration:
         # Load last used commands if not already set
         if not runtime_configuration.steam_environment_data.cmd_steam_wrapper:
-            runtime_configuration.steam_environment_data.cmd_steam_wrapper = (
-                STEAM_LAST_WRAPPER_COMMAND_PROPERTY.get(configuration)
-            )
+            # runtime_configuration.steam_environment_data.cmd_steam_wrapper = (
+            #     STEAM_LAST_WRAPPER_COMMAND_PROPERTY.get(configuration)
+            # )
             self.logger.info(
                 "Restored last used Steam wrapper command as it was not set by runtime provider."
             )
@@ -120,9 +71,9 @@ class SteamTools(FeatureProvider):
             runtime_configuration.steam_environment_data.cmd_steam_wrapper,
         )
         if not runtime_configuration.steam_environment_data.cmd_steam_sniper:
-            runtime_configuration.steam_environment_data.cmd_steam_sniper = (
-                STEAM_LAST_SNIPER_COMMAND_PROPERTY.get(configuration)
-            )
+            # runtime_configuration.steam_environment_data.cmd_steam_sniper = (
+            #     STEAM_LAST_SNIPER_COMMAND_PROPERTY.get(configuration)
+            # )
             self.logger.info(
                 "Restored last used Steam Sniper command as it was not set by runtime provider."
             )
@@ -131,9 +82,9 @@ class SteamTools(FeatureProvider):
             runtime_configuration.steam_environment_data.cmd_steam_sniper,
         )
         if not runtime_configuration.steam_environment_data.cmd_steam_reaper:
-            runtime_configuration.steam_environment_data.cmd_steam_reaper = (
-                STEAM_LAST_REAPER_COMMAND_PROPERTY.get(configuration)
-            )
+            # runtime_configuration.steam_environment_data.cmd_steam_reaper = (
+            #     STEAM_LAST_REAPER_COMMAND_PROPERTY.get(configuration)
+            # )
             self.logger.info(
                 "Restored last used Steam Reaper command as it was not set by runtime provider."
             )
