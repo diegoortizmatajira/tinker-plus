@@ -143,6 +143,14 @@ PROTON_ENABLE_HDR_PROPERTY = ConfigurationProperty(
     generated_environment_variable="PROTON_ENABLE_HDR",
 )
 
+PROTON_USE_WOW64_PROPERTY = ConfigurationProperty(
+    bool,
+    "PROTON_USE_WOW64",
+    "PROTON_USE_WOW64 (32-bit Wine prefix) support",
+    "Enable Proton WoW64 (32-bit Wine prefix) support",
+    generated_environment_variable="PROTON_USE_WOW64",
+)
+
 PROTON_PREFER_SDL_PROPERTY = ConfigurationProperty(
     bool,
     "PROTON_PREFER_SDL",
@@ -182,6 +190,7 @@ class ProtonSelection(FeatureProvider):
                 PROTON_DXVK_D3D8_PROPERTY,
                 PROTON_FORCE_LARGE_ADDRESS_AWARE_PROPERTY,
                 PROTON_PREFER_SDL_PROPERTY,
+                PROTON_USE_WOW64_PROPERTY,
             ],
             "Proton",
         )
