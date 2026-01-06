@@ -20,6 +20,7 @@ from features.read_config import ReadConfig
 from features.sdl_config import SdlConfig
 from features.steam_tools import SteamTools
 from features.trainer_launch_settings import TrainerLaunchSettings
+from features.umu_runner import UmuRunner
 from features.wine_config import WineConfig
 from features.winetricks_install import WinetricksInstall
 
@@ -61,6 +62,7 @@ class BaseHandler(ABC):
                 # Features that affect run pipeline or game launch
                 ExternalTools(),
                 SteamTools(),
+                UmuRunner(),
                 ProtonSelection(),
                 SdlConfig(),
                 WineConfig(),
