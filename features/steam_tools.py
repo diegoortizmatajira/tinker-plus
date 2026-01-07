@@ -3,6 +3,7 @@
 from typing import override
 from core.configuration_property import ConfigurationProperty
 from core.configuration_types import ConfigurationDictionary
+from core.defaults import DEFAULT_STEAM_FOLDER
 from core.feature_provider import FeatureProvider
 from core.runtime_configuration import RuntimeConfiguration, PipelineWrapper
 
@@ -30,6 +31,29 @@ STEAM_USE_REAPER_PROPERTY = ConfigurationProperty(
     default=True,
 )
 
+STEAM_DEFAULT_WRAPPER_COMMAND_PROPERTY = ConfigurationProperty(
+    str,
+    "STEAM_DEFAULT_WRAPPER_COMMAND",
+    "Default Steam Wrapper Command",
+    "Specifies the default command to use for the Steam wrapper if none is set.",
+    default="ubuntu12_32/steam-launch-wrapper",
+)
+
+STEAM_DEFAULT_SNIPER_COMMAND_PROPERTY = ConfigurationProperty(
+    str,
+    "STEAM_DEFAULT_SNIPER_COMMAND",
+    "Default Steam Sniper Command",
+    "Specifies the default command to use for Steam Sniper if none is set.",
+    default="steamapps/common/SteamLinuxRuntime_sniper/_v2-entry-point --verb=waitforexitandrun",
+)
+STEAM_DEFAULT_REAPER_COMMAND_PROPERTY = ConfigurationProperty(
+    str,
+    "STEAM_DEFAULT_REAPER_COMMAND",
+    "Default Steam Reaper Command",
+    "Specifies the default command to use for Steam Reaper if none is set.",
+    default="ubuntu12_32/reaper",
+)
+
 
 class SteamTools(FeatureProvider):
     """
@@ -48,6 +72,9 @@ class SteamTools(FeatureProvider):
                 STEAM_USE_WRAPPER_PROPERTY,
                 STEAM_USE_REAPER_PROPERTY,
                 STEAM_USE_SNIPER_PROPERTY,
+                STEAM_DEFAULT_WRAPPER_COMMAND_PROPERTY,
+                STEAM_DEFAULT_SNIPER_COMMAND_PROPERTY,
+                STEAM_DEFAULT_REAPER_COMMAND_PROPERTY,
             ],
             "Pipeline",
         )
@@ -58,35 +85,32 @@ class SteamTools(FeatureProvider):
         configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ) -> RuntimeConfiguration:
-        # Load last used commands if not already set
+        steam_base_folder = (
+            runtime_configuration.steam_environment_data.steam_base_folder
+        )
+        # Load default commands if not already set
         if not runtime_configuration.steam_environment_data.cmd_steam_wrapper:
-            # runtime_configuration.steam_environment_data.cmd_steam_wrapper = (
-            #     STEAM_LAST_WRAPPER_COMMAND_PROPERTY.get(configuration)
-            # )
+            runtime_configuration.steam_environment_data.cmd_steam_wrapper = f"{steam_base_folder}/{STEAM_DEFAULT_WRAPPER_COMMAND_PROPERTY.get(configuration)}"
             self.logger.info(
-                "Restored last used Steam wrapper command as it was not set by runtime provider."
+                "Restored default Steam wrapper command as it was not set by runtime provider."
             )
         self.logger.info(
             "Steam Launch Wrapper: %s",
             runtime_configuration.steam_environment_data.cmd_steam_wrapper,
         )
         if not runtime_configuration.steam_environment_data.cmd_steam_sniper:
-            # runtime_configuration.steam_environment_data.cmd_steam_sniper = (
-            #     STEAM_LAST_SNIPER_COMMAND_PROPERTY.get(configuration)
-            # )
+            runtime_configuration.steam_environment_data.cmd_steam_sniper = f"{steam_base_folder}/{STEAM_DEFAULT_SNIPER_COMMAND_PROPERTY.get(configuration)}"
             self.logger.info(
-                "Restored last used Steam Sniper command as it was not set by runtime provider."
+                "Restored default Steam Sniper command as it was not set by runtime provider."
             )
         self.logger.info(
             "Steam Sniper Command: %s",
             runtime_configuration.steam_environment_data.cmd_steam_sniper,
         )
         if not runtime_configuration.steam_environment_data.cmd_steam_reaper:
-            # runtime_configuration.steam_environment_data.cmd_steam_reaper = (
-            #     STEAM_LAST_REAPER_COMMAND_PROPERTY.get(configuration)
-            # )
+            runtime_configuration.steam_environment_data.cmd_steam_reaper = f"{steam_base_folder}/{STEAM_DEFAULT_REAPER_COMMAND_PROPERTY.get(configuration)}"
             self.logger.info(
-                "Restored last used Steam Reaper command as it was not set by runtime provider."
+                "Restored default Steam Reaper command as it was not set by runtime provider."
             )
         self.logger.info(
             "Steam Reaper Command: %s",
