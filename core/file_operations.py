@@ -94,6 +94,10 @@ def create_symbolic_link(
                 else:
                     location.unlink()
         target_path = Path(target)
+        # Ensure the parent directory exists
+        parent_dir = location.parent
+        parent_dir.mkdir(parents=True, exist_ok=True)
+
         os.symlink(target_path, location)
         logger.info(
             LOG_EXECUTING.format("Created symbolic link %s -> %s"),

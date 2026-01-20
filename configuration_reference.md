@@ -21,6 +21,8 @@
 |GUI_AUTORUN_TIMEOUT|int|3|Time in seconds before the GUI automatically starts the last launched game. Set to 0 to disable.|
 |GUI_CLOSE_AFTER_RUNNING_GAME|bool|True|If true, closes the GUI after launching a game|
 |GUI_SHOW_UI|bool|True|If true, shows the GUI on startup|
+|LINK_CUSTOM_DESTINATION|str|None|If provided, links to a custom destination folder in the prefix|
+|LINK_CUSTOM_SOURCE|str|None|If provided, links a custom source folder to the prefix|
 |LINK_PUBLIC_USER_FOLDER|str|None|If provided links the public user folder to the given location|
 |LINK_SHOULD_BACKUP_FOLDERS|bool|True|If true, backups the user folders before linking them|
 |LINK_STEAM_USER_FOLDER|str|None|If provided links the steam user folder to the given location|

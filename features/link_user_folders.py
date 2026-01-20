@@ -5,7 +5,12 @@ Feature to link user folders to specified locations to manage saved games and se
 from typing import override
 from core import ConfigurationProperty, FeatureProvider, RuntimeConfiguration
 from core.configuration_types import ConfigurationDictionary
-from core.defaults import LOG_DRY_RUN, PUBLIC_USER_FOLDER_NAME, STEAM_USER_FOLDER_NAME
+from core.defaults import (
+    DRIVE_C_DIR_NAME,
+    LOG_DRY_RUN,
+    PUBLIC_USER_FOLDER_NAME,
+    STEAM_USER_FOLDER_NAME,
+)
 from core.file_operations import create_symbolic_link
 
 LINK_STEAM_USER_FOLDER_PROPERTY = ConfigurationProperty(
@@ -30,6 +35,20 @@ LINK_SHOULD_BACKUP_FOLDERS_PROPERTY = ConfigurationProperty(
     True,
 )
 
+LINK_CUSTOM_SOURCE_PROPERTY = ConfigurationProperty(
+    str,
+    "LINK_CUSTOM_SOURCE",
+    "Custom Source Folder",
+    "If provided, links a custom source folder to the prefix",
+)
+
+LINK_CUSTOM_DESTINATION_PROPERTY = ConfigurationProperty(
+    str,
+    "LINK_CUSTOM_DESTINATION",
+    "Custom Destination Folder",
+    "If provided, links to a custom destination folder in the prefix",
+)
+
 
 class LinkUserFolders(FeatureProvider):
     """
@@ -47,6 +66,8 @@ class LinkUserFolders(FeatureProvider):
                 LINK_STEAM_USER_FOLDER_PROPERTY,
                 LINK_PUBLIC_USER_FOLDER_PROPERTY,
                 LINK_SHOULD_BACKUP_FOLDERS_PROPERTY,
+                LINK_CUSTOM_SOURCE_PROPERTY,
+                LINK_CUSTOM_DESTINATION_PROPERTY,
             ],
             "Data Management",
         )
@@ -98,5 +119,26 @@ class LinkUserFolders(FeatureProvider):
                 create_symbolic_link(
                     public_user_folder,
                     prefix_public_user_folder,
+                    self.logger,
+                )
+        custom_source = LINK_CUSTOM_SOURCE_PROPERTY.get(configuration)
+        custom_destination = LINK_CUSTOM_DESTINATION_PROPERTY.get(configuration)
+        if custom_source and custom_destination:
+            prefix_custom_destination = f"{runtime_configuration.prefix_path}/{DRIVE_C_DIR_NAME}/{custom_destination}"
+            self.logger.info(
+                "Linking custom folder from: %s to: %s",
+                custom_source,
+                prefix_custom_destination,
+            )
+            if runtime_configuration.dry_run:
+                self.logger.info(
+                    LOG_DRY_RUN.format("Ensure custom link at: %s to: %s"),
+                    prefix_custom_destination,
+                    custom_source,
+                )
+            else:
+                create_symbolic_link(
+                    custom_source,
+                    prefix_custom_destination,
                     self.logger,
                 )

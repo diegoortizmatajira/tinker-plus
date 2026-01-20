@@ -46,6 +46,7 @@ HUMAN_READABLE_LINKS_DIR_TEMPLATE = f"{HUMAN_READABLE_LINKS_DIR}/{{}}"
 APP_LAST_RUN_LOG_FILE = "lastrun.log"
 PROTON_LOG_FILE = "proton.log"
 # Common paths
+DRIVE_C_DIR_NAME = "drive_c"
 USERS_DIR_NAME = "drive_c/users"
 CWD_DIR_NAME = "drive_c/cwd"
 STEAM_USER_FOLDER_NAME = f"{USERS_DIR_NAME}/steamuser"
