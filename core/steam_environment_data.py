@@ -1,3 +1,7 @@
+"""
+Module for handling Steam environment data parsing and storage.
+"""
+
 from dataclasses import dataclass
 import logging
 import os
@@ -9,6 +13,10 @@ from core.file_operations import dump_as_json
 
 @dataclass
 class SteamEnvironmentData:
+    """
+    Data class to hold Steam environment data and parse relevant information
+    """
+
     steam_app_id: str | None = None
     steam_game_id: str | None = None
     steam_compat_client_install_path: str | None = None
@@ -49,10 +57,7 @@ class SteamEnvironmentData:
         """
         return self.steam_app_id is not None or self.steam_game_id is not None
 
-    def parse_steam_command(
-        self,
-        full_command: str,
-    ) -> None:
+    def parse_steam_command(self, full_command: str, logger: logging.Logger) -> None:
         """
         Parses the game command line and extracts runtime configuration components.
 
@@ -62,22 +67,19 @@ class SteamEnvironmentData:
         they are logged and assigned to the runtime configuration attributes. If the
         parsing fails, a warning is logged.
 
-        Updates:
-            - runtime_configuration.steam_wrapper: The Steam Launch Wrapper command.
-            - runtime_configuration.steam_reaper: The Reaper command.
-            - runtime_configuration.steam_sniper: The Sniper command.
-            - runtime_configuration.steam_compatibility_tool: The Compatibility Tool command.
-            - runtime_configuration.steam_game_exe: The Game Executable command.
-
         Logs:
             - Logs the identified components or warnings if the pattern does not match.
         """
 
         def evaluate_match(input_str: str, pattern: str, group: str) -> str | None:
-            match = re.search(pattern, input_str)
-            if match:
-                return match.group(group)
-            return None
+            try:
+                match = re.search(pattern, input_str)
+                if match:
+                    return match.group(group)
+                return None
+            except Exception as e:
+                logger.warning("Regex error while parsing command: %s", e)
+                return None
 
         wrapper_regexp = r"(?P<stlwrapper>\/\S+\/steam-launch-wrapper)"
         reaper_regexp = r"(?P<reaper>\/\S+\/reaper)"
@@ -87,7 +89,7 @@ class SteamEnvironmentData:
             r"(?P<compatibility_dir>(?:\/[\w\.][\.\w\s\-']+\w)+)\/"
             r"(?P<compatibility_tool>[\w\.\-\s]+)\/\S+\swaitforexitandrun)\s+"
         )
-        exe_regexp = r"(^|\s)(?P<gameexe>(?:(?:\/[\w\.][\w\s\.\-\',]+\w)+\.exe))\s?(?P<gameargs>.*)$"
+        exe_regexp = r"(^|\s)(?P<gameexe>(?:(?:\/[\w\.][\w\s\.\-\',]*?\w)+\.exe))\s?(?P<gameargs>.*)$"
 
         self.cmd_steam_wrapper = evaluate_match(
             full_command, wrapper_regexp, "stlwrapper"
@@ -107,6 +109,7 @@ class SteamEnvironmentData:
             )
         exe_match = re.search(exe_regexp, full_command)
         if not exe_match:
+            logger.error("Failed to parse game executable from command line.")
             raise RuntimeError(
                 "Game executable pattern did not match the command line."
             )
@@ -145,10 +148,34 @@ class SteamEnvironmentData:
         self.steam_compat_data_path = from_env("STEAM_COMPAT_DATA_PATH")
 
     def parse(self, full_command: str, logger: logging.Logger) -> None:
-        self.parse_steam_command(full_command)
+        """
+        Parses the full Steam command and environment variables to populate the relevant fields.
+
+        This method combines the parsing of the command line and environment variables to
+        populate the SteamEnvironmentData object with the corresponding runtime configuration
+        and environment data.
+
+        Args:
+            full_command (str): The full command string containing game runtime
+            and executable details.
+            logger (logging.Logger): The logger instance used for logging parsing actions.
+        """
+        self.parse_steam_command(full_command, logger)
         self.parse_environment_variables(logger)
 
     def save(self, dry_run: bool, logger: logging.Logger) -> None:
+        """
+        Saves the current Steam environment data to a JSON file.
+
+        This method serializes the SteamEnvironmentData object into a JSON
+        representation and writes it to the location specified by the
+        GAME_ENVIRONMENT_FILE_TEMPLATE. If dry_run is True, the data is
+        logged instead of being written to a file.
+
+        Args:
+            dry_run (bool): If True, the JSON data will be logged instead of saved.
+            logger (logging.Logger): The logger instance used for logging actions.
+        """
         dump_as_json(
             self.__dict__,
             GAME_ENVIRONMENT_FILE_TEMPLATE.format(self.steam_game_id),

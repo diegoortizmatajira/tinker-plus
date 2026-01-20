@@ -32,6 +32,8 @@ def main():
     Raises:
         SystemExit: If no command is provided by the user.
     """
+    # print the full command line for debugging purposes
+    print("Command line:", " ".join(sys.argv))
     parser = argparse.ArgumentParser(description="Tinker-Plus Application")
     _ = parser.add_argument("--debug", action="store_true", help="Enable debug mode")
     subparsers: Any = parser.add_subparsers(  # pyright: ignore[reportExplicitAny]
