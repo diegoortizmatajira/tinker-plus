@@ -3,6 +3,7 @@ Module for handling Steam environment data parsing and storage.
 """
 
 from dataclasses import dataclass
+import json
 import logging
 import os
 import re
@@ -109,12 +110,12 @@ class SteamEnvironmentData:
             )
         exe_match = re.search(exe_regexp, full_command)
         if not exe_match:
-            logger.error("Failed to parse game executable from command line.")
-            raise RuntimeError(
-                "Game executable pattern did not match the command line."
-            )
-        self.cmd_steam_game_exe = exe_match.group("gameexe")
-        self.cmd_steam_game_args = exe_match.group("gameargs")
+            logger.warning("Failed to parse game executable from command line.")
+            # raise RuntimeError(
+            #     "Game executable pattern did not match the command line."
+            # )
+        self.cmd_steam_game_exe = exe_match and exe_match.group("gameexe")
+        self.cmd_steam_game_args = exe_match and exe_match.group("gameargs")
 
     def parse_environment_variables(self, logger: logging.Logger):
         """
@@ -146,6 +147,97 @@ class SteamEnvironmentData:
         self.steam_base_folder = from_env("STEAM_BASE_FOLDER")
         self.steam_compat_install_path = from_env("STEAM_COMPAT_INSTALL_PATH")
         self.steam_compat_data_path = from_env("STEAM_COMPAT_DATA_PATH")
+        self.steam_compat_client_install_path = from_env(
+            "STEAM_COMPAT_CLIENT_INSTALL_PATH"
+        )
+
+    def restore_environment(self, logger: logging.Logger) -> None:
+        """
+        Restores Steam environment data from a JSON file if it exists.
+        """
+        if not self.steam_game_id:
+            return
+        file = GAME_ENVIRONMENT_FILE_TEMPLATE.format(self.steam_game_id)
+        if not os.path.isfile(file):
+            return
+
+        def restore_value(
+            value: str | None, msg: str, env_variable: str | None = None
+        ) -> str | None:
+            if value:
+                logger.info("Restored %s: %s", msg, value)
+                if env_variable:
+                    logger.info(
+                        "Setting environment variable: %s=%s", env_variable, value
+                    )
+                    os.environ[env_variable] = value
+            return value
+
+        with open(file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            restored = SteamEnvironmentData(**data)
+            self.steam_app_id = self.steam_app_id or restore_value(
+                restored.steam_app_id, "Steam App ID", "SteamAppId"
+            )
+            self.steam_base_folder = self.steam_base_folder or restore_value(
+                restored.steam_base_folder, "Steam Base Folder", "STEAM_BASE_FOLDER"
+            )
+            self.steam_compat_install_path = (
+                self.steam_compat_install_path
+                or restore_value(
+                    restored.steam_compat_install_path,
+                    "Steam Compatibility Install Path",
+                    "STEAM_COMPAT_INSTALL_PATH",
+                )
+            )
+            self.steam_compat_data_path = self.steam_compat_data_path or restore_value(
+                restored.steam_compat_data_path,
+                "Steam Compatibility Data Path",
+                "STEAM_COMPAT_DATA_PATH",
+            )
+            self.steam_compat_client_install_path = (
+                self.steam_compat_client_install_path
+                or restore_value(
+                    restored.steam_compat_client_install_path,
+                    "Steam Compatibility Client Install Path",
+                    "STEAM_COMPAT_CLIENT_INSTALL_PATH",
+                )
+            )
+            self.cmd_steam_wrapper = self.cmd_steam_wrapper or restore_value(
+                restored.cmd_steam_wrapper, "Steam Wrapper Command"
+            )
+            self.cmd_steam_reaper = self.cmd_steam_reaper or restore_value(
+                restored.cmd_steam_reaper, "Steam Reaper Command"
+            )
+            self.cmd_steam_sniper = self.cmd_steam_sniper or restore_value(
+                restored.cmd_steam_sniper, "Steam Sniper Command"
+            )
+            self.cmd_steam_compatibility_command = (
+                self.cmd_steam_compatibility_command
+                or restore_value(
+                    restored.cmd_steam_compatibility_command,
+                    "Steam Compatibility Command",
+                )
+            )
+            self.cmd_steam_compatibility_tool = (
+                self.cmd_steam_compatibility_tool
+                or restore_value(
+                    restored.cmd_steam_compatibility_tool, "Steam Compatibility Tool"
+                )
+            )
+            self.cmd_steam_compatibility_tools_path = (
+                self.cmd_steam_compatibility_tools_path
+                or restore_value(
+                    restored.cmd_steam_compatibility_tools_path,
+                    "Steam Compatibility Tools Path",
+                )
+            )
+            self.cmd_steam_game_exe = self.cmd_steam_game_exe or restore_value(
+                restored.cmd_steam_game_exe, "Steam Game Executable"
+            )
+            self.cmd_steam_game_args = self.cmd_steam_game_args or restore_value(
+                restored.cmd_steam_game_args, "Steam Game Arguments"
+            )
 
     def parse(self, full_command: str, logger: logging.Logger) -> None:
         """
@@ -162,6 +254,7 @@ class SteamEnvironmentData:
         """
         self.parse_steam_command(full_command, logger)
         self.parse_environment_variables(logger)
+        self.restore_environment(logger)
 
     def save(self, dry_run: bool, logger: logging.Logger) -> None:
         """
