@@ -93,30 +93,8 @@ class GameFilesBackup(FeatureProvider):
                     "Restores game files from the backup location.",
                     self.restore_game_files,
                 ),
-                FeatureAction(
-                    "backup-restore-if-not-installed",
-                    "Restore Game Files If Not Installed",
-                    "Restores game files from the backup location if they are not found when launching the game.",
-                    self.test_run,
-                ),
             ],
         )
-
-    def test_run(
-        self,
-        _configuration: ConfigurationDictionary,
-        runtime_configuration: RuntimeConfiguration,
-    ) -> None:
-        process = run_in_external_terminal(
-            runtime_configuration.external_terminal_command_template,
-            "7za --help",
-            self.logger,
-        )
-        if process:
-            with process:
-                self.logger.info("Starting test run in external terminal...")
-                _ = process.wait()
-                self.logger.info("Test run in external terminal completed.")
 
     def __get_backup_archive_name(
         self,
