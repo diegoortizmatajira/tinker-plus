@@ -10,6 +10,16 @@ from core.runtime_configuration import (
     RuntimeConfiguration,
 )
 
+EXTERNAL_TERMINAL_COMMAND_TEMPLATE_PROPERTY = ConfigurationProperty(
+    list,
+    "EXTERNAL_TERMINAL_COMMAND_TEMPLATE",
+    "External Terminal Command Template",
+    (
+        "Template for launching a command in an external terminal."
+        "Use {command} for the launch command."
+    ),
+    default=["ghostty", "-e", "/bin/bash", "-c", "{command} && sleep 5"],
+)
 GAMEMODERUN_ENABLED_PROPERTY = ConfigurationProperty(
     bool,
     "GAMEMODERUN_ENABLED",
@@ -67,6 +77,7 @@ class ExternalTools(FeatureProvider):
                 GAMESCOPE_ARGS_PROPERTY,
                 MANGOHUD_ENABLED_PROPERTY,
                 MANGOHUG_CONFIG_PROPERTY,
+                EXTERNAL_TERMINAL_COMMAND_TEMPLATE_PROPERTY,
             ],
             "Additional Tools",
         )
@@ -94,4 +105,12 @@ class ExternalTools(FeatureProvider):
         if MANGOHUD_ENABLED_PROPERTY.get(configuration):
             self.logger.info("Enabling MangoHUD wrapper.")
             runtime_configuration.add_pipeline_wrapper(PipelineWrapper("mangohud"))
+
+        runtime_configuration.external_terminal_command_template = (
+            EXTERNAL_TERMINAL_COMMAND_TEMPLATE_PROPERTY.get(configuration) or []
+        )
+        self.logger.info(
+            "Configured external terminal command template: '%s'",
+            " ".join(runtime_configuration.external_terminal_command_template),
+        )
         return runtime_configuration

@@ -128,6 +128,7 @@ class RuntimeConfiguration:
     pipeline_wrappers: list[PipelineWrapper] | None = None
     log_executable_commands: bool = False
     loaded_global_configuration: ConfigurationDictionary | None = None
+    external_terminal_command_template: list[str] | None = None
 
     @staticmethod
     def empty() -> "RuntimeConfiguration":

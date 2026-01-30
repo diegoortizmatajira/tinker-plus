@@ -306,6 +306,51 @@ def run_command(
         ) from e
 
 
+def run_in_external_terminal(
+    terminal_command_template: list[str] | None,
+    exe_command: str | ExecutableCommand,
+    logger: logging.Logger,
+    *,
+    environment_variables: dict[str, str] | None = None,
+    cwd: str | None = None,
+    dry_run: bool = False,
+):
+    if terminal_command_template is None:
+        logger.error("No terminal command template provided.")
+        raise RuntimeError("No terminal command template provided.")
+
+    try:
+        actual_command = (
+            exe_command
+            if isinstance(exe_command, str)
+            else exe_command.get_full_command()
+        )
+        if dry_run:
+            logger.info(
+                LOG_DRY_RUN.format("Would execute command in terminal: %s"),
+                actual_command,
+            )
+            return None
+
+        terminal_command = [
+            part.format(command=actual_command) for part in terminal_command_template
+        ]
+        logger.info(
+            LOG_EXECUTING.format("Executing command in terminal: %s"),
+            " ".join(terminal_command),
+        )
+        return subprocess.Popen(
+            terminal_command,
+            env=environment_variables,
+            cwd=cwd,
+        )
+    except Exception as e:
+        logger.error("Error while running application in terminal: %s", e)
+        raise RuntimeError(
+            f"Error executing command: '{exe_command}' in terminal."
+        ) from e
+
+
 def run_with_pipeline(
     exe_command: str | ExecutableCommand,
     runtime_configuration: RuntimeConfiguration,
