@@ -76,6 +76,28 @@ WEMOD_WINETRICKS_REQUIREMENTS = ConfigurationProperty(
     ["dotnet48", "dotnetdesktop6"],
 )
 
+CHEAT_ENGINE_EXE_PROPERTY = ConfigurationProperty(
+    str,
+    "CHEAT_ENGINE_EXE",
+    "Cheat Engine executable",
+    "Specifies the path to the Cheat Engine executable.",
+)
+
+CHEAT_ENGINE_FILE_PROPERTY = ConfigurationProperty(
+    str,
+    "CHEAT_ENGINE_FILE",
+    "Cheat Engine file",
+    "Specifies the path to the Cheat Engine file to load.",
+)
+
+CHEAT_ENGINE_RUN_WITHOUT_FILE_PROPERTY = ConfigurationProperty(
+    bool,
+    "CHEAT_ENGINE_RUN_WITHOUT_FILE",
+    "Cheat Engine run without file",
+    "Specifies whether to run Cheat Engine without loading a specific file.",
+    False,
+)
+
 
 class TrainerLaunchSettings(FeatureProvider):
     """
@@ -94,6 +116,9 @@ class TrainerLaunchSettings(FeatureProvider):
                 WEMOD_OPEN_WITHOUT_GAMEID_PROPERTY,
                 WEMOD_GAMEID_PROPERTY,
                 WEMOD_WINETRICKS_REQUIREMENTS,
+                CHEAT_ENGINE_EXE_PROPERTY,
+                CHEAT_ENGINE_FILE_PROPERTY,
+                CHEAT_ENGINE_RUN_WITHOUT_FILE_PROPERTY,
             ],
             "Additional Tools",
             actions=[
@@ -158,6 +183,26 @@ class TrainerLaunchSettings(FeatureProvider):
             execute_trainer = True
             self.logger.info("WeMod trainer: %s", wemod_path)
             self.logger.info("WeMod trainer game id: %s", game_id or "Not specified")
+
+        cheat_engine_path = CHEAT_ENGINE_EXE_PROPERTY.get(configuration)
+        if cheat_engine_path:
+            cheat_engine_file = CHEAT_ENGINE_FILE_PROPERTY.get(configuration)
+            if cheat_engine_file or CHEAT_ENGINE_RUN_WITHOUT_FILE_PROPERTY.get(
+                configuration
+            ):
+                cheat_engine_file = (
+                    f'"{cheat_engine_file}"' if cheat_engine_file else None
+                )
+                runtime_configuration.add_fork_command(
+                    ExecutableCommand(
+                        cheat_engine_path,
+                        cheat_engine_file,
+                        COMMAND_TRAINER,
+                    )
+                )
+                execute_trainer = True
+                self.logger.info("Cheat Engine trainer: %s", cheat_engine_path)
+                self.logger.info("Cheat Engine file: %s", cheat_engine_file)
 
         # Set the execute_trainers flag based on the configuration
         runtime_configuration.execute_trainers = execute_trainer
