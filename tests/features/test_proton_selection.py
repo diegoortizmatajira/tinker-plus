@@ -7,9 +7,7 @@ from typing import final, override
 import unittest
 from unittest.mock import MagicMock, patch
 
-from core.compat_tool_info import CompatToolInfo
-from core.configuration_types import ConfigurationDictionary
-from core.runtime_configuration import RuntimeConfiguration
+from model import CompatToolInfo, RuntimeConfiguration, ConfigurationDictionary
 from features.proton_selection import ProtonSelection, get_proton_versions_list
 
 

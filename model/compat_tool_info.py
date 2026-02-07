@@ -7,16 +7,15 @@ import os
 from pathlib import Path
 from typing import ClassVar, cast
 
-from core.defaults import (
+from core.steam.defaults import (
     DEFAULT_STEAM_COMMON_FOLDER,
     DEFAULT_STEAM_COMPATIBILITY_TOOLS_FOLDER,
     DEFAULT_STEAM_FOLDER,
-    GLOBAL_COMPAT_TOOL_CACHE_FILE,
-    LOG_SEARCHING,
 )
+from core.defaults import LOG_SEARCHING, GLOBAL_COMPAT_TOOL_CACHE_FILE
+from file_system import FileSystem
 
-from core.file_operations import dump_as_json
-from core.runtime_configuration import RuntimeConfiguration
+from .runtime_configuration import RuntimeConfiguration
 
 
 @dataclass
@@ -109,7 +108,9 @@ class CompatToolInfo:
         """
         cls._cache = cache
         raw_cache = {name: asdict(info) for name, info in cache.items()}
-        dump_as_json(raw_cache, GLOBAL_COMPAT_TOOL_CACHE_FILE, dry_run, logger)
+        FileSystem.dump_as_json(
+            raw_cache, GLOBAL_COMPAT_TOOL_CACHE_FILE, dry_run, logger
+        )
         logger.info("Compatibility tool info cache saved successfully.")
 
     @staticmethod
@@ -166,10 +167,12 @@ class CompatToolInfo:
         """
         compat_dirs = [
             DEFAULT_STEAM_COMMON_FOLDER.format(
-                configuration.steam_environment_data.steam_base_folder or DEFAULT_STEAM_FOLDER
+                configuration.steam_environment_data.steam_base_folder
+                or DEFAULT_STEAM_FOLDER
             ),
             DEFAULT_STEAM_COMPATIBILITY_TOOLS_FOLDER.format(
-                configuration.steam_environment_data.steam_base_folder or DEFAULT_STEAM_FOLDER
+                configuration.steam_environment_data.steam_base_folder
+                or DEFAULT_STEAM_FOLDER
             ),
         ]
         if configuration.steam_compatibility_tools_path:

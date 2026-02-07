@@ -19,13 +19,11 @@ from ttkbootstrap.style import (
     SUCCESS,
 )
 
-from core import RuntimeProvider
+from core import RuntimeProvider, LogFactory, SteamUtil
 from core.defaults import (
     LOG_TIMER_ACTION,
     LOG_USER_ACTION,
 )
-from core.log_storage import LogFactory
-from core.steam import get_steam_header_image_path
 from gui.generator import Generator
 
 
@@ -190,7 +188,7 @@ class MainForm:
             font=title_font,
         ).pack(pady=10)
 
-        img_path = get_steam_header_image_path(
+        img_path = SteamUtil.get_steam_header_image_path(
             self.runtime_provider.runtime_configuration
         )
         if img_path:

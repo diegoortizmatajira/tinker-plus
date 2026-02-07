@@ -10,7 +10,7 @@ from core.defaults import (
     TPLUS_BIN_LOCATION,
     TPLUS_COMPATIBILITY_TOOL_DIR,
 )
-from core.file_operations import create_symbolic_link
+from file_system import FileSystem
 from handlers.base_handler import BaseHandler
 
 INSTALL_COMMAND = "install"
@@ -54,7 +54,7 @@ class InstallHandler(BaseHandler):
         )
         tinker_plus_sh_path = os.path.join(ACTUAL_TPLUS_LOCATION, "tinker-plus.sh")
 
-        create_symbolic_link(tinker_plus_sh_path, TPLUS_BIN_LOCATION, logger)
+        FileSystem.create_symbolic_link(tinker_plus_sh_path, TPLUS_BIN_LOCATION, logger)
         # Check if the compatibility tool directory exists, and remove it if it does.
         compat_path = Path(TPLUS_COMPATIBILITY_TOOL_DIR)
         if compat_path.exists() and compat_path.is_dir():
@@ -83,5 +83,5 @@ class InstallHandler(BaseHandler):
 
         for link_name, target in files_to_link.items():
             link_path = compat_path.joinpath(link_name)
-            create_symbolic_link(target, str(link_path), logger)
+            FileSystem.create_symbolic_link(target, str(link_path), logger)
         logger.info("Installation as Steam compatibility tool completed.")

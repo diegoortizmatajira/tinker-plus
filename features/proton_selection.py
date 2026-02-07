@@ -3,14 +3,22 @@ Module for selecting proton version.
 """
 
 import logging
-
 from typing import override
-from core import FeatureProvider, ConfigurationProperty, RuntimeConfiguration, ListItem
-from core.compat_tool_info import CompatToolInfo
-from core.configuration_types import ConfigurationDictionary
-from core.log_storage import LogFactory
-from core.runtime_configuration import PipelineWrapper
-from core.steam import get_wine
+
+from core import (
+    ConfigurationProperty,
+    FeatureProvider,
+    ListItem,
+    LogFactory,
+    SteamUtil,
+)
+from model import (
+    CommandCategory,
+    CommandWrapper,
+    CompatToolInfo,
+    RuntimeConfiguration,
+    ConfigurationDictionary,
+)
 
 
 def get_proton_versions_list(
@@ -218,14 +226,6 @@ class ProtonSelection(FeatureProvider):
             RuntimeConfiguration: The updated runtime configuration object.
         """
 
-        # runtime_configuration.steam_compatibility_tool = (
-        #     runtime_configuration.steam_compatibility_tool
-        #     or PROTON_LAST_COMPATIBILITY_TOOL_PROPERTY.get(configuration)
-        # )
-        # runtime_configuration.steam_compatibility_tools_path = (
-        #     runtime_configuration.steam_compatibility_tools_path
-        #     or PROTON_LAST_COMPATIBILITY_TOOL_PATH_PROPERTY.get(configuration)
-        # )
         custom_proton_version = PROTON_VERSION_PROPERTY.get(configuration)
         if custom_proton_version:
             # Get compatibility tool info from cache to verify it exists
@@ -269,16 +269,21 @@ class ProtonSelection(FeatureProvider):
             runtime_configuration.set_environment_variable("PROTON_LOG_DIR", log_dir)
 
         # Get the Wine executable path corresponding to the selected proton version
-        runtime_configuration.wine = get_wine(runtime_configuration, self.logger)
+        runtime_configuration.wine = SteamUtil.get_wine(
+            runtime_configuration, self.logger
+        )
         runtime_configuration.add_pipeline_wrapper(
-            PipelineWrapper(
+            CommandWrapper(
                 wrapper=lambda cmd, runtime_configuration: (
                     f"{runtime_configuration.steam_compatibility_tools_path}/"
                     f"{runtime_configuration.steam_compatibility_tool}/proton"
                     f" run {cmd}"
                 ),
-                is_global_wrapper=False,
-                is_fork_wrapper=True,
+                applies_for=[
+                    CommandCategory.GAME,
+                    CommandCategory.COMPATIBILITY_TOOL,
+                    CommandCategory.TRAINER,
+                ],
             )
         )
         return runtime_configuration

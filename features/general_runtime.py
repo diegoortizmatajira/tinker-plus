@@ -1,13 +1,21 @@
 """General runtime feature provider."""
 
 from typing import override
-from core.compat_tool_info import CompatToolInfo
-from core.configuration_property import ConfigurationProperty
-from core.configuration_types import ConfigurationDictionary
-from core.feature_provider import FeatureProvider
-from core.runtime_configuration import ExecutableCommand, RuntimeConfiguration
-from core.steam import get_game_info
-from core.steam_environment_data import SteamEnvironmentData
+
+from core import (
+    ConfigurationProperty,
+    FeatureProvider,
+    SteamParser,
+    SteamUtil,
+)
+from model import (
+    Command,
+    CommandCategory,
+    CompatToolInfo,
+    RuntimeConfiguration,
+    SteamEnvironmentData,
+    ConfigurationDictionary,
+)
 
 GENERAL_LOG_INDIVIDUAL_EXE_PROPERTY = ConfigurationProperty(
     bool,
@@ -47,9 +55,12 @@ class GeneralRuntime(FeatureProvider):
         )
         # Parse Steam Environment Variables and original command line
         data = SteamEnvironmentData()
-        data.parse(" ".join(runtime_configuration.original_command), self.logger)
-        if data.has_valid_data():
-            data.save(
+        SteamParser.parse(
+            data, " ".join(runtime_configuration.original_command), self.logger
+        )
+        if SteamParser.has_valid_data(data):
+            SteamParser.save(
+                data,
                 runtime_configuration.dry_run,
                 self.logger,
             )
@@ -70,13 +81,15 @@ class GeneralRuntime(FeatureProvider):
         if data.steam_compat_data_path:
             runtime_configuration.prefix_path = f"{data.steam_compat_data_path}/pfx"
 
-        runtime_configuration.game_info = get_game_info(
+        runtime_configuration.game_info = SteamUtil.get_game_info(
             runtime_configuration, self.logger
         )
-        runtime_configuration.game_executable_command = ExecutableCommand(
-            runtime_configuration.steam_environment_data.cmd_steam_game_exe or "echo",
-            runtime_configuration.steam_environment_data.cmd_steam_game_args,
-            runtime_configuration.steam_environment_data.steam_compat_install_path,
+        runtime_configuration.game_executable_command = Command(
+            command=runtime_configuration.steam_environment_data.cmd_steam_game_exe
+            or "echo",
+            args=runtime_configuration.steam_environment_data.cmd_steam_game_args,
+            cwd=runtime_configuration.steam_environment_data.steam_compat_install_path,
+            category=CommandCategory.GAME,
         )
         return result
 

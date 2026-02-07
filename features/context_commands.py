@@ -1,11 +1,12 @@
 """Module providing context command features to be executed before startup and after exit."""
 
 from typing import override
-from core.configuration_property import ConfigurationProperty
-from core.configuration_types import ConfigurationDictionary
-from core.feature_provider import FeatureProvider
-from core.process_runner import run_command
-from core.runtime_configuration import RuntimeConfiguration
+from core import (
+    ConfigurationProperty,
+    FeatureProvider,
+    ProcessRunner,
+)
+from model import RuntimeConfiguration, ConfigurationDictionary
 
 CONTEXT_COMMAND_BEFORE_STARTUP_PROPERTY = ConfigurationProperty(
     str,
@@ -62,7 +63,7 @@ class ContextCommands(FeatureProvider):
             self.logger.info("No before startup command configured.")
             return
 
-        before_process = run_command(
+        before_process = ProcessRunner.run_string_command(
             before_command,
             self.logger,
             dry_run=_runtime_configuration.dry_run,
@@ -87,7 +88,7 @@ class ContextCommands(FeatureProvider):
         if not after_command:
             self.logger.info("No after exit command configured.")
             return
-        after_process = run_command(
+        after_process = ProcessRunner.run_string_command(
             after_command,
             self.logger,
             dry_run=_runtime_configuration.dry_run,

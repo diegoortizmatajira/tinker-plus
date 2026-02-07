@@ -1,9 +1,8 @@
 """Module for managing compatibility data folders."""
 
-from core.configuration_types import ConfigurationDictionary
-from core.feature_provider import FeatureAction, FeatureProvider
-from core.file_operations import delete_folder_tree
-from core.runtime_configuration import RuntimeConfiguration
+from core import FeatureAction, FeatureProvider
+from file_system import FileSystem
+from model import ConfigurationDictionary, RuntimeConfiguration
 
 
 class CompatDataFolders(FeatureProvider):
@@ -43,7 +42,7 @@ class CompatDataFolders(FeatureProvider):
             configuration for the operation.
         """
         if runtime_configuration.steam_environment_data.steam_compat_data_path:
-            delete_folder_tree(
+            FileSystem.delete_folder_tree(
                 runtime_configuration.steam_environment_data.steam_compat_data_path,
                 self.logger,
                 dry_run=runtime_configuration.dry_run,

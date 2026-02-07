@@ -3,15 +3,16 @@ Feature to link user folders to specified locations to manage saved games and se
 """
 
 from typing import override
-from core import ConfigurationProperty, FeatureProvider, RuntimeConfiguration
-from core.configuration_types import ConfigurationDictionary
+
+from core import ConfigurationProperty, FeatureProvider
 from core.defaults import (
     DRIVE_C_DIR_NAME,
     LOG_DRY_RUN,
     PUBLIC_USER_FOLDER_NAME,
     STEAM_USER_FOLDER_NAME,
 )
-from core.file_operations import create_symbolic_link
+from file_system import FileSystem
+from model import RuntimeConfiguration, ConfigurationDictionary
 
 LINK_STEAM_USER_FOLDER_PROPERTY = ConfigurationProperty(
     str,
@@ -97,7 +98,7 @@ class LinkUserFolders(FeatureProvider):
                     user_folder,
                 )
             else:
-                create_symbolic_link(
+                FileSystem.create_symbolic_link(
                     user_folder,
                     prefix_user_folder,
                     self.logger,
@@ -116,7 +117,7 @@ class LinkUserFolders(FeatureProvider):
                     public_user_folder,
                 )
             else:
-                create_symbolic_link(
+                FileSystem.create_symbolic_link(
                     public_user_folder,
                     prefix_public_user_folder,
                     self.logger,
@@ -137,7 +138,7 @@ class LinkUserFolders(FeatureProvider):
                     custom_source,
                 )
             else:
-                create_symbolic_link(
+                FileSystem.create_symbolic_link(
                     custom_source,
                     prefix_custom_destination,
                     self.logger,

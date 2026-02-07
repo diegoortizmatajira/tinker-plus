@@ -2,14 +2,12 @@
 This module defines a ConfigurationProperty class
 """
 
-from collections.abc import Sequence
 import logging
+from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any, Callable, cast, get_args, get_origin, overload
 
-
-from core.configuration_types import AcceptedPropertyTypes, ConfigurationDictionary
-from core.runtime_configuration import RuntimeConfiguration
+from model import RuntimeConfiguration, AcceptedPropertyTypes, ConfigurationDictionary
 
 
 @dataclass

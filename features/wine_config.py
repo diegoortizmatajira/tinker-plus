@@ -1,12 +1,15 @@
 """Feature provider for Wine configuration."""
 
 from typing import Callable, override
-from core import process_runner
-from core.configuration_property import ConfigurationProperty, ListItem
-from core.configuration_types import ConfigurationDictionary
-from core.feature_provider import FeatureAction, FeatureProvider
-from core.runtime_configuration import ExecutableCommand, RuntimeConfiguration
-from core.wine import get_win_version, get_windows_list_items, set_win_version
+from core import (
+    ConfigurationProperty,
+    ListItem,
+    FeatureAction,
+    FeatureProvider,
+    ProcessRunner,
+    Wine,
+)
+from model import Command, RuntimeConfiguration, ConfigurationDictionary
 
 WINE_DLLOVERRIDES_PROPERTY = ConfigurationProperty(
     str,
@@ -56,7 +59,7 @@ WINE_WINDOWS_VERSION_PROPERTY = ConfigurationProperty(
     "Wine Windows Version",
     "Specifies the Windows version that Wine should emulate."
     + " Common values include 'win7', 'win10', etc.",
-    values_provider=get_windows_list_items,
+    values_provider=Wine.get_windows_list_items,
 )
 
 
@@ -105,8 +108,8 @@ class WineConfig(FeatureProvider):
     ):
         try:
             # Install required Winetricks packages
-            succeed = process_runner.run_in_wine_prefix(
-                ExecutableCommand(app, args),
+            succeed = ProcessRunner.run_in_wine_prefix(
+                Command(app, args),
                 runtime_configuration,
                 self.logger,
             )
@@ -146,11 +149,13 @@ class WineConfig(FeatureProvider):
     ):
         windows_version = WINE_WINDOWS_VERSION_PROPERTY.get(_configuration)
         if windows_version:
-            current_windows_version = get_win_version(
+            current_windows_version = Wine.get_win_version(
                 runtime_configuration, self.logger
             )
             if windows_version != current_windows_version:
                 self.logger.info(
                     "Setting Custom Wine Windows version to: %s", windows_version
                 )
-                set_win_version(windows_version, runtime_configuration, self.logger)
+                Wine.set_win_version(
+                    windows_version, runtime_configuration, self.logger
+                )

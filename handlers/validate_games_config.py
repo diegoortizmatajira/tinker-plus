@@ -1,7 +1,6 @@
 import logging
 from typing import Any, override
-from core.config_storage import ConfigStorage
-from core.games_manager import GamesManager
+from core import ConfigStorage, GamesManager
 from handlers.base_handler import BaseHandler
 
 VALIDATE_GAMES_COMMAND = "validate-games"

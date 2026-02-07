@@ -3,8 +3,7 @@
 import os
 from typing import override
 
-from core import log_storage
-from core.configuration_types import ConfigurationDictionary
+from core import FeatureProvider, LogFactory
 from core.defaults import (
     APP_LAST_RUN_LOG_FILE,
     GAME_CONFIG_FILE_TEMPLATE,
@@ -14,9 +13,8 @@ from core.defaults import (
     HUMAN_READABLE_LINKS_DIR_TEMPLATE,
     LAST_RUN_LOG_FILE,
 )
-from core.feature_provider import FeatureProvider
-from core.file_operations import create_symbolic_link
-from core.runtime_configuration import RuntimeConfiguration
+from file_system import FileSystem
+from model import ConfigurationDictionary, RuntimeConfiguration
 
 
 class HumanReadableLinks(FeatureProvider):
@@ -49,13 +47,13 @@ class HumanReadableLinks(FeatureProvider):
             config_file = GAME_CONFIG_FILE_TEMPLATE.format(
                 runtime_configuration.get_game_identifier()
             )
-            create_symbolic_link(
+            FileSystem.create_symbolic_link(
                 config_file, f"{game_links_dir}/config.json", self.logger
             )
             environment_file = GAME_ENVIRONMENT_FILE_TEMPLATE.format(
                 runtime_configuration.get_game_identifier()
             )
-            create_symbolic_link(
+            FileSystem.create_symbolic_link(
                 environment_file, f"{game_links_dir}/environment.json", self.logger
             )
 
@@ -63,20 +61,22 @@ class HumanReadableLinks(FeatureProvider):
             log_dir = GAME_LOGS_DIR_TEMPLATE.format(
                 runtime_configuration.get_game_identifier()
             )
-            create_symbolic_link(log_dir, f"{game_links_dir}/logs", self.logger)
+            FileSystem.create_symbolic_link(
+                log_dir, f"{game_links_dir}/logs", self.logger
+            )
 
             # Create link to Script File
             script_file = GAME_SCRIPT_TEMPLATE.format(
                 runtime_configuration.get_game_identifier()
             )
-            create_symbolic_link(
+            FileSystem.create_symbolic_link(
                 script_file, f"{game_links_dir}/launch_script.sh", self.logger
             )
 
             # Create link to the Game Files
             game_files_path = runtime_configuration.get_game_files_path()
             if game_files_path:
-                create_symbolic_link(
+                FileSystem.create_symbolic_link(
                     game_files_path,
                     f"{game_links_dir}/game_files",
                     self.logger,
@@ -85,17 +85,19 @@ class HumanReadableLinks(FeatureProvider):
             # Create link to the Game compat data folder
             compat_data_path = runtime_configuration.get_compat_data_path()
             if compat_data_path:
-                create_symbolic_link(
+                FileSystem.create_symbolic_link(
                     compat_data_path,
                     f"{game_links_dir}/compat_data",
                     self.logger,
                 )
 
             # Create link to the last run log
-            last_run_log = log_storage.LogFactory.singleton().get_log_filename(
+            last_run_log = LogFactory.singleton().get_log_filename(
                 APP_LAST_RUN_LOG_FILE
             )
-            create_symbolic_link(last_run_log, LAST_RUN_LOG_FILE, self.logger)
+            FileSystem.create_symbolic_link(
+                last_run_log, LAST_RUN_LOG_FILE, self.logger
+            )
 
         except RuntimeError as e:
             self.logger.warning("Could not create some human-readable links: %s", e)

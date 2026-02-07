@@ -3,10 +3,8 @@ Module for reading and building configuration from default or config files.
 """
 
 from typing import final, override
-from core import FeatureProvider
-from core.config_storage import ConfigStorage
-from core.configuration_types import ConfigurationDictionary
-from core.runtime_configuration import RuntimeConfiguration
+from core import FeatureProvider, ConfigStorage
+from model import RuntimeConfiguration, ConfigurationDictionary
 
 
 @final

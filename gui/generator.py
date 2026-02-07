@@ -1,14 +1,18 @@
 """Module for generating GUI components based on runtime features."""
 
 from typing import Any, cast, final
+
 import ttkbootstrap as ttk
 from ttkbootstrap.style import DANGER, INFO, PRIMARY, SUCCESS
 
-from core.configuration_property import AnyConfigurationProperty, ConfigurationProperty
-from core.configuration_types import AcceptedPropertyTypes, ConfigurationDictionary
-from core.feature_provider import FeatureAction
-from core.log_storage import LogFactory
-from core.runtime_provider import RuntimeProvider
+from core import (
+    AnyConfigurationProperty,
+    ConfigurationProperty,
+    FeatureAction,
+    LogFactory,
+    RuntimeProvider,
+)
+from model import AcceptedPropertyTypes, ConfigurationDictionary
 
 
 @final

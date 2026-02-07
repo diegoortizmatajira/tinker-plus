@@ -1,17 +1,23 @@
 """Module for enabling and configuring custom trainers or WeMod integration."""
 
-from typing import override
+from subprocess import Popen
+from time import sleep
+from typing import Any, override
+
 from core import (
-    FeatureProvider,
     ConfigurationProperty,
-    RuntimeConfiguration,
-    process_runner,
+    FeatureAction,
+    FeatureProvider,
+    ProcessRunner,
+    Wine,
 )
-from core.configuration_types import ConfigurationDictionary
 from core.defaults import ACTUAL_TPLUS_LOCATION
-from core.feature_provider import FeatureAction
-from core.runtime_configuration import COMMAND_TRAINER, ExecutableCommand
-from core.wine import get_win_version, set_win_version
+from model import (
+    Command,
+    CommandCategory,
+    ConfigurationDictionary,
+    RuntimeConfiguration,
+)
 
 DOTNET48_OFFLINE_INSTALLER = (
     f"{ACTUAL_TPLUS_LOCATION}/redist/NDP48-x86-x64-AllOS-ENU.exe"
@@ -104,6 +110,8 @@ class TrainerLaunchSettings(FeatureProvider):
     A feature provider for configuring and launching custom trainers or WeMod integration.
     """
 
+    trainer_process_list: list[Popen[Any]] = []
+
     def __init__(self):
         super().__init__(
             "Trainers",
@@ -148,10 +156,10 @@ class TrainerLaunchSettings(FeatureProvider):
         if custom_trainer:
             custom_trainer_args = TRAINER_ARGS_PROPERTY.get(configuration)
             runtime_configuration.add_fork_command(
-                ExecutableCommand(
-                    custom_trainer,
-                    custom_trainer_args,
-                    COMMAND_TRAINER,
+                Command(
+                    command=custom_trainer,
+                    args=custom_trainer_args,
+                    category=CommandCategory.TRAINER,
                 )
             )
             execute_trainer = True
@@ -174,10 +182,10 @@ class TrainerLaunchSettings(FeatureProvider):
                 else None
             )
             runtime_configuration.add_fork_command(
-                ExecutableCommand(
-                    wemod_path,
-                    wemod_args,
-                    COMMAND_TRAINER,
+                Command(
+                    command=wemod_path,
+                    args=wemod_args,
+                    category=CommandCategory.TRAINER,
                 )
             )
             execute_trainer = True
@@ -194,10 +202,10 @@ class TrainerLaunchSettings(FeatureProvider):
                     f'"{cheat_engine_file}"' if cheat_engine_file else None
                 )
                 runtime_configuration.add_fork_command(
-                    ExecutableCommand(
-                        cheat_engine_path,
-                        cheat_engine_file,
-                        COMMAND_TRAINER,
+                    Command(
+                        command=cheat_engine_path,
+                        args=cheat_engine_file,
+                        category=CommandCategory.TRAINER,
                     )
                 )
                 execute_trainer = True
@@ -206,6 +214,7 @@ class TrainerLaunchSettings(FeatureProvider):
 
         # Set the execute_trainers flag based on the configuration
         runtime_configuration.execute_trainers = execute_trainer
+
         return runtime_configuration
 
     def prepare_prefix_for_wemod(
@@ -222,16 +231,18 @@ class TrainerLaunchSettings(FeatureProvider):
         self.logger.info("WeMod trainer winetricks: %s", ",".join(winetricks))
 
         try:
-            original_win_version = get_win_version(runtime_configuration, self.logger)
+            original_win_version = Wine.get_win_version(
+                runtime_configuration, self.logger
+            )
             if original_win_version is None:
                 self.logger.error(
                     "Could not determine original Windows version in Wine prefix."
                 )
                 return
-            set_win_version("win7", runtime_configuration, self.logger)
+            Wine.set_win_version("win7", runtime_configuration, self.logger)
             # Install required Winetricks packages
-            succeed = process_runner.run_in_wine_prefix(
-                ExecutableCommand("wine", DOTNET48_OFFLINE_INSTALLER),
+            succeed = ProcessRunner.run_in_wine_prefix(
+                Command("wine", DOTNET48_OFFLINE_INSTALLER),
                 runtime_configuration,
                 self.logger,
             )
@@ -240,7 +251,61 @@ class TrainerLaunchSettings(FeatureProvider):
             else:
                 self.logger.error("Dotnet 4.8 installation failed.")
                 raise RuntimeError("Dotnet 4.8 installation failed")
-            set_win_version(original_win_version, runtime_configuration, self.logger)
+            Wine.set_win_version(
+                original_win_version, runtime_configuration, self.logger
+            )
         except RuntimeError as e:
             self.logger.error("Failed to prepare Wine prefix for WeMod: %s", e)
             raise
+
+    @override
+    def execute_in_pipeline(
+        self,
+        _configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
+    ):
+        self.trainer_process_list = []
+        forks_to_include = [
+            fork
+            for fork in runtime_configuration.fork_commands or []
+            if (
+                fork.category is CommandCategory.TRAINER
+                and not runtime_configuration.execute_trainers
+            )
+            is False
+        ]
+        for fork in forks_to_include:
+            self.logger.info(
+                "Preparing trainer command '%s'",
+                fork.command,
+            )
+            fork_process = ProcessRunner.run_with_pipeline(
+                fork, runtime_configuration, self.logger
+            )
+            if fork_process:
+                self.trainer_process_list.append(fork_process)
+                self.logger.info(
+                    "Launched trainer command '%s' with PID: %s",
+                    fork.command,
+                    fork_process.pid,
+                )
+                sleep(2)
+
+    @override
+    def after_execution(
+        self,
+        _configuration: ConfigurationDictionary,
+        _runtime_configuration: RuntimeConfiguration,
+    ):
+        for process in self.trainer_process_list:
+            status = process.poll()
+            if status is None:  # Check if the process is still running
+                self.logger.info(
+                    "Trainer process with PID: %s is still running", process.pid
+                )
+            else:
+                self.logger.info(
+                    "Trainer process with PID: %s has exited with code: %s",
+                    process.pid,
+                    status,
+                )

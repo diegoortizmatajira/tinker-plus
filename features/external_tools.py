@@ -1,12 +1,11 @@
 """Module to manage external tools being used when running the game."""
 
 from typing import override
-from core.configuration_property import ConfigurationProperty
-from core.configuration_types import ConfigurationDictionary
-from core.feature_provider import FeatureProvider
-from core.runtime_configuration import (
-    ExecutableCommand,
-    PipelineWrapper,
+from core import ConfigurationProperty, FeatureProvider
+from model import (
+    Command,
+    CommandWrapper,
+    ConfigurationDictionary,
     RuntimeConfiguration,
 )
 
@@ -90,21 +89,21 @@ class ExternalTools(FeatureProvider):
     ) -> RuntimeConfiguration:
         if GAMEMODERUN_ENABLED_PROPERTY.get(configuration):
             self.logger.info("Enabling GameModeRun wrapper.")
-            runtime_configuration.add_pipeline_wrapper(PipelineWrapper("gamemoderun"))
+            runtime_configuration.add_pipeline_wrapper(CommandWrapper("gamemoderun"))
         if GAMESCOPE_ENABLED_PROPERTY.get(configuration):
             gamescope_args = GAMESCOPE_ARGS_PROPERTY.get(configuration) or ""
             self.logger.info(
                 'Enabling Gamescope wrapper with args: "%s"', gamescope_args
             )
-            command = ExecutableCommand("gamescope", args=gamescope_args)
+            command = Command("gamescope", args=gamescope_args)
             runtime_configuration.add_pipeline_wrapper(
-                PipelineWrapper(
+                CommandWrapper(
                     wrapper=lambda cmd, _: (f"{command.get_full_command()} -- {cmd}"),
                 )
             )
         if MANGOHUD_ENABLED_PROPERTY.get(configuration):
             self.logger.info("Enabling MangoHUD wrapper.")
-            runtime_configuration.add_pipeline_wrapper(PipelineWrapper("mangohud"))
+            runtime_configuration.add_pipeline_wrapper(CommandWrapper("mangohud"))
 
         runtime_configuration.external_terminal_command_template = (
             EXTERNAL_TERMINAL_COMMAND_TEMPLATE_PROPERTY.get(configuration) or []

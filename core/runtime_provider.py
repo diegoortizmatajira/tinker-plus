@@ -7,17 +7,19 @@ as well as feature-specific customizations to build a comprehensive runtime envi
 import json
 from typing import final
 
-from core.config_storage import ConfigStorage
-from core.configuration_types import ConfigurationDictionary
-from core.defaults import LOG_STAGE_STARTED
-from core.game_info import GameInfo
-from core.steam_environment_data import SteamEnvironmentData
-from .runtime_configuration import RuntimeConfiguration
+from model import (
+    GameInfo,
+    RuntimeConfiguration,
+    SteamEnvironmentData,
+    ConfigurationDictionary,
+)
+
+from .config_storage import ConfigStorage
+from .defaults import LOG_STAGE_STARTED
 from .feature_provider import FeatureAction, FeatureProvider
 from .log_storage import LogFactory
 
 EMPTY = "(not provided)"
-
 
 
 @final
@@ -56,7 +58,6 @@ class RuntimeProvider:
             dry_run=dry_run,
         )
         self.last_applied_configuration: ConfigurationDictionary = {}
-
 
     def build_configuration(self, pre_apply_configuration: bool = False):
         """

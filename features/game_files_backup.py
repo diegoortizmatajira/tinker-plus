@@ -2,12 +2,14 @@
 
 from pathlib import Path
 from typing import override
-from core.configuration_property import ConfigurationProperty
-from core.configuration_types import ConfigurationDictionary
+from core import (
+    ConfigurationProperty,
+    FeatureAction,
+    FeatureProvider,
+    ProcessRunner,
+)
 from core.defaults import LOG_DRY_RUN
-from core.feature_provider import FeatureAction, FeatureProvider
-from core.process_runner import run_command, run_in_external_terminal
-from core.runtime_configuration import RuntimeConfiguration
+from model import RuntimeConfiguration, ConfigurationDictionary
 
 BACKUP_LOCATION_PROPERTY = ConfigurationProperty(
     str,
@@ -150,7 +152,7 @@ class GameFilesBackup(FeatureProvider):
         if runtime_configuration.dry_run:
             self.logger.info(LOG_DRY_RUN.format("Backup command: %s"), command)
             return
-        process = run_in_external_terminal(
+        process = ProcessRunner.run_in_external_terminal(
             runtime_configuration.external_terminal_command_template,
             command,
             self.logger,
@@ -212,7 +214,7 @@ class GameFilesBackup(FeatureProvider):
         if runtime_configuration.dry_run:
             self.logger.info(LOG_DRY_RUN.format("Restore command: %s"), command)
             return
-        process = run_in_external_terminal(
+        process = ProcessRunner.run_in_external_terminal(
             runtime_configuration.external_terminal_command_template,
             command,
             self.logger,

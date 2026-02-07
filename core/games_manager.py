@@ -1,8 +1,9 @@
 """Manages the collection of game configurations."""
 
-from core.config_storage import ConfigStorage
-from core.game_info import GameInfo
-from core.log_storage import LogFactory
+from model import GameInfo
+
+from .config_storage import ConfigStorage
+from .log_storage import LogFactory
 
 
 class GamesManager:

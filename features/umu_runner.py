@@ -1,10 +1,13 @@
 """Umu Launcher Feature Provider"""
 
 from typing import override
-from core.configuration_property import ConfigurationProperty
-from core.configuration_types import ConfigurationDictionary
-from core.feature_provider import FeatureProvider
-from core.runtime_configuration import PipelineWrapper, RuntimeConfiguration
+from core import ConfigurationProperty, FeatureProvider
+from model import (
+    CommandCategory,
+    CommandWrapper,
+    RuntimeConfiguration,
+    ConfigurationDictionary,
+)
 
 UMU_RUN_ENABLED_PROPERTY = ConfigurationProperty(
     bool,
@@ -57,9 +60,12 @@ class UmuRunner(FeatureProvider):
         if UMU_RUN_ENABLED_PROPERTY.get(configuration) and umu_binary:
             self.logger.info("Enabling Umu Runner.")
             runtime_configuration.add_pipeline_wrapper(
-                PipelineWrapper(
+                CommandWrapper(
                     f"{umu_binary} --",
-                    is_global_wrapper=False,
+                    applies_for=[
+                        CommandCategory.GAME,
+                        CommandCategory.COMPATIBILITY_TOOL,
+                    ],
                 )
             )
         return runtime_configuration

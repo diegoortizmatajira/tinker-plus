@@ -7,11 +7,14 @@ from typing import override
 from core import (
     FeatureProvider,
     ConfigurationProperty,
-    RuntimeConfiguration,
+    ProcessRunner,
 )
-from core.configuration_types import ConfigurationDictionary
-from core.process_runner import run_command_with_compatibility_tool
-from core.runtime_configuration import ExecutableCommand
+from model import (
+    CommandCategory,
+    RuntimeConfiguration,
+    Command,
+    ConfigurationDictionary,
+)
 
 PREFIX_CUSTOM_PATH_PROPERTY = ConfigurationProperty(
     str,
@@ -53,6 +56,7 @@ class PrefixSelection(FeatureProvider):
             self.logger.info(
                 "Using default prefix: %s", runtime_configuration.prefix_path
             )
+
         return runtime_configuration
 
     @override
@@ -64,6 +68,8 @@ class PrefixSelection(FeatureProvider):
         custom_prefix_path = Path(runtime_configuration.prefix_path or ".")
         if not custom_prefix_path.exists():
             self.logger.info("Executing mock command, to force prefix creation.")
-            _ = run_command_with_compatibility_tool(
-                ExecutableCommand("/bin/echo", None), runtime_configuration, self.logger
+            _ = ProcessRunner.run_command_with_compatibility_tool(
+                Command("/bin/echo", None, category=CommandCategory.COMPATIBILITY_TOOL),
+                runtime_configuration,
+                self.logger,
             )

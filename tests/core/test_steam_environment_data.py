@@ -1,6 +1,6 @@
 import unittest
 
-from core.steam_environment_data import SteamEnvironmentData
+from model import SteamEnvironmentData
 
 
 PART_WRAPPER = "wrapper"

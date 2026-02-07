@@ -1,22 +1,20 @@
 """Module for managing configuration storage, including global and game-specific"""
 
-from collections.abc import Sequence
 import json
 import os
+from collections.abc import Sequence
 from pathlib import Path
 from typing import cast, final
 
-from core.configuration_types import ConfigurationDictionary
-from core.defaults import (
+from model import GameInfo, ConfigurationDictionary
+from .defaults import (
     CONFIG_LOCATION,
     GAME_CONFIG_DIR,
     GAME_CONFIG_FILE_TEMPLATE,
     GAME_INFO_KEY,
     GLOBAL_CONFIG_FILE,
 )
-from core.feature_provider import FeatureProvider
-from core.game_info import GameInfo
-
+from .feature_provider import FeatureProvider
 from .log_storage import LogFactory
 
 

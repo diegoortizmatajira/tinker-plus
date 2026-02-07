@@ -1,11 +1,8 @@
 """Feature provider for Steam tools and wrappers."""
 
 from typing import override
-from core.configuration_property import ConfigurationProperty
-from core.configuration_types import ConfigurationDictionary
-from core.defaults import DEFAULT_STEAM_FOLDER
-from core.feature_provider import FeatureProvider
-from core.runtime_configuration import RuntimeConfiguration, PipelineWrapper
+from core import ConfigurationProperty, FeatureProvider
+from model import RuntimeConfiguration, CommandWrapper, ConfigurationDictionary
 
 STEAM_USE_WRAPPER_PROPERTY = ConfigurationProperty(
     bool,
@@ -123,9 +120,8 @@ class SteamTools(FeatureProvider):
         ):
             self.logger.info("Enabling Steam wrapper.")
             runtime_configuration.add_pipeline_wrapper(
-                PipelineWrapper(
+                CommandWrapper(
                     f"{runtime_configuration.steam_environment_data.cmd_steam_wrapper} --",
-                    is_global_wrapper=True,
                 )
             )
         # Apply the Reaper (After Wrapper)
@@ -142,9 +138,8 @@ class SteamTools(FeatureProvider):
                 return f"{rtm_cfg.steam_environment_data.cmd_steam_reaper} {args} {cmd}"
 
             runtime_configuration.add_pipeline_wrapper(
-                PipelineWrapper(
+                CommandWrapper(
                     wrapper=reaper_wrapper,
-                    is_global_wrapper=True,
                 )
             )
 
@@ -155,9 +150,8 @@ class SteamTools(FeatureProvider):
         ):
             self.logger.info("Enabling Steam Sniper wrapper.")
             runtime_configuration.add_pipeline_wrapper(
-                PipelineWrapper(
+                CommandWrapper(
                     f"{runtime_configuration.steam_environment_data.cmd_steam_sniper} --",
-                    is_global_wrapper=False,
                 )
             )
         return runtime_configuration

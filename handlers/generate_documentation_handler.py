@@ -5,7 +5,7 @@ from typing import Any, override
 
 from jinja2 import Environment, FileSystemLoader
 
-from core.configuration_types import AcceptedPropertyTypes
+from model import AcceptedPropertyTypes
 from handlers.base_handler import BaseHandler
 
 GENERATE_DOCUMENTATION_COMMAND = "generate_documentation"

@@ -2,20 +2,19 @@
 Feature Provider Base Class
 """
 
+import logging
 from abc import ABC
 from collections.abc import Sequence
 from dataclasses import dataclass
-import logging
 from typing import Callable
 
-from core.configuration_types import ConfigurationDictionary
+from model import RuntimeConfiguration, ConfigurationDictionary
 
 from .configuration_property import (
     AnyConfigurationProperty,
     ConfigurationProperty,
 )
 from .log_storage import LogFactory
-from .runtime_configuration import RuntimeConfiguration
 
 
 @dataclass

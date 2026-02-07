@@ -4,12 +4,9 @@ from typing import override
 from core import (
     FeatureProvider,
     ConfigurationProperty,
-    RuntimeConfiguration,
-    process_runner,
 )
-from core.configuration_types import ConfigurationDictionary
-from core.feature_provider import FeatureAction
-from core.runtime_configuration import ExecutableCommand
+from core import  FeatureAction, ProcessRunner
+from model import ConfigurationDictionary,RuntimeConfiguration, Command
 
 
 WINETRICKS_RUN_PROPERTY = ConfigurationProperty(
@@ -78,8 +75,8 @@ class WinetricksInstall(FeatureProvider):
             ", ".join(winetricks or []),
         )
         try:
-            succeed = process_runner.run_in_wine_prefix(
-                ExecutableCommand("winetricks", f"--unattended {' '.join(winetricks)}"),
+            succeed = ProcessRunner.run_in_wine_prefix(
+                Command("winetricks", f"--unattended {' '.join(winetricks)}"),
                 runtime_configuration,
                 self.logger,
             )

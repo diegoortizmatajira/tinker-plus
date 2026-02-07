@@ -2,96 +2,13 @@
 
 from collections.abc import Sequence
 from dataclasses import dataclass
-import logging
-from typing import Callable
+from typing import Self
 
-from core.configuration_types import ConfigurationDictionary
-from core.game_info import GameInfo
-from core.steam_environment_data import SteamEnvironmentData
-
-
-COMMAND_TRAINER = "trainer"
-COMMAND_GAME = "game"
-
-
-@dataclass
-class ExecutableCommand:
-    """
-    Represents a command that can be executed with optional arguments and category.
-
-    Attributes:
-        command (str): The command to execute.
-        args (str | None): Optional arguments for the command.
-        category (str | None): An optional category to classify the command.
-    """
-
-    command: str
-    args: str | None = None
-    cwd: str | None = None
-    category: str | None = None
-
-    def get_full_command(self) -> str:
-        """
-        Constructs the full command string by combining the command and its arguments.
-
-        Returns:
-            str: The full command string.
-        """
-        quoted_command = f'"{self.command}"' if " " in self.command else self.command
-        if self.args:
-            return f"{quoted_command} {self.args}".strip()
-        return quoted_command.strip()
-
-
-@dataclass()
-class PipelineWrapper:
-    """
-    Represents a pipeline wrapper with environment variables and a command to execute.
-    Attributes:
-        environment_variables (dict[str, str]): A dictionary of environment variables to set.
-        command (str): The command to execute within the pipeline wrapper.
-    """
-
-    command: str | None = None
-    wrapper: Callable[[str, "RuntimeConfiguration"], str] | None = None
-    is_global_wrapper: bool = True
-    is_fork_wrapper: bool = False
-
-    def wrap(
-        self,
-        pipeline_assembled_command: str,
-        runtime_configuration: "RuntimeConfiguration",
-        *,
-        is_global: bool = True,
-        is_fork: bool = False,
-        logger: logging.Logger,
-    ) -> str:
-        """
-        Wraps the provided pipeline assembled command using the defined wrapper.
-
-        If a wrapper is defined, it applies the wrapper function to the pipeline
-        assembled command. Otherwise, it concatenates the command and the pipeline
-        assembled command.
-
-        Args:
-            pipeline_assembled_command (str): The assembled command to be wrapped.
-
-        Returns:
-            str: The wrapped command.
-        """
-        if is_global != self.is_global_wrapper:
-            return pipeline_assembled_command
-        if is_fork and not self.is_fork_wrapper:
-            return pipeline_assembled_command
-
-        if self.wrapper:
-            wrapped_command = self.wrapper(
-                pipeline_assembled_command, runtime_configuration
-            )
-        else:
-            wrapped_command = f"{self.command} {pipeline_assembled_command}"
-        logger.debug("Wrapped command build step: %s", wrapped_command)
-        return wrapped_command
+from .command import Command, CommandCategory
+from .command_wrapper import CommandWrapper
+from .configuration_types import ConfigurationDictionary
+from .game_info import GameInfo
+from .steam_environment_data import SteamEnvironmentData
 
 
 # pylint: disable=too-many-instance-attributes
@@ -117,15 +34,15 @@ class RuntimeConfiguration:
     steam_compatibility_command: str | None = None
     steam_compatibility_tool: str | None = None
     steam_compatibility_tools_path: str | None = None
-    game_executable_command: ExecutableCommand | None = None
-    game_executable_wrapper: PipelineWrapper | None = None
+    game_executable_command: Command | None = None
+    game_executable_wrapper: CommandWrapper[Self] | None = None
     wine: str | None = None
-    fork_commands: list[ExecutableCommand] | None = None
+    fork_commands: list[Command] | None = None
     prefix_path: str | None = None
     execute_trainers: bool = True
     execute_forks_only: bool = False
     environment_variables: dict[str, str] | None = None
-    pipeline_wrappers: list[PipelineWrapper] | None = None
+    pipeline_wrappers: list[CommandWrapper[Self]] | None = None
     log_executable_commands: bool = False
     loaded_global_configuration: ConfigurationDictionary | None = None
     external_terminal_command_template: list[str] | None = None
@@ -196,11 +113,11 @@ class RuntimeConfiguration:
         if self.fork_commands is None:
             return False
         for cmd in self.fork_commands:
-            if cmd.category == COMMAND_TRAINER:
+            if cmd.category is CommandCategory.TRAINER:
                 return True
         return False
 
-    def add_fork_command(self, command: ExecutableCommand) -> None:
+    def add_fork_command(self, command: Command) -> None:
         """
         Adds a forked command to the current configuration.
 
@@ -224,7 +141,7 @@ class RuntimeConfiguration:
             self.environment_variables = {}
         self.environment_variables[key] = value
 
-    def add_pipeline_wrapper(self, wrapper: PipelineWrapper) -> None:
+    def add_pipeline_wrapper(self, wrapper: CommandWrapper[Self]) -> None:
         """
         Adds a pipeline wrapper to the current configuration. Each wrapper
         will affect the final command in the order they were added.

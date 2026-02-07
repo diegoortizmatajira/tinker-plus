@@ -1,7 +1,7 @@
 from typing import override
-from core import ConfigurationProperty, FeatureProvider, RuntimeConfiguration
-from core.configuration_types import ConfigurationDictionary
 
+from core import ConfigurationProperty, FeatureProvider
+from model import ConfigurationDictionary, RuntimeConfiguration
 
 ENVIRONMENT_VARIABLES = ConfigurationProperty(
     list,
@@ -42,3 +42,12 @@ class EnvironmentVariables(FeatureProvider):
                 self.logger.info(f"Setting environment variable: {key}={value}")
                 runtime_configuration.set_environment_variable(key, value)
         return runtime_configuration
+
+    @override
+    def execute_in_pipeline(
+        self,
+        _configuration: ConfigurationDictionary,
+        runtime_configuration: RuntimeConfiguration,
+    ):
+        for k, v in (runtime_configuration.environment_variables or {}).items():
+            self.logger.info("Using environment:  %s=%s", k, v)

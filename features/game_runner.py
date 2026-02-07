@@ -4,13 +4,18 @@ A feature provider for executing the main game command and any forked commands
 
 from typing import override
 
-from core import FeatureProvider, RuntimeConfiguration
-from core.configuration_property import ConfigurationProperty
-from core.configuration_types import ConfigurationDictionary
+from core import (
+    FeatureProvider,
+    ConfigurationProperty,
+    ProcessRunner,
+)
 from core.defaults import CWD_DIR_NAME
-from core.process_runner import run_game_and_forks_with_compatibility_tool
-from core.runtime_configuration import ExecutableCommand
-
+from model import (
+    Command,
+    CommandCategory,
+    RuntimeConfiguration,
+    ConfigurationDictionary,
+)
 
 GAME_CUSTOM_EXE_PROPERTY = ConfigurationProperty(
     str,
@@ -74,7 +79,9 @@ class GameRunner(FeatureProvider):
                 "Configured to run only forked commands, skipping main game."
             )
         if not runtime_configuration.game_executable_command:
-            runtime_configuration.game_executable_command = ExecutableCommand("echo")
+            runtime_configuration.game_executable_command = Command(
+                "echo", category=CommandCategory.GAME
+            )
 
         custom_exe = GAME_CUSTOM_EXE_PROPERTY.get(configuration)
         if custom_exe:
@@ -103,6 +110,23 @@ class GameRunner(FeatureProvider):
         _configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ):
-        for k, v in (runtime_configuration.environment_variables or {}).items():
-            self.logger.info("Using environment:  %s=%s", k, v)
-        run_game_and_forks_with_compatibility_tool(runtime_configuration, self.logger)
+        if runtime_configuration.execute_forks_only:
+            self.logger.info(
+                "Skipping main game execution as configured to run only forked commands."
+            )
+            return
+
+        if not runtime_configuration.game_executable_command:
+            self.logger.error("No game executable specified to run.")
+            raise RuntimeError("No game executable specified to run.")
+
+        game_process = ProcessRunner.run_with_pipeline(
+            runtime_configuration.game_executable_command,
+            runtime_configuration,
+            self.logger,
+        )
+        if game_process:
+            with game_process:
+                self.logger.info("Launched game with PID: %s", game_process.pid)
+                result = game_process.wait()
+                self.logger.info("Game process exited with return code: %s", result)

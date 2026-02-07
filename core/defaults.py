@@ -13,18 +13,9 @@ def timestamped_log(folder: str, base: str) -> str:
 
 GAME_INFO_KEY = "!game_info"
 ACTUAL_TPLUS_LOCATION = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-DEFAULT_STEAM_FOLDER = os.path.expandvars("$HOME/.local/share/Steam")
-DEFAULT_STEAM_COMMON_FOLDER = "{}/steamapps/common"
-DEFAULT_STEAM_COMPATIBILITY_TOOLS_FOLDER = "{}/compatibilitytools.d"
-DEFAULT_STEAM_WRAPPER = "{}/ubuntu12_32/steam-launch-wrapper"
-DEFAULT_STEAM_REAPER = "{}/ubuntu12_32/reaper"
-DEFAULT_STEAM_SNIPER = "{}/steamapps/common/SteamLinuxRuntime_sniper/_v2-entry-point --verb=waitforexitandrun"
-DEFAULT_STEAM_APP_CACHE_FOLDER = "{}/appcache/librarycache/{}"
 
 TPLUS_BIN_LOCATION = os.path.expandvars("$HOME/.local/bin/tplus")
-TPLUS_COMPATIBILITY_TOOL_DIR = (
-    f"{DEFAULT_STEAM_FOLDER}/compatibilitytools.d/Tinker-Plus"
-)
+TPLUS_COMPATIBILITY_TOOL_DIR = "Tinker-Plus"
 
 CONFIG_LOCATION = os.path.expandvars("$HOME/.config/tinker-plus")
 GLOBAL_CONFIG_FILE = f"{CONFIG_LOCATION}/global_config.json"
@@ -51,7 +42,6 @@ USERS_DIR_NAME = "drive_c/users"
 CWD_DIR_NAME = "drive_c/cwd"
 STEAM_USER_FOLDER_NAME = f"{USERS_DIR_NAME}/steamuser"
 PUBLIC_USER_FOLDER_NAME = f"{USERS_DIR_NAME}/Public"
-STEAM_MANIFESTS_TEMPLATE = "{}/steamapps/appmanifest_{}.acf"
 
 LOG_STAGE_STARTED = "🟢 STAGE STARTED: {}"
 LOG_DRY_RUN = "ℹ️ DRY RUN: {}"

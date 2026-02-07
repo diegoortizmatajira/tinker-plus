@@ -1,10 +1,9 @@
 """Module defining the abstract base class for command handlers."""
 
-from abc import ABC, abstractmethod
 import logging
+from abc import ABC, abstractmethod
 
-from core.config_storage import ConfigStorage
-from core.runtime_provider import RuntimeProvider
+from core import ConfigStorage, RuntimeProvider
 from features.compat_data_folders import CompatDataFolders
 from features.context_commands import ContextCommands
 from features.environment_variables import EnvironmentVariables
