@@ -315,6 +315,33 @@ def run_in_external_terminal(
     cwd: str | None = None,
     dry_run: bool = False,
 ):
+    """
+    Executes a given command in an external terminal.
+
+    This function formats the terminal command template with the specific command,
+    prepares the environment, and executes the command in a new terminal window or tab.
+    If dry_run is enabled, it logs the command that would be executed without performing
+    the actual execution.
+
+    Args:
+        terminal_command_template (list[str] | None): The template for the terminal
+            command. Each element represents a part of the command, and parts that
+            contain `{command}` will be replaced by the actual command.
+        exe_command (str | ExecutableCommand): The command to execute, either as a
+            string or an ExecutableCommand object.
+        logger (logging.Logger): Logger instance for logging execution details and
+            errors.
+        environment_variables (dict[str, str] | None, optional): Custom environment
+            variables to use during the execution. Defaults to None.
+        cwd (str | None, optional): The working directory to set for the command
+            execution. Defaults to None.
+        dry_run (bool, optional): If True, the command is logged but not executed.
+            Defaults to False.
+
+    Raises:
+        RuntimeError: If no terminal command template is provided, or if an error
+        occurs while running the command in the terminal.
+    """
     if terminal_command_template is None:
         logger.error("No terminal command template provided.")
         raise RuntimeError("No terminal command template provided.")
@@ -456,13 +483,13 @@ def run_game_and_forks_with_compatibility_tool(
                 "Including game command in launcher script: '%s'.",
                 runtime_configuration.game_executable_command.get_full_command(),
             )
-            launcher_script_content += "# main game command\n"
 
             assembled_command_str = __assemble_command_str(
                 runtime_configuration.game_executable_command,
                 runtime_configuration,
                 is_global=False,
             )
+            launcher_script_content += "# main game command\n"
             launcher_script_content += f"{assembled_command_str}\n"
         script_filename = GAME_SCRIPT_TEMPLATE.format(
             runtime_configuration.get_game_identifier()
