@@ -145,9 +145,12 @@ class WineConfig(FeatureProvider):
         runtime_configuration: RuntimeConfiguration,
     ):
         windows_version = WINE_WINDOWS_VERSION_PROPERTY.get(_configuration)
-        current_windows_version = get_win_version(runtime_configuration, self.logger)
-        if windows_version and windows_version != current_windows_version:
-            self.logger.info(
-                "Setting Custom Wine Windows version to: %s", windows_version
+        if windows_version:
+            current_windows_version = get_win_version(
+                runtime_configuration, self.logger
             )
-            set_win_version(windows_version, runtime_configuration, self.logger)
+            if windows_version != current_windows_version:
+                self.logger.info(
+                    "Setting Custom Wine Windows version to: %s", windows_version
+                )
+                set_win_version(windows_version, runtime_configuration, self.logger)

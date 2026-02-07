@@ -6,7 +6,7 @@ from core.configuration_property import ConfigurationProperty
 from core.configuration_types import ConfigurationDictionary
 from core.defaults import LOG_DRY_RUN
 from core.feature_provider import FeatureAction, FeatureProvider
-from core.process_runner import run_command
+from core.process_runner import run_command, run_in_external_terminal
 from core.runtime_configuration import RuntimeConfiguration
 
 BACKUP_LOCATION_PROPERTY = ConfigurationProperty(
@@ -150,7 +150,11 @@ class GameFilesBackup(FeatureProvider):
         if runtime_configuration.dry_run:
             self.logger.info(LOG_DRY_RUN.format("Backup command: %s"), command)
             return
-        process = run_command(command, self.logger)
+        process = run_in_external_terminal(
+            runtime_configuration.external_terminal_command_template,
+            command,
+            self.logger,
+        )
         if process:
             with process:
                 self.logger.info(
@@ -208,7 +212,11 @@ class GameFilesBackup(FeatureProvider):
         if runtime_configuration.dry_run:
             self.logger.info(LOG_DRY_RUN.format("Restore command: %s"), command)
             return
-        process = run_command(command, self.logger)
+        process = run_in_external_terminal(
+            runtime_configuration.external_terminal_command_template,
+            command,
+            self.logger,
+        )
         if process:
             with process:
                 self.logger.info(

@@ -7,6 +7,7 @@ from core.config_storage import ConfigStorage
 from core.runtime_provider import RuntimeProvider
 from features.compat_data_folders import CompatDataFolders
 from features.context_commands import ContextCommands
+from features.environment_variables import EnvironmentVariables
 from features.external_tools import ExternalTools
 from features.game_files_backup import GameFilesBackup
 from features.game_runner import GameRunner
@@ -20,6 +21,7 @@ from features.read_config import ReadConfig
 from features.sdl_config import SdlConfig
 from features.steam_tools import SteamTools
 from features.trainer_launch_settings import TrainerLaunchSettings
+from features.umu_runner import UmuRunner
 from features.wine_config import WineConfig
 from features.winetricks_install import WinetricksInstall
 
@@ -59,8 +61,10 @@ class BaseHandler(ABC):
                 HumanReadableLinks(),
                 ContextCommands(),
                 # Features that affect run pipeline or game launch
+                EnvironmentVariables(),
                 ExternalTools(),
                 SteamTools(),
+                UmuRunner(),
                 ProtonSelection(),
                 SdlConfig(),
                 WineConfig(),
