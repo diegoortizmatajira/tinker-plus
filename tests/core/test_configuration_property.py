@@ -1,13 +1,13 @@
 import logging
 import unittest
 
-from core import (
-    ConfigurationProperty,
-    ListItem,
+from model import (
     AcceptedPropertyTypes,
     ConfigurationDictionary,
+    RuntimeConfiguration,
+    ConfigurationProperty,
+    ListItem,
 )
-from model import RuntimeConfiguration
 
 
 class TestConfigurationProperty(unittest.TestCase):

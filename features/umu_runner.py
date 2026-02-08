@@ -1,10 +1,11 @@
 """Umu Launcher Feature Provider"""
 
 from typing import override
-from core import ConfigurationProperty, FeatureProvider
+from core import FeatureProvider
 from model import (
     CommandCategory,
     CommandWrapper,
+    ConfigurationProperty,
     RuntimeConfiguration,
     ConfigurationDictionary,
 )

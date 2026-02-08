@@ -3,7 +3,6 @@
 from typing import override
 
 from core import (
-    ConfigurationProperty,
     FeatureProvider,
     SteamParser,
     SteamUtil,
@@ -15,6 +14,7 @@ from model import (
     RuntimeConfiguration,
     SteamEnvironmentData,
     ConfigurationDictionary,
+    ConfigurationProperty,
 )
 
 GENERAL_LOG_INDIVIDUAL_EXE_PROPERTY = ConfigurationProperty(

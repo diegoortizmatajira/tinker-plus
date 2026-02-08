@@ -9,7 +9,6 @@ from core.defaults import (
     GAME_CONFIG_FILE_TEMPLATE,
     GAME_ENVIRONMENT_FILE_TEMPLATE,
     GAME_LOGS_DIR_TEMPLATE,
-    GAME_SCRIPT_TEMPLATE,
     HUMAN_READABLE_LINKS_DIR_TEMPLATE,
     LAST_RUN_LOG_FILE,
 )
@@ -20,7 +19,7 @@ from model import ConfigurationDictionary, RuntimeConfiguration
 class HumanReadableLinks(FeatureProvider):
     """
     Feature provider that creates human-readable symbolic links for game configurations,
-    logs, scripts, and game files based on the game's name extracted from the Steam manifest.
+    logs and game files based on the game's name extracted from the Steam manifest.
     """
 
     def __init__(self):
@@ -63,14 +62,6 @@ class HumanReadableLinks(FeatureProvider):
             )
             FileSystem.create_symbolic_link(
                 log_dir, f"{game_links_dir}/logs", self.logger
-            )
-
-            # Create link to Script File
-            script_file = GAME_SCRIPT_TEMPLATE.format(
-                runtime_configuration.get_game_identifier()
-            )
-            FileSystem.create_symbolic_link(
-                script_file, f"{game_links_dir}/launch_script.sh", self.logger
             )
 
             # Create link to the Game Files

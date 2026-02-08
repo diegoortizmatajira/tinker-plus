@@ -8,9 +8,9 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Callable
 
-from model import RuntimeConfiguration, ConfigurationDictionary
-
-from .configuration_property import (
+from model import (
+    RuntimeConfiguration,
+    ConfigurationDictionary,
     AnyConfigurationProperty,
     ConfigurationProperty,
 )

@@ -4,7 +4,7 @@ Feature to link user folders to specified locations to manage saved games and se
 
 from typing import override
 
-from core import ConfigurationProperty, FeatureProvider
+from core import FeatureProvider
 from core.defaults import (
     DRIVE_C_DIR_NAME,
     LOG_DRY_RUN,
@@ -12,7 +12,7 @@ from core.defaults import (
     STEAM_USER_FOLDER_NAME,
 )
 from file_system import FileSystem
-from model import RuntimeConfiguration, ConfigurationDictionary
+from model import ConfigurationProperty, RuntimeConfiguration, ConfigurationDictionary
 
 LINK_STEAM_USER_FOLDER_PROPERTY = ConfigurationProperty(
     str,

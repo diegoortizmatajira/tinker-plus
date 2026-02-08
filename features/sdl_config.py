@@ -1,10 +1,9 @@
 """Module providing SDL configuration features."""
 
 from core import (
-    ConfigurationProperty,
     FeatureProvider,
-    ListItem,
 )
+from model import ConfigurationProperty, ListItem
 
 SDL_VIDEODRIVER_PROPERTY = ConfigurationProperty(
     str,

@@ -2,14 +2,18 @@
 
 from typing import Callable, override
 from core import (
-    ConfigurationProperty,
-    ListItem,
     FeatureAction,
     FeatureProvider,
     ProcessRunner,
     Wine,
 )
-from model import Command, RuntimeConfiguration, ConfigurationDictionary
+from model import (
+    Command,
+    RuntimeConfiguration,
+    ConfigurationDictionary,
+    ConfigurationProperty,
+    ListItem,
+)
 
 WINE_DLLOVERRIDES_PROPERTY = ConfigurationProperty(
     str,

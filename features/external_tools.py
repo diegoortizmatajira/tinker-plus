@@ -1,9 +1,10 @@
 """Module to manage external tools being used when running the game."""
 
 from typing import override
-from core import ConfigurationProperty, FeatureProvider
+from core import FeatureProvider
 from model import (
     Command,
+    ConfigurationProperty,
     CommandWrapper,
     ConfigurationDictionary,
     RuntimeConfiguration,

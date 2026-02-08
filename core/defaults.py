@@ -27,9 +27,7 @@ GAME_CONFIG_DIR = f"{CONFIG_LOCATION}/game_configs"
 GAME_CONFIG_FILE_TEMPLATE = f"{GAME_CONFIG_DIR}/{{}}.json"
 GAME_ENVIRONMENT_FILE_TEMPLATE = f"{GAME_CONFIG_DIR}/{{}}_environment.json"
 LOGS_DIR = f"{CONFIG_LOCATION}/logs"
-SCRIPTS_DIR = f"{CONFIG_LOCATION}/scripts"
 GAME_LOGS_DIR_TEMPLATE = f"{LOGS_DIR}/{{}}"
-GAME_SCRIPT_TEMPLATE = f"{SCRIPTS_DIR}/{{}}.sh"
 HUMAN_READABLE_LINKS_DIR = f"{CONFIG_LOCATION}/games"
 HUMAN_READABLE_LINKS_DIR_TEMPLATE = f"{HUMAN_READABLE_LINKS_DIR}/{{}}"
 
@@ -53,5 +51,4 @@ LOG_TIMER_ACTION = "⏱️ {}"
 # Create directories if they do not exist
 os.makedirs(GAME_CONFIG_DIR, exist_ok=True)
 os.makedirs(LOGS_DIR, exist_ok=True)
-os.makedirs(SCRIPTS_DIR, exist_ok=True)
 os.makedirs(HUMAN_READABLE_LINKS_DIR, exist_ok=True)

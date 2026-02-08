@@ -3,10 +3,14 @@
 from typing import override
 from core import (
     FeatureProvider,
+)
+from core import FeatureAction, ProcessRunner
+from model import (
+    ConfigurationDictionary,
+    RuntimeConfiguration,
+    Command,
     ConfigurationProperty,
 )
-from core import  FeatureAction, ProcessRunner
-from model import ConfigurationDictionary,RuntimeConfiguration, Command
 
 
 WINETRICKS_RUN_PROPERTY = ConfigurationProperty(

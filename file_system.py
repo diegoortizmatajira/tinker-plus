@@ -11,7 +11,6 @@ from typing import Any
 from core.defaults import (
     GAME_CONFIG_FILE_TEMPLATE,
     GAME_LOGS_DIR_TEMPLATE,
-    GAME_SCRIPT_TEMPLATE,
     HUMAN_READABLE_LINKS_DIR_TEMPLATE,
     LOG_DRY_RUN,
     LOG_EXECUTING,
@@ -161,7 +160,6 @@ class FileSystem:
         delete_queue = [
             GAME_CONFIG_FILE_TEMPLATE.format(game_id),
             GAME_LOGS_DIR_TEMPLATE.format(game_id),
-            GAME_SCRIPT_TEMPLATE.format(game_id),
         ]
         game_info = GameInfo.from_cache(game_id, logger)
         if game_info:

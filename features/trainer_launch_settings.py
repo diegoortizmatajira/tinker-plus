@@ -5,7 +5,6 @@ from time import sleep
 from typing import Any, override
 
 from core import (
-    ConfigurationProperty,
     FeatureAction,
     FeatureProvider,
     ProcessRunner,
@@ -13,6 +12,7 @@ from core import (
 )
 from core.defaults import ACTUAL_TPLUS_LOCATION
 from model import (
+    ConfigurationProperty,
     Command,
     CommandCategory,
     ConfigurationDictionary,

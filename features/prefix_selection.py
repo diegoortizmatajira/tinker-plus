@@ -6,12 +6,12 @@ from pathlib import Path
 from typing import override
 from core import (
     FeatureProvider,
-    ConfigurationProperty,
     ProcessRunner,
 )
 from model import (
     CommandCategory,
     RuntimeConfiguration,
+    ConfigurationProperty,
     Command,
     ConfigurationDictionary,
 )

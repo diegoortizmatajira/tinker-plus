@@ -1,8 +1,13 @@
 """Feature provider for Steam tools and wrappers."""
 
 from typing import override
-from core import ConfigurationProperty, FeatureProvider
-from model import RuntimeConfiguration, CommandWrapper, ConfigurationDictionary
+from core import FeatureProvider
+from model import (
+    ConfigurationProperty,
+    RuntimeConfiguration,
+    CommandWrapper,
+    ConfigurationDictionary,
+)
 
 STEAM_USE_WRAPPER_PROPERTY = ConfigurationProperty(
     bool,

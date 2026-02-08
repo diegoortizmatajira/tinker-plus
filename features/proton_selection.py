@@ -6,13 +6,13 @@ import logging
 from typing import override
 
 from core import (
-    ConfigurationProperty,
     FeatureProvider,
-    ListItem,
     LogFactory,
     SteamUtil,
 )
 from model import (
+    ConfigurationProperty,
+    ListItem,
     CommandCategory,
     CommandWrapper,
     CompatToolInfo,

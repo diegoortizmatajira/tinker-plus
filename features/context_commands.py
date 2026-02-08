@@ -2,11 +2,10 @@
 
 from typing import override
 from core import (
-    ConfigurationProperty,
     FeatureProvider,
     ProcessRunner,
 )
-from model import RuntimeConfiguration, ConfigurationDictionary
+from model import RuntimeConfiguration, ConfigurationDictionary, ConfigurationProperty
 
 CONTEXT_COMMAND_BEFORE_STARTUP_PROPERTY = ConfigurationProperty(
     str,

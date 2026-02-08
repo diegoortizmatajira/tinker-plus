@@ -6,13 +6,16 @@ import ttkbootstrap as ttk
 from ttkbootstrap.style import DANGER, INFO, PRIMARY, SUCCESS
 
 from core import (
-    AnyConfigurationProperty,
-    ConfigurationProperty,
     FeatureAction,
     LogFactory,
     RuntimeProvider,
 )
-from model import AcceptedPropertyTypes, ConfigurationDictionary
+from model import (
+    AcceptedPropertyTypes,
+    ConfigurationDictionary,
+    AnyConfigurationProperty,
+    ConfigurationProperty,
+)
 
 
 @final

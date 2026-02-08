@@ -1,8 +1,8 @@
 """GUI Options Feature Provider"""
 
 from typing import override
-from core import ConfigurationProperty, FeatureProvider
-from model import RuntimeConfiguration, ConfigurationDictionary
+from core import FeatureProvider
+from model import ConfigurationProperty, RuntimeConfiguration, ConfigurationDictionary
 
 GUI_SHOW_UI_PROPERTY = ConfigurationProperty(
     bool,

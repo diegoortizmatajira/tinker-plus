@@ -1,7 +1,7 @@
 from typing import override
 
-from core import ConfigurationProperty, FeatureProvider
-from model import ConfigurationDictionary, RuntimeConfiguration
+from core import FeatureProvider
+from model import ConfigurationProperty, ConfigurationDictionary, RuntimeConfiguration
 
 ENVIRONMENT_VARIABLES = ConfigurationProperty(
     list,

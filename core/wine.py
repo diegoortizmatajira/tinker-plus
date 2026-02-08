@@ -3,9 +3,7 @@
 import logging
 from typing import final
 
-from model import Command, RuntimeConfiguration
-
-from .configuration_property import ListItem
+from model import Command, RuntimeConfiguration, ListItem
 from .process_runner import ProcessRunner
 
 WIN_VERSIONS = {

@@ -7,6 +7,11 @@ from .steam_environment_data import SteamEnvironmentData
 from .game_info import GameInfo
 from .compat_tool_info import CompatToolInfo
 from .configuration_types import ConfigurationDictionary, AcceptedPropertyTypes
+from .configuration_property import (
+    AnyConfigurationProperty,
+    ConfigurationProperty,
+    ListItem,
+)
 
 __all__ = [
     "Command",
@@ -18,4 +23,7 @@ __all__ = [
     "CompatToolInfo",
     "ConfigurationDictionary",
     "AcceptedPropertyTypes",
+    "AnyConfigurationProperty",
+    "ConfigurationProperty",
+    "ListItem",
 ]

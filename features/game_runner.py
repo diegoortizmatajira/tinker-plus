@@ -6,7 +6,6 @@ from typing import override
 
 from core import (
     FeatureProvider,
-    ConfigurationProperty,
     ProcessRunner,
 )
 from core.defaults import CWD_DIR_NAME
@@ -14,6 +13,7 @@ from model import (
     Command,
     CommandCategory,
     RuntimeConfiguration,
+    ConfigurationProperty,
     ConfigurationDictionary,
 )
 

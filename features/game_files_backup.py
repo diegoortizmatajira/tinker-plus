@@ -3,13 +3,12 @@
 from pathlib import Path
 from typing import override
 from core import (
-    ConfigurationProperty,
     FeatureAction,
     FeatureProvider,
     ProcessRunner,
 )
 from core.defaults import LOG_DRY_RUN
-from model import RuntimeConfiguration, ConfigurationDictionary
+from model import ConfigurationProperty, RuntimeConfiguration, ConfigurationDictionary
 
 BACKUP_LOCATION_PROPERTY = ConfigurationProperty(
     str,
