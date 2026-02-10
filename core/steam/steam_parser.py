@@ -9,7 +9,7 @@ from typing import final
 from file_system import FileSystem
 from model import SteamEnvironmentData
 
-from core.defaults import  GAME_ENVIRONMENT_FILE_TEMPLATE
+from core.defaults import GAME_ENVIRONMENT_FILE_TEMPLATE
 
 REGEX_WRAPPER = r"(?P<stlwrapper>\/\S+\/steam-launch-wrapper)"
 REGEX_REAPER = r"(?P<reaper>\/\S+\/reaper)"
@@ -26,9 +26,58 @@ REGEXP_EXE = (
 ENV_STEAM_APP_ID = "SteamAppId"
 ENV_STEAM_GAME_ID = "SteamGameId"
 ENV_STEAM_BASE_FOLDER = "STEAM_BASE_FOLDER"
+ENV_STEAM_COMPAT_APP_ID = "STEAM_COMPAT_APP_ID"
 ENV_STEAM_COMPAT_INSTALL_PATH = "STEAM_COMPAT_INSTALL_PATH"
 ENV_STEAM_COMPAT_DATA_PATH = "STEAM_COMPAT_DATA_PATH"
 ENV_STEAM_COMPAT_CLIENT_INSTALL_PATH = "STEAM_COMPAT_CLIENT_INSTALL_PATH"
+
+ENV_LIST = [
+    ENV_STEAM_APP_ID,
+    ENV_STEAM_GAME_ID,
+    ENV_STEAM_BASE_FOLDER,
+    ENV_STEAM_COMPAT_APP_ID,
+    ENV_STEAM_COMPAT_INSTALL_PATH,
+    ENV_STEAM_COMPAT_DATA_PATH,
+    ENV_STEAM_COMPAT_CLIENT_INSTALL_PATH,
+    "STEAM_FOSSILIZE_DUMP_PATH",
+    "STEAM_RUNTIME",
+    "STEAM_CLIENT_CONFIG_FILE",
+    "STEAM_ZENITY",
+    "STEAMSCRIPT_VERSION",
+    "STEAM_COMPAT_SHADER_PATH",
+    "STEAM_COMPAT_MEDIA_PATH",
+    "STEAM_COMPAT_TRANSCODED_MEDIA_PATH",
+    "STEAM_COMPAT_MOUNTS",
+    "SteamVirtualGamepadInfo_Proton",
+    "STEAM_COMPAT_PROTON",
+    "STEAM_COMPAT_TOOL_PATHS",
+    "STEAM_FOSSILIZE_DUMP_PATH_READ_ONLY",
+    "LD_LIBRARY_PATH",
+    "AMD_VK_PIPELINE_CACHE_FILENAME",
+    "AMD_VK_PIPELINE_CACHE_PATH",
+    "SteamClientLaunch",
+    "LD_PRELOAD",
+    "MESA_GLSL_CACHE_MAX_SIZE",
+    "FOSSILIZE_APPLICATION_INFO_FILTER_PATH",
+    "ENABLE_VK_LAYER_VALVE_steam_fossilize_1",
+    "SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD",
+    "SRT_LAUNCHER_SERVICE_ALONGSIDE_STEAM",
+    "DXVK_STATE_CACHE_PATH",
+    "MESA_DISK_CACHE_READ_ONLY_FOZ_DBS",
+    "STEAMSCRIPT",
+    "STEAM_COMPAT_FLAGS",
+    "SteamOverlayGameId",
+    "__GL_SHADER_DISK_CACHE_APP_NAME",
+    "SteamEnv",
+    "GIO_LAUNCHED_DESKTOP_FILE_PID",
+    "SDL_JOYSTICK_HIDAPI_STEAMXBOX",
+    "GIO_LAUNCHED_DESKTOP_FILE",
+    "STEAM_COMPAT_LIBRARY_PATHS",
+    "SteamUser",
+    "OLDPWD",
+    "STEAM_RUNTIME_LIBRARY_PATH",
+    "TEXTDOMAIN",
+]
 
 
 @final
@@ -123,11 +172,16 @@ class SteamParser:
         data.steam_app_id = from_env(ENV_STEAM_APP_ID)
         data.steam_game_id = from_env(ENV_STEAM_GAME_ID)
         data.steam_base_folder = from_env(ENV_STEAM_BASE_FOLDER)
+        data.steam_compat_app_id = from_env(ENV_STEAM_COMPAT_APP_ID)
         data.steam_compat_install_path = from_env(ENV_STEAM_COMPAT_INSTALL_PATH)
         data.steam_compat_data_path = from_env(ENV_STEAM_COMPAT_DATA_PATH)
         data.steam_compat_client_install_path = from_env(
             ENV_STEAM_COMPAT_CLIENT_INSTALL_PATH
         )
+        # Store all relevant environment variables in a dictionary for potential future use
+        data.environment_variables = {
+            env: str(os.getenv(env)) for env in ENV_LIST if os.getenv(env) is not None
+        }
 
     @staticmethod
     def restore_environment(data: SteamEnvironmentData, logger: logging.Logger) -> None:
@@ -168,6 +222,11 @@ class SteamParser:
                     "Steam Compatibility Install Path",
                     ENV_STEAM_COMPAT_INSTALL_PATH,
                 )
+            )
+            data.steam_compat_app_id = data.steam_compat_app_id or restore_value(
+                restored.steam_compat_app_id,
+                "Steam Compatibility App ID",
+                ENV_STEAM_COMPAT_APP_ID,
             )
             data.steam_compat_data_path = data.steam_compat_data_path or restore_value(
                 restored.steam_compat_data_path,
@@ -216,6 +275,9 @@ class SteamParser:
             )
             data.cmd_steam_game_args = data.cmd_steam_game_args or restore_value(
                 restored.cmd_steam_game_args, "Steam Game Arguments"
+            )
+            data.environment_variables = (
+                data.environment_variables or restored.environment_variables
             )
 
     @classmethod

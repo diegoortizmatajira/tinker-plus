@@ -15,16 +15,8 @@ class SteamEnvironmentData:
     steam_game_id: str | None = None
     steam_compat_client_install_path: str | None = None
     steam_compat_install_path: str | None = None
-    steam_fossilize_dump_path: str | None = None
-    steam_runtime: str | None = None
-    steam_client_config_file: str | None = None
-    steam_compat_shader_path: str | None = None
-    ld_preload: str | None = None
-    steamscript_version: str | None = None
-    steam_compat_media_path: str | None = None
     steam_compat_app_id: str | None = None
     steam_compat_data_path: str | None = None
-    steam_compat_transcoded_media_path: str | None = None
     steam_base_folder: str | None = None
     cmd_steam_wrapper: str | None = None
     cmd_steam_reaper: str | None = None
@@ -34,6 +26,7 @@ class SteamEnvironmentData:
     cmd_steam_compatibility_tools_path: str | None = None
     cmd_steam_game_exe: str | None = None
     cmd_steam_game_args: str | None = None
+    environment_variables: dict[str, str] | None = None
 
     @staticmethod
     def empty() -> "SteamEnvironmentData":
