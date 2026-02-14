@@ -5,7 +5,7 @@ Feature to link user folders to specified locations to manage saved games and se
 from typing import override
 
 from core import FeatureProvider
-from core.defaults import (
+from defaults import (
     DRIVE_C_DIR_NAME,
     LOG_DRY_RUN,
     PUBLIC_USER_FOLDER_NAME,

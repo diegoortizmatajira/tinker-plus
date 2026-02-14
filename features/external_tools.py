@@ -90,21 +90,23 @@ class ExternalTools(FeatureProvider):
     ) -> RuntimeConfiguration:
         if GAMEMODERUN_ENABLED_PROPERTY.get(configuration):
             self.logger.info("Enabling GameModeRun wrapper.")
-            runtime_configuration.add_pipeline_wrapper(CommandWrapper("gamemoderun"))
+            runtime_configuration.add_pipeline_wrapper(
+                CommandWrapper.from_command_str("gamemoderun")
+            )
         if GAMESCOPE_ENABLED_PROPERTY.get(configuration):
             gamescope_args = GAMESCOPE_ARGS_PROPERTY.get(configuration) or ""
             self.logger.info(
                 'Enabling Gamescope wrapper with args: "%s"', gamescope_args
             )
-            command = Command("gamescope", args=gamescope_args)
+            command = Command.from_string("gamescope", gamescope_args)
             runtime_configuration.add_pipeline_wrapper(
-                CommandWrapper(
-                    wrapper=lambda cmd, _: (f"{command.get_full_command()} -- {cmd}"),
-                )
+                CommandWrapper(wrapper=lambda cmd, _: Command([command, "--", cmd]))
             )
         if MANGOHUD_ENABLED_PROPERTY.get(configuration):
             self.logger.info("Enabling MangoHUD wrapper.")
-            runtime_configuration.add_pipeline_wrapper(CommandWrapper("mangohud"))
+            runtime_configuration.add_pipeline_wrapper(
+                CommandWrapper.from_command_str("mangohud")
+            )
 
         runtime_configuration.external_terminal_command_template = (
             EXTERNAL_TERMINAL_COMMAND_TEMPLATE_PROPERTY.get(configuration) or []

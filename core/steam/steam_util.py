@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 from typing import final
 from model import GameInfo, RuntimeConfiguration
+from repositories import GameInfoRepository
 from .steam_parser import SteamParser
 from .defaults import DEFAULT_STEAM_APP_CACHE_FOLDER, STEAM_MANIFESTS_TEMPLATE
 
@@ -95,7 +96,7 @@ class SteamUtil:
 
         game_id = runtime_configuration.get_game_identifier()
         logger.debug("Getting game info for Game ID: %s", game_id)
-        game_info = GameInfo.from_cache(game_id, logger)
+        game_info = GameInfoRepository.from_cache(game_id, logger)
         if game_info:
             logger.debug("Found game info in cache: %s", game_info)
             return game_info
@@ -127,6 +128,33 @@ class SteamUtil:
                 )
         else:
             logger.warning("Steam manifest file does not exist at: %s", manifest_path)
-        game_info.put_in_cache(logger)
+        GameInfoRepository.put_in_cache(game_info, logger)
         # Fallback to using the executable name if manifest reading fails
         return game_info
+
+    @staticmethod
+    def get_anonymous_steam_overrides() -> dict[str, str | None]:
+        """
+        Generates a dictionary of Steam environment variable overrides,
+        setting specific variables to `None` to ensure that they are removed
+        from the environment for running trainers without Game ID.
+
+        Returns:
+            dict[str, str | None]: A dictionary where keys are the names of
+            environment variables to be removed, and their values are set to
+            `None`, indicating removal.
+        """
+        environment_vars_to_remove = [
+            "SteamGameId",
+            "SteamAppId",
+            "SteamInput",
+            "SteamControllerAppId",
+            "STEAM_COMPAT_APP_ID",
+            "SteamOverlayGameId",
+            "SteamClientLaunch",
+            "STEAM_COMPAT_PROTON",
+            "LD_PRELOAD",
+        ]
+        # Setting the environment variables to None will remove them from the
+        # environment of the trainer processes
+        return {key: None for key in environment_vars_to_remove}

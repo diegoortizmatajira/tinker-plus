@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from typing import Any, final
 
-from core.defaults import APP_LAST_RUN_LOG_FILE, GAME_LOGS_DIR_TEMPLATE
+from defaults import APP_LAST_RUN_LOG_FILE, GAME_LOGS_DIR_TEMPLATE
 
 
 @final

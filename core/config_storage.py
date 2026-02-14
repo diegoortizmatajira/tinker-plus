@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import cast, final
 
 from model import GameInfo, ConfigurationDictionary
-from .defaults import (
+from defaults import (
     CONFIG_LOCATION,
     GAME_CONFIG_DIR,
     GAME_CONFIG_FILE_TEMPLATE,

@@ -69,7 +69,9 @@ class PrefixSelection(FeatureProvider):
         if not custom_prefix_path.exists():
             self.logger.info("Executing mock command, to force prefix creation.")
             _ = ProcessRunner.run_command_with_compatibility_tool(
-                Command("/bin/echo", None, category=CommandCategory.COMPATIBILITY_TOOL),
+                Command.from_string(
+                    "/bin/echo", category=CommandCategory.COMPATIBILITY_TOOL
+                ),
                 runtime_configuration,
                 self.logger,
             )

@@ -4,7 +4,7 @@ import os
 from typing import override
 
 from core import FeatureProvider, LogFactory
-from core.defaults import (
+from defaults import (
     APP_LAST_RUN_LOG_FILE,
     GAME_CONFIG_FILE_TEMPLATE,
     GAME_ENVIRONMENT_FILE_TEMPLATE,

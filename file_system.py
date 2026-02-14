@@ -8,7 +8,7 @@ import shutil
 from os.path import islink
 from typing import Any
 
-from core.defaults import (
+from defaults import (
     GAME_CONFIG_FILE_TEMPLATE,
     GAME_LOGS_DIR_TEMPLATE,
     HUMAN_READABLE_LINKS_DIR_TEMPLATE,

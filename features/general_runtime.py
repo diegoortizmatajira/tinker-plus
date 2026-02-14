@@ -16,6 +16,7 @@ from model import (
     ConfigurationDictionary,
     ConfigurationProperty,
 )
+from repositories import CompatToolInfoRepository
 
 GENERAL_LOG_INDIVIDUAL_EXE_PROPERTY = ConfigurationProperty(
     bool,
@@ -67,7 +68,7 @@ class GeneralRuntime(FeatureProvider):
         runtime_configuration.steam_environment_data = data
         # Handle Steam Compatibility Tool caching
         if data.cmd_steam_compatibility_tool:
-            compat_tool_info = CompatToolInfo.from_cache(
+            compat_tool_info = CompatToolInfoRepository.from_cache(
                 data.cmd_steam_compatibility_tool, self.logger
             )
             if not compat_tool_info:
@@ -75,8 +76,10 @@ class GeneralRuntime(FeatureProvider):
                     name=data.cmd_steam_compatibility_tool,
                     dir=data.cmd_steam_compatibility_tools_path or "",
                 )
-                compat_tool_info.put_in_cache(self.logger)
-        _ = CompatToolInfo.scan_and_populate_cache(self.logger, runtime_configuration)
+                CompatToolInfoRepository.put_in_cache(compat_tool_info, self.logger)
+        _ = CompatToolInfoRepository.scan_and_populate_cache(
+            self.logger, runtime_configuration
+        )
         # Sets the default prefix path if Steam compatibility data path is available
         if data.steam_compat_data_path:
             runtime_configuration.prefix_path = f"{data.steam_compat_data_path}/pfx"
@@ -84,10 +87,9 @@ class GeneralRuntime(FeatureProvider):
         runtime_configuration.game_info = SteamUtil.get_game_info(
             runtime_configuration, self.logger
         )
-        runtime_configuration.game_executable_command = Command(
-            command=runtime_configuration.steam_environment_data.cmd_steam_game_exe
-            or "echo",
-            args=runtime_configuration.steam_environment_data.cmd_steam_game_args,
+        runtime_configuration.game_executable_command = Command.from_parts(
+            runtime_configuration.steam_environment_data.cmd_steam_game_exe or "echo",
+            runtime_configuration.steam_environment_data.cmd_steam_game_args,
             cwd=runtime_configuration.steam_environment_data.steam_compat_install_path,
             category=CommandCategory.GAME,
         )

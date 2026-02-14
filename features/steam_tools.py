@@ -3,6 +3,7 @@
 from typing import override
 from core import FeatureProvider
 from model import (
+    Command,
     ConfigurationProperty,
     RuntimeConfiguration,
     CommandWrapper,
@@ -126,7 +127,15 @@ class SteamTools(FeatureProvider):
             self.logger.info("Enabling Steam wrapper.")
             runtime_configuration.add_pipeline_wrapper(
                 CommandWrapper(
-                    f"{runtime_configuration.steam_environment_data.cmd_steam_wrapper} --",
+                    lambda cmd, rtm_cfg: Command(
+                        [
+                            Command.from_string(
+                                rtm_cfg.steam_environment_data.cmd_steam_wrapper or ""
+                            ),
+                            "--",
+                            cmd,
+                        ]
+                    )
                 )
             )
         # Apply the Reaper (After Wrapper)
@@ -136,11 +145,23 @@ class SteamTools(FeatureProvider):
         ):
             self.logger.info("Enabling Steam Reaper wrapper.")
 
-            def reaper_wrapper(cmd: str, rtm_cfg: RuntimeConfiguration) -> str:
-                args = "--"
+            def reaper_wrapper(cmd: Command, rtm_cfg: RuntimeConfiguration) -> Command:
+                args = ["--"]
                 if rtm_cfg.get_game_identifier():
-                    args = f"SteamLaunch AppId={rtm_cfg.get_game_identifier()} --"
-                return f"{rtm_cfg.steam_environment_data.cmd_steam_reaper} {args} {cmd}"
+                    args = [
+                        "SteamLaunch",
+                        f"AppId={rtm_cfg.get_game_identifier()}",
+                        "--",
+                    ]
+                return Command(
+                    [
+                        Command.from_string(
+                            rtm_cfg.steam_environment_data.cmd_steam_reaper or ""
+                        )
+                    ]
+                    + args
+                    + [cmd]
+                )
 
             runtime_configuration.add_pipeline_wrapper(
                 CommandWrapper(
@@ -156,7 +177,15 @@ class SteamTools(FeatureProvider):
             self.logger.info("Enabling Steam Sniper wrapper.")
             runtime_configuration.add_pipeline_wrapper(
                 CommandWrapper(
-                    f"{runtime_configuration.steam_environment_data.cmd_steam_sniper} --",
+                    lambda cmd, rtm_cfg: Command(
+                        [
+                            Command.from_string(
+                                rtm_cfg.steam_environment_data.cmd_steam_sniper or ""
+                            ),
+                            "--",
+                            cmd,
+                        ]
+                    )
                 )
             )
         return runtime_configuration

@@ -7,7 +7,7 @@ from core import (
     FeatureProvider,
     ProcessRunner,
 )
-from core.defaults import LOG_DRY_RUN
+from defaults import LOG_DRY_RUN
 from model import ConfigurationProperty, RuntimeConfiguration, ConfigurationDictionary
 
 BACKUP_LOCATION_PROPERTY = ConfigurationProperty(

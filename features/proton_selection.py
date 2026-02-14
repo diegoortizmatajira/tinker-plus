@@ -11,14 +11,15 @@ from core import (
     SteamUtil,
 )
 from model import (
+    Command,
     ConfigurationProperty,
     ListItem,
     CommandCategory,
     CommandWrapper,
-    CompatToolInfo,
     RuntimeConfiguration,
     ConfigurationDictionary,
 )
+from repositories import CompatToolInfoRepository
 
 
 def get_proton_versions_list(
@@ -30,7 +31,7 @@ def get_proton_versions_list(
     """
     result = [
         ListItem(item.name, item.name)
-        for item in CompatToolInfo.get_cache(logger).values()
+        for item in CompatToolInfoRepository.get_cache(logger).values()
     ]
     result.sort(key=lambda x: x.name)
     return result
@@ -229,7 +230,7 @@ class ProtonSelection(FeatureProvider):
         custom_proton_version = PROTON_VERSION_PROPERTY.get(configuration)
         if custom_proton_version:
             # Get compatibility tool info from cache to verify it exists
-            compat_tool_info = CompatToolInfo.from_cache(
+            compat_tool_info = CompatToolInfoRepository.from_cache(
                 custom_proton_version, self.logger
             )
             if compat_tool_info:
@@ -272,17 +273,37 @@ class ProtonSelection(FeatureProvider):
         runtime_configuration.wine = SteamUtil.get_wine(
             runtime_configuration, self.logger
         )
+
+        proton_cmd_path = (
+            f"{runtime_configuration.steam_compatibility_tools_path}/"
+            + f"{runtime_configuration.steam_compatibility_tool}/proton"
+        )
         runtime_configuration.add_pipeline_wrapper(
             CommandWrapper(
-                wrapper=lambda cmd, runtime_configuration: (
-                    f"{runtime_configuration.steam_compatibility_tools_path}/"
-                    f"{runtime_configuration.steam_compatibility_tool}/proton"
-                    f" run {cmd}"
+                wrapper=lambda cmd, runtime_configuration: Command(
+                    [
+                        proton_cmd_path,
+                        "runinprefix",
+                        cmd,
+                    ]
+                ),
+                applies_for=[
+                    CommandCategory.COMPATIBILITY_TOOL,
+                    CommandCategory.TRAINER,
+                ],
+            )
+        )
+        runtime_configuration.add_pipeline_wrapper(
+            CommandWrapper(
+                wrapper=lambda cmd, runtime_configuration: Command(
+                    [
+                        proton_cmd_path,
+                        "run",
+                        cmd,
+                    ]
                 ),
                 applies_for=[
                     CommandCategory.GAME,
-                    CommandCategory.COMPATIBILITY_TOOL,
-                    CommandCategory.TRAINER,
                 ],
             )
         )

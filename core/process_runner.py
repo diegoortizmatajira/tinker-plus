@@ -8,10 +8,11 @@ from typing import Any, final, overload
 
 from model import (
     Command,
+    CommandWrapper,
     RuntimeConfiguration,
 )
 
-from .defaults import (
+from defaults import (
     LOG_DRY_RUN,
     LOG_EXECUTING,
 )
@@ -185,12 +186,12 @@ class ProcessRunner:
         runtime_configuration: RuntimeConfiguration,
         logger: logging.Logger,
         override_log_to_file: bool | None = None,
-    ):
+    ) -> Command:
         """
         Assembles the full command string with optional logging to file based
         on the runtime configuration.
         """
-        actual_command = command.get_full_command()
+        actual_command = command
         logger.debug(
             "Available pipeline wrappers: %d",
             len(runtime_configuration.pipeline_wrappers or []),
@@ -204,12 +205,13 @@ class ProcessRunner:
                 logger=logger,
             )
 
-        if runtime_configuration.log_executable_commands and (
-            override_log_to_file is not False
-        ):
-            exe_path = Path(command.command)
-            log_file = LogFactory.singleton().get_log_filename(f"{exe_path.stem}.log")
-            actual_command = f"{actual_command} >> {log_file} 2>&1"
+        # TODO: Consider if we want to log the final assembled command or the original command, or both.
+        # if runtime_configuration.log_executable_commands and (
+        #     override_log_to_file is not False
+        # ):
+        #     exe_path = Path(command.command)
+        #     log_file = LogFactory.singleton().get_log_filename(f"{exe_path.stem}.log")
+        #     actual_command = Command([actual_command, ">>", log_file, "2>&1"])
         return actual_command
 
     @classmethod
@@ -235,7 +237,10 @@ class ProcessRunner:
         try:
             logger.info(LOG_EXECUTING.format("Executing command: %s"), command)
             result = subprocess.run(
-                command, env=environment_variables, shell=True, check=True
+                command.get_chain_command(),
+                env=environment_variables,
+                shell=True,
+                check=True,
             )
             if result.returncode != 0:
                 logger.error(
@@ -257,13 +262,14 @@ class ProcessRunner:
             ) from e
 
     @staticmethod
-    def run_string_command(
-        exe_command: str,
+    def run_chain_command(
+        exe_command: list[str],
         logger: logging.Logger,
         *,
         environment_variables: dict[str, str] | None = None,
         cwd: str | None = None,
         dry_run: bool = False,
+        detached: bool = False,
     ) -> subprocess.Popen[Any] | None:
         """
         Executes a given command using subprocess.Popen.
@@ -292,11 +298,23 @@ class ProcessRunner:
                 LOG_EXECUTING.format("Executing command: %s"),
                 exe_command,
             )
+            # Ensure the working directory is an absolute path without symlinks
+            # to avoid issues with subprocess and relative paths
+            cwd = os.path.realpath(cwd or os.getcwd())
+            if detached:
+                # On Windows, use creationflags to detach the process
+                return subprocess.Popen(
+                    exe_command,
+                    env=environment_variables,
+                    cwd=cwd,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    stdin=subprocess.DEVNULL,
+                )
             return subprocess.Popen(
                 exe_command,
                 env=environment_variables,
                 cwd=cwd,
-                shell=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 stdin=subprocess.DEVNULL,
@@ -386,6 +404,9 @@ class ProcessRunner:
         exe_command: Command,
         runtime_configuration: RuntimeConfiguration,
         logger: logging.Logger,
+        wrapper: CommandWrapper | None = None,
+        detached: bool = False,
+        custom_environment_variables: dict[str, str | None] | None = None,
     ) -> subprocess.Popen[Any] | None:
         """
         Executes a given command using subprocess.
@@ -396,6 +417,22 @@ class ProcessRunner:
 
         environment_variables = os.environ.copy()
         environment_variables.update(runtime_configuration.environment_variables or {})
+        if custom_environment_variables:
+            for key, value in custom_environment_variables.items():
+                if value is None:
+                    logger.debug(
+                        "Removing environment variable '%s' as its custom value is set to None",
+                        key,
+                    )
+                    environment_variables.pop(key, None)
+                else:
+                    logger.debug(
+                        "Setting environment variable '%s' to custom value: %s",
+                        key,
+                        value,
+                    )
+                    environment_variables[key] = value
+
         command = cls.assemble_command_str(
             exe_command,
             runtime_configuration,
@@ -410,11 +447,19 @@ class ProcessRunner:
             )
             or "."
         )
+        if wrapper:
+            command = wrapper.wrap(
+                command,
+                runtime_configuration,
+                command_category=exe_command.category,
+                logger=logger,
+            )
         os.makedirs(cwd, exist_ok=True)
-        return cls.run_string_command(
-            command,
+        return cls.run_chain_command(
+            command.get_chain_command(),
             logger,
             environment_variables=environment_variables,
             cwd=cwd,
             dry_run=runtime_configuration.dry_run,
+            detached=detached,
         )

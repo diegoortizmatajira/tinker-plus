@@ -68,8 +68,8 @@ class BaseHandler(ABC):
                 SdlConfig(),
                 WineConfig(),
                 PrefixSelection(),
-                TrainerLaunchSettings(),
                 GameRunner(),
+                TrainerLaunchSettings(),
                 # ReadConfig and CURRENT_GUI_OPTIONS have to be the last ones
                 # to ensure default configs are read first, then overridden by user configs
                 ReadConfig(storage),

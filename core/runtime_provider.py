@@ -7,15 +7,15 @@ as well as feature-specific customizations to build a comprehensive runtime envi
 import json
 from typing import final
 
+from defaults import LOG_STAGE_STARTED
 from model import (
+    ConfigurationDictionary,
     GameInfo,
     RuntimeConfiguration,
     SteamEnvironmentData,
-    ConfigurationDictionary,
 )
 
 from .config_storage import ConfigStorage
-from .defaults import LOG_STAGE_STARTED
 from .feature_provider import FeatureAction, FeatureProvider
 from .log_storage import LogFactory
 
@@ -126,16 +126,20 @@ class RuntimeProvider:
         self.runtime_configuration.execute_trainers = run_with_trainers
 
         self.logger.info(LOG_STAGE_STARTED.format("Before Execution Stage."))
-        for features in self.features:
-            features.before_execution(self.configuration, self.runtime_configuration)
+        for feature in self.features:
+            feature.before_execution(self.configuration, self.runtime_configuration)
 
         self.logger.info(LOG_STAGE_STARTED.format("Pipeline Execution Stage."))
-        for features in self.features:
-            features.execute_in_pipeline(self.configuration, self.runtime_configuration)
+        for feature in self.features:
+            feature.execute_in_pipeline(self.configuration, self.runtime_configuration)
 
+        self.logger.info(LOG_STAGE_STARTED.format("Wait for completion Stage."))
+        for feature in self.features:
+            feature.wait_for_completion(self.configuration, self.runtime_configuration)
+            
         self.logger.info(LOG_STAGE_STARTED.format("After Execution Stage."))
-        for features in self.features:
-            features.after_execution(self.configuration, self.runtime_configuration)
+        for feature in self.features:
+            feature.after_execution(self.configuration, self.runtime_configuration)
 
     def run_action(self, action: FeatureAction):
         """

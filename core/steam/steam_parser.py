@@ -9,7 +9,7 @@ from typing import final
 from file_system import FileSystem
 from model import SteamEnvironmentData
 
-from core.defaults import GAME_ENVIRONMENT_FILE_TEMPLATE
+from defaults import GAME_ENVIRONMENT_FILE_TEMPLATE
 
 REGEX_WRAPPER = r"(?P<stlwrapper>\/\S+\/steam-launch-wrapper)"
 REGEX_REAPER = r"(?P<reaper>\/\S+\/reaper)"

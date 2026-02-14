@@ -20,7 +20,7 @@ from ttkbootstrap.style import (
 )
 
 from core import RuntimeProvider, LogFactory, SteamUtil
-from core.defaults import (
+from defaults import (
     LOG_TIMER_ACTION,
     LOG_USER_ACTION,
 )

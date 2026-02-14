@@ -1,5 +1,6 @@
 """Module for enabling and configuring custom trainers or WeMod integration."""
 
+import os
 from subprocess import Popen
 from time import sleep
 from typing import Any, override
@@ -8,10 +9,12 @@ from core import (
     FeatureAction,
     FeatureProvider,
     ProcessRunner,
+    SteamUtil,
     Wine,
 )
-from core.defaults import ACTUAL_TPLUS_LOCATION
+from defaults import ACTUAL_TPLUS_LOCATION
 from model import (
+    CommandWrapper,
     ConfigurationProperty,
     Command,
     CommandCategory,
@@ -30,75 +33,93 @@ TRAINER_ENABLED_PROPERTY = ConfigurationProperty(
     "Enables custom trainer launching.",
     True,
 )
-TRAINER_EXE_PROPERTY = ConfigurationProperty(
+TRAINER_CUSTOM_EXE_PROPERTY = ConfigurationProperty(
     str,
-    "TRAINER_EXE",
+    "TRAINER_CUSTOM_EXE",
     "Custom trainer executable",
     "Allows selection of a specific trainer excecutable program.",
 )
 
-TRAINER_ARGS_PROPERTY = ConfigurationProperty(
+TRAINER_CUSTOM_ARGS_PROPERTY = ConfigurationProperty(
     str,
-    "TRAINER_ARGS",
+    "TRAINER_CUSTOM_ARGS",
     "Custom trainer arguments",
     "Allows providing custom args to the trainer program.",
 )
 
-WEMOD_ENABLED_PROPERTY = ConfigurationProperty(
+TRAINER_WAIT_BEFORE_CONTINUING = ConfigurationProperty(
     bool,
-    "WEMOD_ENABLED",
+    "TRAINER_WAIT_BEFORE_CONTINUING",
+    "Wait for trainers to exit before continuing",
+    "When enabled, the system will wait for all trainer processes to exit "
+    + "before continuing with the main game execution. When disabled, trainer "
+    + "processes will be launched and the system will continue without waiting.",
+    False,
+)
+
+TRAINER_USE_RUN_SCRIPT = ConfigurationProperty(
+    bool,
+    "TRAINER_USE_RUN_SCRIPT",
+    "Use run script for trainers",
+    "Specifies whether to use a wrapper script to run trainers in the "
+    + "background without blocking the main game execution.",
+    True,
+)
+TRAINER_WEMOD_ENABLED_PROPERTY = ConfigurationProperty(
+    bool,
+    "TRAINER_WEMOD_ENABLED",
     "Enable Wemod integration",
     "Enables WeMod integration for trainer launching.",
     False,
 )
 
-WEMOD_EXE_PROPERTY = ConfigurationProperty(
+TRAINER_WEMOD_EXE_PROPERTY = ConfigurationProperty(
     str,
-    "WEMOD_EXE",
+    "TRAINER_WEMOD_EXE",
     "WeMod executable",
     "Specifies the path to the WeMod executable.",
 )
 
-WEMOD_OPEN_WITHOUT_GAMEID_PROPERTY = ConfigurationProperty(
+TRAINER_WEMOD_OPEN_WITHOUT_GAMEID_PROPERTY = ConfigurationProperty(
     bool,
-    "WEMOD_OPEN_WITHOUT_GAMEID",
+    "TRAINER_WEMOD_OPEN_WITHOUT_GAMEID",
     "WeMod open without game ID",
     "Specifies whether to open WeMod without a specific game ID.",
     False,
 )
 
-WEMOD_GAMEID_PROPERTY = ConfigurationProperty(
+TRAINER_WEMOD_GAMEID_PROPERTY = ConfigurationProperty(
     str,
-    "WEMOD_GAMEID",
+    "TRAINER_WEMOD_GAMEID",
     "WeMod game ID",
     "Specifies the WeMod game ID for the target game.",
 )
 
-WEMOD_WINETRICKS_REQUIREMENTS = ConfigurationProperty(
+TRAINER_WEMOD_WINETRICKS_REQUIREMENTS = ConfigurationProperty(
     list,
-    "WEMOD_WINETRICKS_REQUIREMENTS",
+    "TRAINER_WEMOD_WINETRICKS_REQUIREMENTS",
     "WeMod Winetricks Requirements",
     "Specifies the Winetricks requirements for WeMod integration.",
     ["dotnet48", "dotnetdesktop6"],
 )
 
-CHEAT_ENGINE_EXE_PROPERTY = ConfigurationProperty(
+TRAINER_CHEAT_ENGINE_EXE_PROPERTY = ConfigurationProperty(
     str,
-    "CHEAT_ENGINE_EXE",
+    "TRAINER_CHEAT_ENGINE_EXE",
     "Cheat Engine executable",
     "Specifies the path to the Cheat Engine executable.",
 )
 
-CHEAT_ENGINE_FILE_PROPERTY = ConfigurationProperty(
+TRAINER_CHEAT_ENGINE_FILE_PROPERTY = ConfigurationProperty(
     str,
-    "CHEAT_ENGINE_FILE",
+    "TRAINER_CHEAT_ENGINE_FILE",
     "Cheat Engine file",
     "Specifies the path to the Cheat Engine file to load.",
 )
 
-CHEAT_ENGINE_RUN_WITHOUT_FILE_PROPERTY = ConfigurationProperty(
+TRAINER_CHEAT_ENGINE_RUN_WITHOUT_FILE_PROPERTY = ConfigurationProperty(
     bool,
-    "CHEAT_ENGINE_RUN_WITHOUT_FILE",
+    "TRAINER_CHEAT_ENGINE_RUN_WITHOUT_FILE",
     "Cheat Engine run without file",
     "Specifies whether to run Cheat Engine without loading a specific file.",
     False,
@@ -111,24 +132,27 @@ class TrainerLaunchSettings(FeatureProvider):
     """
 
     trainer_process_list: list[Popen[Any]] = []
+    wait_for_trainers: bool = False
 
     def __init__(self):
         super().__init__(
             "Trainers",
             [
                 TRAINER_ENABLED_PROPERTY,
-                TRAINER_EXE_PROPERTY,
-                TRAINER_ARGS_PROPERTY,
-                WEMOD_ENABLED_PROPERTY,
-                WEMOD_EXE_PROPERTY,
-                WEMOD_OPEN_WITHOUT_GAMEID_PROPERTY,
-                WEMOD_GAMEID_PROPERTY,
-                WEMOD_WINETRICKS_REQUIREMENTS,
-                CHEAT_ENGINE_EXE_PROPERTY,
-                CHEAT_ENGINE_FILE_PROPERTY,
-                CHEAT_ENGINE_RUN_WITHOUT_FILE_PROPERTY,
+                TRAINER_WAIT_BEFORE_CONTINUING,
+                TRAINER_USE_RUN_SCRIPT,
+                TRAINER_CUSTOM_EXE_PROPERTY,
+                TRAINER_CUSTOM_ARGS_PROPERTY,
+                TRAINER_WEMOD_ENABLED_PROPERTY,
+                TRAINER_WEMOD_EXE_PROPERTY,
+                TRAINER_WEMOD_OPEN_WITHOUT_GAMEID_PROPERTY,
+                TRAINER_WEMOD_GAMEID_PROPERTY,
+                TRAINER_WEMOD_WINETRICKS_REQUIREMENTS,
+                TRAINER_CHEAT_ENGINE_EXE_PROPERTY,
+                TRAINER_CHEAT_ENGINE_FILE_PROPERTY,
+                TRAINER_CHEAT_ENGINE_RUN_WITHOUT_FILE_PROPERTY,
             ],
-            "Additional Tools",
+            "Trainers",
             actions=[
                 FeatureAction(
                     "trainers-prepare-wemod",
@@ -150,15 +174,15 @@ class TrainerLaunchSettings(FeatureProvider):
         # Check for custom trainer configuration
         custom_trainer = (
             TRAINER_ENABLED_PROPERTY.get(configuration)
-            and TRAINER_EXE_PROPERTY.get(configuration)
+            and TRAINER_CUSTOM_EXE_PROPERTY.get(configuration)
             or None
         )
         if custom_trainer:
-            custom_trainer_args = TRAINER_ARGS_PROPERTY.get(configuration)
+            custom_trainer_args = TRAINER_CUSTOM_ARGS_PROPERTY.get(configuration)
             runtime_configuration.add_fork_command(
-                Command(
-                    command=custom_trainer,
-                    args=custom_trainer_args,
+                Command.from_parts(
+                    custom_trainer,
+                    custom_trainer_args,
                     category=CommandCategory.TRAINER,
                 )
             )
@@ -168,13 +192,13 @@ class TrainerLaunchSettings(FeatureProvider):
 
         # Check for WeMod integration
         wemod_path = (
-            WEMOD_ENABLED_PROPERTY.get(configuration)
-            and WEMOD_EXE_PROPERTY.get(configuration)
+            TRAINER_WEMOD_ENABLED_PROPERTY.get(configuration)
+            and TRAINER_WEMOD_EXE_PROPERTY.get(configuration)
             or None
         )
-        game_id = WEMOD_GAMEID_PROPERTY.get(configuration)
+        game_id = TRAINER_WEMOD_GAMEID_PROPERTY.get(configuration)
         if wemod_path and (
-            WEMOD_OPEN_WITHOUT_GAMEID_PROPERTY.get(configuration) or game_id
+            TRAINER_WEMOD_OPEN_WITHOUT_GAMEID_PROPERTY.get(configuration) or game_id
         ):
             wemod_args = (
                 f'"wemod://play?titleId={game_id}&gameId={game_id}"'
@@ -182,9 +206,9 @@ class TrainerLaunchSettings(FeatureProvider):
                 else None
             )
             runtime_configuration.add_fork_command(
-                Command(
-                    command=wemod_path,
-                    args=wemod_args,
+                Command.from_string(
+                    wemod_path,
+                    wemod_args,
                     category=CommandCategory.TRAINER,
                 )
             )
@@ -192,19 +216,19 @@ class TrainerLaunchSettings(FeatureProvider):
             self.logger.info("WeMod trainer: %s", wemod_path)
             self.logger.info("WeMod trainer game id: %s", game_id or "Not specified")
 
-        cheat_engine_path = CHEAT_ENGINE_EXE_PROPERTY.get(configuration)
+        cheat_engine_path = TRAINER_CHEAT_ENGINE_EXE_PROPERTY.get(configuration)
         if cheat_engine_path:
-            cheat_engine_file = CHEAT_ENGINE_FILE_PROPERTY.get(configuration)
-            if cheat_engine_file or CHEAT_ENGINE_RUN_WITHOUT_FILE_PROPERTY.get(
+            cheat_engine_file = TRAINER_CHEAT_ENGINE_FILE_PROPERTY.get(configuration)
+            if cheat_engine_file or TRAINER_CHEAT_ENGINE_RUN_WITHOUT_FILE_PROPERTY.get(
                 configuration
             ):
                 cheat_engine_file = (
                     f'"{cheat_engine_file}"' if cheat_engine_file else None
                 )
                 runtime_configuration.add_fork_command(
-                    Command(
-                        command=cheat_engine_path,
-                        args=cheat_engine_file,
+                    Command.from_string(
+                        cheat_engine_path,
+                        cheat_engine_file,
                         category=CommandCategory.TRAINER,
                     )
                 )
@@ -212,8 +236,24 @@ class TrainerLaunchSettings(FeatureProvider):
                 self.logger.info("Cheat Engine trainer: %s", cheat_engine_path)
                 self.logger.info("Cheat Engine file: %s", cheat_engine_file)
 
+        self.wait_for_trainers = TRAINER_WAIT_BEFORE_CONTINUING.get_or_fail(
+            configuration
+        )
+
         # Set the execute_trainers flag based on the configuration
         runtime_configuration.execute_trainers = execute_trainer
+
+        if TRAINER_USE_RUN_SCRIPT.get_or_fail(configuration):
+            # Creates a wrapper to run trainer commands in the background without
+            # blocking the main game execution
+            script = ACTUAL_TPLUS_LOCATION + "/scripts/run_trainer.sh"
+            background_wrapper = CommandWrapper.from_command_str(
+                script,
+                applies_for=[
+                    CommandCategory.TRAINER,
+                ],
+            )
+            runtime_configuration.add_pipeline_wrapper(background_wrapper)
 
         return runtime_configuration
 
@@ -227,7 +267,7 @@ class TrainerLaunchSettings(FeatureProvider):
         Prepares the Wine prefix for WeMod integration by adding necessary Winetricks.
         See: https://www.reddit.com/r/SteamDeck/comments/1gtlydp/wemod_a_guide_to_installing/?share_id=utlceK1w5lmQ33fx6jBij&utm_name=iossmf
         """
-        winetricks = WEMOD_WINETRICKS_REQUIREMENTS.get(configuration, [])
+        winetricks = TRAINER_WEMOD_WINETRICKS_REQUIREMENTS.get(configuration, [])
         self.logger.info("WeMod trainer winetricks: %s", ",".join(winetricks))
 
         try:
@@ -242,7 +282,7 @@ class TrainerLaunchSettings(FeatureProvider):
             Wine.set_win_version("win7", runtime_configuration, self.logger)
             # Install required Winetricks packages
             succeed = ProcessRunner.run_in_wine_prefix(
-                Command("wine", DOTNET48_OFFLINE_INSTALLER),
+                Command.from_string("wine", DOTNET48_OFFLINE_INSTALLER),
                 runtime_configuration,
                 self.logger,
             )
@@ -264,6 +304,7 @@ class TrainerLaunchSettings(FeatureProvider):
         _configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ):
+
         self.trainer_process_list = []
         forks_to_include = [
             fork
@@ -274,38 +315,68 @@ class TrainerLaunchSettings(FeatureProvider):
             )
             is False
         ]
+
         for fork in forks_to_include:
+            sleep(5)
+            # Small delay to ensure trainers launch after the game process has started
             self.logger.info(
                 "Preparing trainer command '%s'",
                 fork.command,
             )
             fork_process = ProcessRunner.run_with_pipeline(
-                fork, runtime_configuration, self.logger
+                fork,
+                runtime_configuration,
+                self.logger,
+                custom_environment_variables=SteamUtil.get_anonymous_steam_overrides(),
             )
             if fork_process:
                 self.trainer_process_list.append(fork_process)
                 self.logger.info(
-                    "Launched trainer command '%s' with PID: %s",
+                    "Trainer command '%s' launched with PID: %s",
                     fork.command,
                     fork_process.pid,
                 )
                 sleep(2)
 
     @override
-    def after_execution(
+    def wait_for_completion(
         self,
         _configuration: ConfigurationDictionary,
         _runtime_configuration: RuntimeConfiguration,
     ):
-        for process in self.trainer_process_list:
-            status = process.poll()
-            if status is None:  # Check if the process is still running
-                self.logger.info(
-                    "Trainer process with PID: %s is still running", process.pid
-                )
+        for fork_process in self.trainer_process_list:
+            status = fork_process.poll()
+            if status is None:
+                if self.wait_for_trainers:
+                    self.logger.info(
+                        "Waiting for trainer process with PID %s to exit...",
+                        fork_process.pid,
+                    )
+                    result = fork_process.wait()
+                    self.logger.info(
+                        "Trainer process with PID %s exited with code: %s",
+                        fork_process.pid,
+                        result,
+                    )
+                else:
+                    self.logger.info(
+                        "Terminating trainer process with PID %s...", fork_process.pid
+                    )
+                    fork_process.terminate()
             else:
                 self.logger.info(
-                    "Trainer process with PID: %s has exited with code: %s",
-                    process.pid,
+                    "Trainer process with PID %s has already exited with code: %s",
+                    fork_process.pid,
                     status,
                 )
+                # Log stderr if the trainer failed
+                if status != 0:
+                    stderr_output = (
+                        fork_process.stderr.read().decode(errors="replace")
+                        if fork_process.stderr
+                        else ""
+                    )
+                    if stderr_output:
+                        self.logger.error(
+                            "Trainer stderr output:\n%s", stderr_output.strip()
+                        )

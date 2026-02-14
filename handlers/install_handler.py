@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 import shutil
 from typing import Any, override
-from core.defaults import (
+from defaults import (
     ACTUAL_TPLUS_LOCATION,
     TPLUS_BIN_LOCATION,
     TPLUS_COMPATIBILITY_TOOL_DIR,

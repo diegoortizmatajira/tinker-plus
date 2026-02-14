@@ -146,6 +146,15 @@ class FeatureProvider(ABC):
             used during the pipeline execution.
         """
 
+    def wait_for_completion(
+        self,
+        _configuration: ConfigurationDictionary,
+        _runtime_configuration: RuntimeConfiguration,
+    ):
+        """
+        Hook method to await any asynchronous operations in the pipeline.
+        """
+
     def try_apply_configuration(
         self,
         configuration: ConfigurationDictionary,
@@ -185,34 +194,6 @@ class FeatureProvider(ABC):
             )
             raise RuntimeError(
                 f"Failed to apply configuration in {self.__class__.__name__}"
-            ) from e
-
-    def try_execute_in_pipeline(
-        self,
-        configuration: ConfigurationDictionary,
-        runtime_configuration: RuntimeConfiguration,
-    ):
-        """
-        Attempts to execute the feature provider in the runtime pipeline,
-        handling any exceptions that may arise during the process.
-
-        Args:
-            configuration (dict): The configuration settings to be used during execution.
-            runtime_configuration (RuntimeConfiguration): The runtime environment
-            used during the pipeline execution.
-
-        Raises:
-            RuntimeError: If an error occurs during pipeline execution.
-        """
-        try:
-            self.execute_in_pipeline(configuration, runtime_configuration)
-        except Exception as e:
-            self.logger.error(
-                "Error executing in pipeline: %s",
-                e,
-            )
-            raise RuntimeError(
-                f"Failed to execute in pipeline in {self.__class__.__name__}"
             ) from e
 
     def validate(

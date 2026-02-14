@@ -1,6 +1,7 @@
 """Manages the collection of game configurations."""
 
 from model import GameInfo
+from repositories import GameInfoRepository
 
 from .config_storage import ConfigStorage
 from .log_storage import LogFactory
@@ -34,7 +35,7 @@ class GamesManager:
         self.__games = [
             item
             for item in [
-                GameInfo.from_cache(file.stem, self.__logger) for file in files
+                GameInfoRepository.from_cache(file.stem, self.__logger) for file in files
             ]
             if item is not None
         ]
