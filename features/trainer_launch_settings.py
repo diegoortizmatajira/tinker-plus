@@ -327,7 +327,7 @@ class TrainerLaunchSettings(FeatureProvider):
                 fork,
                 runtime_configuration,
                 self.logger,
-                custom_environment_variables=SteamUtil.get_anonymous_steam_overrides(),
+                # custom_environment_variables=SteamUtil.get_anonymous_steam_overrides(),
             )
             if fork_process:
                 self.trainer_process_list.append(fork_process)
