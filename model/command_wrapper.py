@@ -21,10 +21,15 @@ class CommandWrapper[T]:
 
     wrapper: Callable[[Command, T], Command]
     applies_for: Sequence[CommandCategory] | None = None
+    use_in_script: bool = False
 
     @classmethod
     def from_command_str(
-        cls, command: str, applies_for: Sequence[CommandCategory] | None = None
+        cls,
+        command: str,
+        *,
+        applies_for: Sequence[CommandCategory] | None = None,
+        use_in_script: bool = False,
     ) -> "CommandWrapper":
         """
         Creates a CommandWrapper instance from a Command object.
@@ -37,11 +42,19 @@ class CommandWrapper[T]:
             CommandWrapper: A new instance of CommandWrapper with the specified
             command and applies_for categories.
         """
-        return cls.from_command(Command.from_string(command), applies_for)
+        return cls.from_command(
+            Command.from_string(command),
+            applies_for=applies_for,
+            use_in_script=use_in_script,
+        )
 
     @classmethod
     def from_command(
-        cls, command: Command, applies_for: Sequence[CommandCategory] | None = None
+        cls,
+        command: Command,
+        *,
+        applies_for: Sequence[CommandCategory] | None = None,
+        use_in_script: bool = False,
     ) -> "CommandWrapper":
         """
         Creates a CommandWrapper instance from a Command object.
@@ -59,6 +72,7 @@ class CommandWrapper[T]:
                 internal_representation=[command, pipeline_command]
             ),
             applies_for=applies_for,
+            use_in_script=use_in_script,
         )
 
     def wrap(
@@ -68,6 +82,7 @@ class CommandWrapper[T]:
         *,
         command_category: CommandCategory | None = None,
         logger: logging.Logger,
+        is_script: bool = False,
     ) -> Command:
         """
         Wraps the provided pipeline assembled command using the defined wrapper.
@@ -87,6 +102,8 @@ class CommandWrapper[T]:
         if not (command_category and command_category in applies_for_with_default):
             # If the wrapper does not apply for the given command category,
             # return the original command.
+            return pipeline_assembled_command
+        if is_script and not self.use_in_script:
             return pipeline_assembled_command
 
         wrapped_command = self.wrapper(pipeline_assembled_command, parameter)

@@ -1,20 +1,15 @@
 """Module for enabling and configuring custom trainers or WeMod integration."""
 
-import os
-from subprocess import Popen
-from time import sleep
-from typing import Any, override
+from typing import override
 
 from core import (
     FeatureAction,
     FeatureProvider,
     ProcessRunner,
-    SteamUtil,
     Wine,
 )
 from defaults import ACTUAL_TPLUS_LOCATION
 from model import (
-    CommandWrapper,
     ConfigurationProperty,
     Command,
     CommandCategory,
@@ -47,24 +42,6 @@ TRAINER_CUSTOM_ARGS_PROPERTY = ConfigurationProperty(
     "Allows providing custom args to the trainer program.",
 )
 
-TRAINER_WAIT_BEFORE_CONTINUING = ConfigurationProperty(
-    bool,
-    "TRAINER_WAIT_BEFORE_CONTINUING",
-    "Wait for trainers to exit before continuing",
-    "When enabled, the system will wait for all trainer processes to exit "
-    + "before continuing with the main game execution. When disabled, trainer "
-    + "processes will be launched and the system will continue without waiting.",
-    False,
-)
-
-TRAINER_USE_RUN_SCRIPT = ConfigurationProperty(
-    bool,
-    "TRAINER_USE_RUN_SCRIPT",
-    "Use run script for trainers",
-    "Specifies whether to use a wrapper script to run trainers in the "
-    + "background without blocking the main game execution.",
-    True,
-)
 TRAINER_WEMOD_ENABLED_PROPERTY = ConfigurationProperty(
     bool,
     "TRAINER_WEMOD_ENABLED",
@@ -131,16 +108,11 @@ class TrainerLaunchSettings(FeatureProvider):
     A feature provider for configuring and launching custom trainers or WeMod integration.
     """
 
-    trainer_process_list: list[Popen[Any]] = []
-    wait_for_trainers: bool = False
-
     def __init__(self):
         super().__init__(
             "Trainers",
             [
                 TRAINER_ENABLED_PROPERTY,
-                TRAINER_WAIT_BEFORE_CONTINUING,
-                TRAINER_USE_RUN_SCRIPT,
                 TRAINER_CUSTOM_EXE_PROPERTY,
                 TRAINER_CUSTOM_ARGS_PROPERTY,
                 TRAINER_WEMOD_ENABLED_PROPERTY,
@@ -236,24 +208,8 @@ class TrainerLaunchSettings(FeatureProvider):
                 self.logger.info("Cheat Engine trainer: %s", cheat_engine_path)
                 self.logger.info("Cheat Engine file: %s", cheat_engine_file)
 
-        self.wait_for_trainers = TRAINER_WAIT_BEFORE_CONTINUING.get_or_fail(
-            configuration
-        )
-
         # Set the execute_trainers flag based on the configuration
         runtime_configuration.execute_trainers = execute_trainer
-
-        if TRAINER_USE_RUN_SCRIPT.get_or_fail(configuration):
-            # Creates a wrapper to run trainer commands in the background without
-            # blocking the main game execution
-            script = ACTUAL_TPLUS_LOCATION + "/scripts/run_trainer.sh"
-            background_wrapper = CommandWrapper.from_command_str(
-                script,
-                applies_for=[
-                    CommandCategory.TRAINER,
-                ],
-            )
-            runtime_configuration.add_pipeline_wrapper(background_wrapper)
 
         return runtime_configuration
 
@@ -297,86 +253,3 @@ class TrainerLaunchSettings(FeatureProvider):
         except RuntimeError as e:
             self.logger.error("Failed to prepare Wine prefix for WeMod: %s", e)
             raise
-
-    @override
-    def execute_in_pipeline(
-        self,
-        _configuration: ConfigurationDictionary,
-        runtime_configuration: RuntimeConfiguration,
-    ):
-
-        self.trainer_process_list = []
-        forks_to_include = [
-            fork
-            for fork in runtime_configuration.fork_commands or []
-            if (
-                fork.category is CommandCategory.TRAINER
-                and not runtime_configuration.execute_trainers
-            )
-            is False
-        ]
-
-        for fork in forks_to_include:
-            sleep(5)
-            # Small delay to ensure trainers launch after the game process has started
-            self.logger.info(
-                "Preparing trainer command '%s'",
-                fork.command,
-            )
-            fork_process = ProcessRunner.run_with_pipeline(
-                fork,
-                runtime_configuration,
-                self.logger,
-                # custom_environment_variables=SteamUtil.get_anonymous_steam_overrides(),
-            )
-            if fork_process:
-                self.trainer_process_list.append(fork_process)
-                self.logger.info(
-                    "Trainer command '%s' launched with PID: %s",
-                    fork.command,
-                    fork_process.pid,
-                )
-                sleep(2)
-
-    @override
-    def wait_for_completion(
-        self,
-        _configuration: ConfigurationDictionary,
-        _runtime_configuration: RuntimeConfiguration,
-    ):
-        for fork_process in self.trainer_process_list:
-            status = fork_process.poll()
-            if status is None:
-                if self.wait_for_trainers:
-                    self.logger.info(
-                        "Waiting for trainer process with PID %s to exit...",
-                        fork_process.pid,
-                    )
-                    result = fork_process.wait()
-                    self.logger.info(
-                        "Trainer process with PID %s exited with code: %s",
-                        fork_process.pid,
-                        result,
-                    )
-                else:
-                    self.logger.info(
-                        "Terminating trainer process with PID %s...", fork_process.pid
-                    )
-                    fork_process.terminate()
-            else:
-                self.logger.info(
-                    "Trainer process with PID %s has already exited with code: %s",
-                    fork_process.pid,
-                    status,
-                )
-                # Log stderr if the trainer failed
-                if status != 0:
-                    stderr_output = (
-                        fork_process.stderr.read().decode(errors="replace")
-                        if fork_process.stderr
-                        else ""
-                    )
-                    if stderr_output:
-                        self.logger.error(
-                            "Trainer stderr output:\n%s", stderr_output.strip()
-                        )

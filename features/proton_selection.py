@@ -289,8 +289,8 @@ class ProtonSelection(FeatureProvider):
                 ),
                 applies_for=[
                     CommandCategory.COMPATIBILITY_TOOL,
-                    CommandCategory.TRAINER,
                 ],
+                use_in_script=True,
             )
         )
         runtime_configuration.add_pipeline_wrapper(
@@ -304,7 +304,9 @@ class ProtonSelection(FeatureProvider):
                 ),
                 applies_for=[
                     CommandCategory.GAME,
+                    CommandCategory.TRAINER,
                 ],
+                use_in_script=True,
             )
         )
         return runtime_configuration

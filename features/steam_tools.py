@@ -4,6 +4,7 @@ from typing import override
 from core import FeatureProvider
 from model import (
     Command,
+    CommandCategory,
     ConfigurationProperty,
     RuntimeConfiguration,
     CommandWrapper,
@@ -135,7 +136,8 @@ class SteamTools(FeatureProvider):
                             "--",
                             cmd,
                         ]
-                    )
+                    ),
+                    applies_for=[CommandCategory.SCRIPT, CommandCategory.GAME],
                 )
             )
         # Apply the Reaper (After Wrapper)
@@ -166,6 +168,7 @@ class SteamTools(FeatureProvider):
             runtime_configuration.add_pipeline_wrapper(
                 CommandWrapper(
                     wrapper=reaper_wrapper,
+                    applies_for=[CommandCategory.SCRIPT, CommandCategory.GAME],
                 )
             )
 
@@ -185,7 +188,9 @@ class SteamTools(FeatureProvider):
                             "--",
                             cmd,
                         ]
-                    )
+                    ),
+                    applies_for=[CommandCategory.GAME],
+                    use_in_script=True,
                 )
             )
         return runtime_configuration

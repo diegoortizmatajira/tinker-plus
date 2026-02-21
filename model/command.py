@@ -18,6 +18,7 @@ class CommandCategory(StrEnum):
     TRAINER = "trainer"
     GAME = "game"
     COMPATIBILITY_TOOL = "compatibility_tool"
+    SCRIPT = "script"
 
 
 @dataclass

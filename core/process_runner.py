@@ -8,6 +8,7 @@ from typing import Any, final, overload
 
 from model import (
     Command,
+    CommandCategory,
     CommandWrapper,
     RuntimeConfiguration,
 )
@@ -186,6 +187,8 @@ class ProcessRunner:
         runtime_configuration: RuntimeConfiguration,
         logger: logging.Logger,
         override_log_to_file: bool | None = None,
+        override_command_category: CommandCategory | None = None,
+        is_script: bool = False,
     ) -> Command:
         """
         Assembles the full command string with optional logging to file based
@@ -201,8 +204,9 @@ class ProcessRunner:
             actual_command = wrapper.wrap(
                 actual_command,
                 runtime_configuration,
-                command_category=command.category,
+                command_category=override_command_category or command.category,
                 logger=logger,
+                is_script=is_script,
             )
 
         # TODO: Consider if we want to log the final assembled command or the original command, or both.
