@@ -12,7 +12,7 @@ def timestamped_log(folder: str, base: str) -> str:
 
 
 GAME_INFO_KEY = "!game_info"
-ACTUAL_TPLUS_LOCATION = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ACTUAL_TPLUS_LOCATION = os.path.abspath(os.path.join(os.path.dirname(__file__), "."))
 
 TPLUS_BIN_LOCATION = os.path.expandvars("$HOME/.local/bin/tplus")
 TPLUS_COMPATIBILITY_TOOL_DIR = "Tinker-Plus"

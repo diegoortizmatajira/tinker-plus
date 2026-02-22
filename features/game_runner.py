@@ -47,16 +47,20 @@ GAME_RUN_FORKS_ONLY_PROPERTY = ConfigurationProperty(
     bool,
     "GAME_RUN_FORKS_ONLY",
     "Run Forked Commands Only",
-    "If set to 'True', only the forked commands will be executed, skipping the main game command.",
+    "If set to 'True', only the forked commands will be executed, skipping "
+    + "the main game command.",
     default=False,
 )
 GAME_RUN_WITH_SCRIPT_PROPERTY = ConfigurationProperty(
     bool,
     "GAME_RUN_WITH_SCRIPT",
     "Run Commands with Script",
-    "If set to 'True', commands will be executed through a temporary script to ensure proper sequencing and environment setup.",
+    "If set to 'True', commands will be executed through a temporary "
+    + "script to ensure proper sequencing and environment setup.",
     default=True,
 )
+
+SLEEP_TIME_BETWEEN_COMMANDS = 2  # seconds
 
 
 class GameRunner(FeatureProvider):
@@ -208,6 +212,19 @@ class GameRunner(FeatureProvider):
         _configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ):
+        """
+        Executes the commands in the pipeline using a temporary script.
+
+        This method generates a temporary shell script to execute the runtime
+        configuration's command sequence in the specified order. Each command in
+        the sequence is executed with a delay between them to ensure proper
+        sequencing and environment setup.
+
+        Args:
+            _configuration (ConfigurationDictionary): The configuration dictionary.
+            runtime_configuration (RuntimeConfiguration): The runtime configuration
+                containing the command sequence and other relevant settings.
+        """
         sequence = self.get_run_sequence(
             [
                 CommandCategory.TRAINER,
@@ -229,7 +246,12 @@ class GameRunner(FeatureProvider):
                 ).get_full_command()
                 for command in sequence
             ]
-            tmp.write(" & \n".join(script_commands).encode("utf-8"))
+            tmp.write(
+                f" & \nsleep {SLEEP_TIME_BETWEEN_COMMANDS}\n".join(
+                    # " & \n".join(
+                    script_commands
+                ).encode("utf-8")
+            )
 
         self.logger.info("Created temporary script at: %s", script_path)
         # Make it executable

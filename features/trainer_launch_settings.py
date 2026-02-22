@@ -1,5 +1,7 @@
 """Module for enabling and configuring custom trainers or WeMod integration."""
 
+from subprocess import Popen
+import subprocess
 from typing import override
 
 from core import (
@@ -7,8 +9,10 @@ from core import (
     FeatureProvider,
     ProcessRunner,
     Wine,
+    process_runner,
 )
 from defaults import ACTUAL_TPLUS_LOCATION
+from features import environment_variables
 from model import (
     ConfigurationProperty,
     Command,
@@ -223,33 +227,48 @@ class TrainerLaunchSettings(FeatureProvider):
         Prepares the Wine prefix for WeMod integration by adding necessary Winetricks.
         See: https://www.reddit.com/r/SteamDeck/comments/1gtlydp/wemod_a_guide_to_installing/?share_id=utlceK1w5lmQ33fx6jBij&utm_name=iossmf
         """
+        self.logger.info("Preparing Wine prefix for WeMod integration...")
         winetricks = TRAINER_WEMOD_WINETRICKS_REQUIREMENTS.get(configuration, [])
         self.logger.info("WeMod trainer winetricks: %s", ",".join(winetricks))
 
         try:
-            original_win_version = Wine.get_win_version(
-                runtime_configuration, self.logger
+            self.logger.info(
+                "Using steam compatibility tool: %s",
+                runtime_configuration.steam_compatibility_tool,
             )
-            if original_win_version is None:
+            self.logger.info(
+                "Using steam game ID: %s", runtime_configuration.get_game_identifier()
+            )
+            if runtime_configuration.steam_compatibility_tool is None:
                 self.logger.error(
-                    "Could not determine original Windows version in Wine prefix."
+                    "Steam compatibility tool not found in environment data."
                 )
                 return
-            Wine.set_win_version("win7", runtime_configuration, self.logger)
-            # Install required Winetricks packages
-            succeed = ProcessRunner.run_in_wine_prefix(
-                Command.from_string("wine", DOTNET48_OFFLINE_INSTALLER),
-                runtime_configuration,
+            installer_command = Command(
+                [
+                    "/usr/bin/protontricks",
+                    runtime_configuration.get_game_identifier(),
+                    "dotnet48",
+                ]
+            )
+            dotnet_installer = ProcessRunner.run_chain_command(
+                installer_command.get_chain_command(),
                 self.logger,
+                environment_variables={
+                    "PROTON_VERSION": runtime_configuration.steam_compatibility_tool,
+                },
+                dry_run=runtime_configuration.dry_run,
             )
-            if succeed:
-                self.logger.info("Dotnet 4.8 installed successfully.")
-            else:
-                self.logger.error("Dotnet 4.8 installation failed.")
-                raise RuntimeError("Dotnet 4.8 installation failed")
-            Wine.set_win_version(
-                original_win_version, runtime_configuration, self.logger
-            )
+            if dotnet_installer:
+                result = dotnet_installer.wait()
+                if result != 0:
+                    self.logger.error(
+                        "Dotnet 4.8 installer exited with code %d.", result
+                    )
+                    raise RuntimeError(
+                        f"Dotnet 4.8 installer failed with code {result}"
+                    )
+                self.logger.info("Dotnet 4.8 installer completed successfully.")
         except RuntimeError as e:
             self.logger.error("Failed to prepare Wine prefix for WeMod: %s", e)
             raise

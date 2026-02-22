@@ -10,4 +10,5 @@ wheels/
 # Virtual environments
 .venv
 data/
+redist/
 CLAUDE.md
