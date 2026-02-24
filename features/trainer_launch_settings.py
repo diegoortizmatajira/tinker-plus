@@ -1,19 +1,13 @@
 """Module for enabling and configuring custom trainers or WeMod integration."""
 
-from pathlib import Path
-from subprocess import Popen
-import subprocess
 from typing import override
 
 from core import (
     FeatureAction,
     FeatureProvider,
     ProcessRunner,
-    Wine,
-    process_runner,
 )
 from defaults import ACTUAL_TPLUS_LOCATION
-from features import environment_variables
 from model import (
     ConfigurationProperty,
     Command,
