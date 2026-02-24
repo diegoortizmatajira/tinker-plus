@@ -232,33 +232,39 @@ class GameRunner(FeatureProvider):
             ],
             runtime_configuration,
         )
-        script_path: str
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".sh") as tmp:
-            script_path = tmp.name
-            tmp.write(b"#!/bin/bash\n")
+        script_commands = [
+            ProcessRunner.assemble_command_str(
+                command,
+                runtime_configuration,
+                self.logger,
+                is_script=True,
+            ).get_full_command()
+            for command in sequence
+        ]
+        if len(script_commands) > 1:
+            script_path: str
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".sh") as tmp:
+                script_path = tmp.name
+                tmp.write(b"#!/bin/bash\n")
 
-            script_commands = [
-                ProcessRunner.assemble_command_str(
-                    command,
-                    runtime_configuration,
-                    self.logger,
-                    is_script=True,
-                ).get_full_command()
-                for command in sequence
-            ]
-            tmp.write(
-                f" & \nsleep {SLEEP_TIME_BETWEEN_COMMANDS}\n".join(
-                    # " & \n".join(
-                    script_commands
-                ).encode("utf-8")
+                tmp.write(
+                    f" & \nsleep {SLEEP_TIME_BETWEEN_COMMANDS}\n".join(
+                        # " & \n".join(
+                        script_commands
+                    ).encode("utf-8")
+                )
+
+            self.logger.info("Created temporary script at: %s", script_path)
+            # Make it executable
+            os.chmod(script_path, os.stat(script_path).st_mode | stat.S_IEXEC)
+            script_command = Command.from_string(
+                script_path, category=CommandCategory.SCRIPT
             )
-
-        self.logger.info("Created temporary script at: %s", script_path)
-        # Make it executable
-        os.chmod(script_path, os.stat(script_path).st_mode | stat.S_IEXEC)
-        script_command = Command.from_string(
-            script_path, category=CommandCategory.SCRIPT
-        )
+        else:
+            # If there's only one command, we can run it directly without a script
+            script_command = Command.from_string(
+                script_commands[0], category=CommandCategory.SCRIPT
+            )
         # Run the script which will execute the commands in sequence
         self.game_process = ProcessRunner.run_with_pipeline(
             script_command, runtime_configuration, self.logger

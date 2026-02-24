@@ -2,6 +2,7 @@
 
 from collections.abc import Sequence
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Self
 
 from .command import Command, CommandCategory
@@ -140,6 +141,21 @@ class RuntimeConfiguration:
         if self.environment_variables is None:
             self.environment_variables = {}
         self.environment_variables[key] = value
+
+    def set_debugger(self, command: Command) -> None:
+        """
+        Sets the debugger command in the current configuration.
+
+        Args:
+            command (ExecutableCommand): The debugger command to be set.
+        """
+        trainer_path = Path(command.command)
+        self.set_environment_variable(
+            "PROTON_REMOTE_DEBUG_CMD", command.get_full_command()
+        )
+        self.set_environment_variable(
+            "PRESSURE_VESSEL_FILESYSTEMS_RW", trainer_path.parent.resolve().as_posix()
+        )
 
     def add_pipeline_wrapper(self, wrapper: CommandWrapper[Self]) -> None:
         """

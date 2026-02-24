@@ -1,5 +1,6 @@
 """Module for enabling and configuring custom trainers or WeMod integration."""
 
+from pathlib import Path
 from subprocess import Popen
 import subprocess
 from typing import override
@@ -25,6 +26,13 @@ DOTNET48_OFFLINE_INSTALLER = (
     f"{ACTUAL_TPLUS_LOCATION}/redist/NDP48-x86-x64-AllOS-ENU.exe"
 )
 
+TRAINER_AS_DEBUGGER_PROPERTY = ConfigurationProperty(
+    bool,
+    "TRAINER_AS_DEBUGGER",
+    "Enable trainer as debugger",
+    "Allows running the trainer as a debugger for the game process.",
+    True,
+)
 TRAINER_ENABLED_PROPERTY = ConfigurationProperty(
     bool,
     "TRAINER_ENABLED",
@@ -117,6 +125,7 @@ class TrainerLaunchSettings(FeatureProvider):
             "Trainers",
             [
                 TRAINER_ENABLED_PROPERTY,
+                TRAINER_AS_DEBUGGER_PROPERTY,
                 TRAINER_CUSTOM_EXE_PROPERTY,
                 TRAINER_CUSTOM_ARGS_PROPERTY,
                 TRAINER_WEMOD_ENABLED_PROPERTY,
@@ -139,13 +148,34 @@ class TrainerLaunchSettings(FeatureProvider):
             ],
         )
 
+    def configure_trainer(
+        self,
+        runtime_configuration: RuntimeConfiguration,
+        command: Command,
+        as_debugger: bool,
+    ) -> None:
+        """
+        Configures the trainer to run as a debugger if specified.
+
+        Args:
+            as_debugger (bool): Whether to run the trainer as a debugger.
+        """
+        self.logger.info("Configuring trainer: %s", command.get_full_command())
+        if as_debugger:
+            self.logger.info("Configuring trainer to run as debugger.")
+            runtime_configuration.set_debugger(command)
+        else:
+            self.logger.info("Trainer will run as forked process.")
+            runtime_configuration.add_fork_command(command)
+        runtime_configuration.execute_trainers = True
+
     @override
     def apply_configuration(
         self,
         configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ) -> RuntimeConfiguration:
-        execute_trainer = False
+        as_debugger = TRAINER_AS_DEBUGGER_PROPERTY.get_or_fail(configuration)
 
         # Check for custom trainer configuration
         custom_trainer = (
@@ -154,17 +184,12 @@ class TrainerLaunchSettings(FeatureProvider):
             or None
         )
         if custom_trainer:
-            custom_trainer_args = TRAINER_CUSTOM_ARGS_PROPERTY.get(configuration)
-            runtime_configuration.add_fork_command(
-                Command.from_parts(
-                    custom_trainer,
-                    custom_trainer_args,
-                    category=CommandCategory.TRAINER,
-                )
+            trainer_command = Command.from_parts(
+                custom_trainer,
+                TRAINER_CUSTOM_ARGS_PROPERTY.get(configuration),
+                category=CommandCategory.TRAINER,
             )
-            execute_trainer = True
-            self.logger.info("Custom trainer: %s", custom_trainer)
-            self.logger.info("Custom trainer args: %s", custom_trainer_args)
+            self.configure_trainer(runtime_configuration, trainer_command, as_debugger)
 
         # Check for WeMod integration
         wemod_path = (
@@ -181,16 +206,15 @@ class TrainerLaunchSettings(FeatureProvider):
                 if game_id
                 else None
             )
-            runtime_configuration.add_fork_command(
-                Command.from_string(
+            self.configure_trainer(
+                runtime_configuration,
+                Command.from_parts(
                     wemod_path,
                     wemod_args,
                     category=CommandCategory.TRAINER,
-                )
+                ),
+                as_debugger,
             )
-            execute_trainer = True
-            self.logger.info("WeMod trainer: %s", wemod_path)
-            self.logger.info("WeMod trainer game id: %s", game_id or "Not specified")
 
         cheat_engine_path = TRAINER_CHEAT_ENGINE_EXE_PROPERTY.get(configuration)
         if cheat_engine_path:
@@ -201,19 +225,17 @@ class TrainerLaunchSettings(FeatureProvider):
                 cheat_engine_file = (
                     f'"{cheat_engine_file}"' if cheat_engine_file else None
                 )
-                runtime_configuration.add_fork_command(
-                    Command.from_string(
+                self.configure_trainer(
+                    runtime_configuration,
+                    Command.from_parts(
                         cheat_engine_path,
                         cheat_engine_file,
                         category=CommandCategory.TRAINER,
-                    )
+                    ),
+                    as_debugger,
                 )
-                execute_trainer = True
-                self.logger.info("Cheat Engine trainer: %s", cheat_engine_path)
-                self.logger.info("Cheat Engine file: %s", cheat_engine_file)
 
         # Set the execute_trainers flag based on the configuration
-        runtime_configuration.execute_trainers = execute_trainer
 
         return runtime_configuration
 
