@@ -65,14 +65,17 @@ class FeatureProvider(ABC):
         _runtime_configuration: RuntimeConfiguration,
     ) -> ConfigurationDictionary:
         """
-        Builds and returns the updated configuration dictionary with default
-        values initialized based on the property definitions.
+        Builds and initializes the feature's configuration by setting default values
+        for unspecified properties.
 
         Args:
-            sourced_configuration (dict): The initial configuration dictionary to be sourced.
+            sourced_configuration (ConfigurationDictionary): The incoming
+            configuration dictionary.
+            _runtime_configuration (RuntimeConfiguration): The runtime context
+            (not used in this method).
 
         Returns:
-            dict: The updated configuration dictionary with defaults applied.
+            ConfigurationDictionary: The updated configuration dictionary with defaults applied.
         """
         sourced_configuration = ConfigurationProperty.initialize_defaults(
             sourced_configuration, self.properties

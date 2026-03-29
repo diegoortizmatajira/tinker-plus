@@ -12,3 +12,5 @@ wheels/
 data/
 redist/
 CLAUDE.md
+
+.idea/
