@@ -41,7 +41,7 @@ class ProcessRunner:
         and executes it using the subprocess module. The execution can also
         capture output if explicitly enabled.
 
-        Args:
+        Arguments:
             exe_command (ExecutableCommand): The command to be executed.
             runtime_configuration (RuntimeConfiguration): The runtime configuration
                 containing Wine-related settings, environment variables, and execution
@@ -413,10 +413,31 @@ class ProcessRunner:
         custom_environment_variables: dict[str, str | None] | None = None,
     ) -> subprocess.Popen[Any] | None:
         """
-        Executes a given command using subprocess.
+        Runs a command within an execution pipeline, allowing for environment 
+        variable modifications, optional detachment, and command wrapping.
+
+        This method handles environmental customization, command construction, 
+        and subprocess execution, seamlessly integrating optional wrappers and 
+        detached operations. It honors runtime configuration settings such as 
+        dry-run and ensures proper handling of the command execution.
 
         Args:
-            command (str): The command to execute.
+            exe_command (Command): The command to be executed within the pipeline.
+            runtime_configuration (RuntimeConfiguration): Configuration details
+                for runtime execution, including environment variables and 
+                execution behavior.
+            logger (logging.Logger): Logger for tracking execution details and outputs.
+            wrapper (CommandWrapper | None, optional): Optional wrapper to modify
+                the command before execution. Defaults to None.
+            detached (bool, optional): Flag indicating if the execution should be detached.
+                Defaults to False.
+            custom_environment_variables (dict[str, str | None] | None, optional): 
+                Additional environment variable settings. Variables mapped to 
+                None are removed from the environment. Defaults to None.
+
+        Returns:
+            subprocess.Popen[Any] | None: Subprocess instance for the executed command
+            or None if the execution is skipped or fails.
         """
 
         environment_variables = os.environ.copy()

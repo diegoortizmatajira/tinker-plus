@@ -3,15 +3,15 @@
 Tinker-Plus is a robust tool tailored for advanced PC gamers seeking greater
 control and optimization of their gaming setups on Steam. It offers seamless
 integration and powerful features to enhance customization, resolve
-compatibility issues, and fine-tune runtime configurations for a smoother
-gaming experience.
+compatibility issues, and fine-tune runtime configurations for a smoother gaming
+experience.
 
 ## Key Features
 
 Tinker-Plus comes with versatile functionality, including:
 
-- **Steam Integration:** Optimize settings and configurations for specific
-  Steam games.
+- **Steam Integration:** Optimize settings and configurations for specific Steam
+  games.
 - **Proton Customization:** Enable or disable features like WineD3D, DXVK, and
   others for better compatibility.
 - **Winetricks Support:** Easily manage game-specific requirements with
@@ -31,8 +31,8 @@ Tinker-Plus comes with versatile functionality, including:
 
 For gamers and power users who demand full control over their gaming
 environment, Tinker-Plus simplifies complex configuration tasks. It empowers
-users to fine-tune and micromanage their setups with ease, ensuring an
-optimized experience for Steam gaming.
+users to fine-tune and micromanage their setups with ease, ensuring an optimized
+experience for Steam gaming.
 
 ## Installation
 
