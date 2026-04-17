@@ -158,7 +158,7 @@ class SteamParser:
         """
 
         def from_env(environment_variable: str) -> str | None:
-            value = os.getenv(environment_variable)
+            value = os.getenv(environment_variable) or os.getenv(environment_variable.upper())
             if value and (
                 (value.startswith('"') and value.endswith('"'))
                 or (value.startswith("'") and value.endswith("'"))
@@ -180,7 +180,9 @@ class SteamParser:
         )
         # Store all relevant environment variables in a dictionary for potential future use
         data.environment_variables = {
-            env: str(os.getenv(env)) for env in ENV_LIST if os.getenv(env) is not None
+            env: str(os.getenv(env) or os.getenv(env.upper()))
+            for env in ENV_LIST
+            if os.getenv(env) or os.getenv(env.upper()) is not None
         }
 
     @staticmethod
