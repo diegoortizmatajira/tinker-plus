@@ -10,6 +10,9 @@ dependencies = [
     "ttkbootstrap>=1.19.1",
 ]
 
+[project.scripts]
+tplus = "main:main"
+
 [tool.pylint]
 init-hook = "import sys; sys.path.insert(0, \".\")"
 
