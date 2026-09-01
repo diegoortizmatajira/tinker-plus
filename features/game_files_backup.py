@@ -97,7 +97,7 @@ class GameFilesBackup(FeatureProvider):
             ],
         )
 
-    def __get_backup_archive_name(
+    def _get_backup_archive_name(
         self,
         configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
@@ -137,7 +137,7 @@ class GameFilesBackup(FeatureProvider):
         game_files_location = (
             runtime_configuration.steam_environment_data.steam_compat_install_path
         )
-        archive_name = self.__get_backup_archive_name(
+        archive_name = self._get_backup_archive_name(
             configuration, runtime_configuration
         )
         command_template = BACKUP_ARCHIVE_COMMAND_PROPERTY.get(configuration)
@@ -199,7 +199,7 @@ class GameFilesBackup(FeatureProvider):
         game_files_location = Path(
             runtime_configuration.steam_environment_data.steam_compat_install_path
         ).parent
-        archive_name = self.__get_backup_archive_name(
+        archive_name = self._get_backup_archive_name(
             configuration, runtime_configuration
         )
         command_template = BACKUP_RESTORE_COMMAND_PROPERTY.get(configuration)

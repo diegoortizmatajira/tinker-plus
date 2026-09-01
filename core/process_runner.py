@@ -182,6 +182,30 @@ class ProcessRunner:
             ) from e
 
     @staticmethod
+    def wait_and_log(
+        process: subprocess.Popen[Any],
+        logger: logging.Logger,
+        label: str,
+    ) -> int:
+        """
+        Waits for the given process to exit, logging its PID and exit code.
+
+        Args:
+            process (subprocess.Popen): The process to wait for.
+            logger (logging.Logger): Logger instance used for the launch/exit messages.
+            label (str): Human-readable label for the process, used in the log
+                messages (e.g. "before startup process").
+
+        Returns:
+            int: The process's exit code.
+        """
+        with process:
+            logger.info("Launched '%s' with PID: %s", label, process.pid)
+            result = process.wait()
+            logger.info("'%s' exited with return code: %s", label.capitalize(), result)
+            return result
+
+    @staticmethod
     def assemble_command_str(
         command: Command,
         runtime_configuration: RuntimeConfiguration,

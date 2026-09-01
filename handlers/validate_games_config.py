@@ -8,7 +8,7 @@ from handlers.base_handler import BaseHandler
 VALIDATE_GAMES_COMMAND = "validate-games"
 
 
-class ValidateGamesConfig(BaseHandler):
+class ValidateGamesConfigHandler(BaseHandler):
     """
     Handles the "validate-games" command, which checks every configured game's
     stored configuration for unexpected keys against the currently registered

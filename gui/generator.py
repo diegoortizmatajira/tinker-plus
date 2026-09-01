@@ -32,6 +32,11 @@ class PropertyWrapper[T_co: AcceptedPropertyTypes]:
         False: "0",
         None: "",
     }
+    reverse_map: ClassVar[dict[str, AcceptedPropertyTypes | None]] = {
+        "1": True,
+        "0": False,
+        "": None,
+    }
 
     def __init__(self, config_property: ConfigurationProperty[T_co]):
         """
@@ -48,8 +53,7 @@ class PropertyWrapper[T_co: AcceptedPropertyTypes]:
         value: str = self.variable.get()
         mapped_value: AcceptedPropertyTypes | None
         if self.config_property.type_ref is bool:
-            reverse_map = {v: k for k, v in self.map.items()}
-            mapped_value = reverse_map.get(value)
+            mapped_value = self.reverse_map.get(value)
         elif self.config_property.type_ref is list:
             mapped_value = value.split(",") if value != "" else []
         elif self.config_property.type_ref is int:

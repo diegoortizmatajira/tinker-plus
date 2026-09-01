@@ -73,6 +73,41 @@ class LinkUserFolders(FeatureProvider):
             "Data Management",
         )
 
+    def _link_folder(
+        self,
+        label: str,
+        source: str,
+        destination: str,
+        should_backup: bool,
+        dry_run: bool,
+    ):
+        """Links `source` into `destination` under the Wine prefix, or logs the
+        intended link when `dry_run` is enabled.
+
+        Args:
+            label (str): Human-readable name of the folder being linked, used
+                in log messages (e.g. "user", "public", "custom").
+            source (str): Path to link from.
+            destination (str): Path inside the Wine prefix to create the link at.
+            should_backup (bool): Whether to back up an existing folder before
+                replacing it (forwarded to `FileSystem.create_symbolic_link`).
+            dry_run (bool): If True, logs the intended link instead of performing it.
+        """
+        self.logger.info("Linking %s folder from: %s to: %s", label, source, destination)
+        if dry_run:
+            self.logger.info(
+                LOG_DRY_RUN.format(f"Ensure {label} folder link at: %s to: %s"),
+                destination,
+                source,
+            )
+        else:
+            FileSystem.create_symbolic_link(
+                source,
+                destination,
+                self.logger,
+                should_backup=should_backup,
+            )
+
     @override
     def before_execution(
         self,
@@ -87,63 +122,36 @@ class LinkUserFolders(FeatureProvider):
             )
             return
         should_backup = LINK_SHOULD_BACKUP_FOLDERS_PROPERTY.get(configuration, True)
+        dry_run = runtime_configuration.dry_run
+
         user_folder = LINK_STEAM_USER_FOLDER_PROPERTY.get(configuration)
         if user_folder:
-            self.logger.info("Linking user folder to: %s", user_folder)
-            prefix_user_folder = (
-                f"{runtime_configuration.prefix_path}/{STEAM_USER_FOLDER_NAME}"
+            self._link_folder(
+                "user",
+                user_folder,
+                f"{runtime_configuration.prefix_path}/{STEAM_USER_FOLDER_NAME}",
+                should_backup,
+                dry_run,
             )
-            if runtime_configuration.dry_run:
-                self.logger.info(
-                    LOG_DRY_RUN.format("Ensure user folder link at: %s to: %s"),
-                    prefix_user_folder,
-                    user_folder,
-                )
-            else:
-                FileSystem.create_symbolic_link(
-                    user_folder,
-                    prefix_user_folder,
-                    self.logger,
-                    should_backup=should_backup,
-                )
+
         public_user_folder = LINK_PUBLIC_USER_FOLDER_PROPERTY.get(configuration)
         if public_user_folder:
-            self.logger.info("Linking public folder to: %s", public_user_folder)
-            prefix_public_user_folder = (
-                f"{runtime_configuration.prefix_path}/{PUBLIC_USER_FOLDER_NAME}"
+            self._link_folder(
+                "public",
+                public_user_folder,
+                f"{runtime_configuration.prefix_path}/{PUBLIC_USER_FOLDER_NAME}",
+                should_backup,
+                dry_run,
             )
-            if runtime_configuration.dry_run:
-                self.logger.info(
-                    LOG_DRY_RUN.format("Ensure public folder link at: %s to: %s"),
-                    prefix_public_user_folder,
-                    public_user_folder,
-                )
-            else:
-                FileSystem.create_symbolic_link(
-                    public_user_folder,
-                    prefix_public_user_folder,
-                    self.logger,
-                    should_backup=should_backup,
-                )
+
         custom_source = LINK_CUSTOM_SOURCE_PROPERTY.get(configuration)
         custom_destination = LINK_CUSTOM_DESTINATION_PROPERTY.get(configuration)
         if custom_source and custom_destination:
             prefix_custom_destination = f"{runtime_configuration.prefix_path}/{DRIVE_C_DIR_NAME}/{custom_destination}"
-            self.logger.info(
-                "Linking custom folder from: %s to: %s",
+            self._link_folder(
+                "custom",
                 custom_source,
                 prefix_custom_destination,
+                should_backup,
+                dry_run,
             )
-            if runtime_configuration.dry_run:
-                self.logger.info(
-                    LOG_DRY_RUN.format("Ensure custom link at: %s to: %s"),
-                    prefix_custom_destination,
-                    custom_source,
-                )
-            else:
-                FileSystem.create_symbolic_link(
-                    custom_source,
-                    prefix_custom_destination,
-                    self.logger,
-                    should_backup=should_backup,
-                )

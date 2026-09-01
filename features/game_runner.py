@@ -60,7 +60,9 @@ GAME_RUN_WITH_SCRIPT_PROPERTY = ConfigurationProperty(
     default=True,
 )
 
-SLEEP_TIME_BETWEEN_COMMANDS = 2  # seconds
+SLEEP_TIME_BETWEEN_COMMANDS = 2  # seconds, delay between chained commands in a generated script
+TRAINER_LAUNCH_DELAY_SECONDS = 5  # give the game a head start before launching a trainer
+TRAINER_LAUNCH_SETTLE_SECONDS = 2  # brief settle time after a trainer process is launched
 
 
 class GameRunner(FeatureProvider):
@@ -204,8 +206,8 @@ class GameRunner(FeatureProvider):
             used to build and launch the command.
             command (Command): The trainer command to launch.
         """
-        sleep(5)
-        # Small delay to ensure trainers launch after the game process has started
+        # Give the game a head start before launching the trainer
+        sleep(TRAINER_LAUNCH_DELAY_SECONDS)
         self.logger.info(
             "Preparing trainer command '%s'",
             command.command,
@@ -223,7 +225,8 @@ class GameRunner(FeatureProvider):
                 command.command,
                 fork_process.pid,
             )
-            sleep(2)
+            # Brief settle time after launching the trainer process
+            sleep(TRAINER_LAUNCH_SETTLE_SECONDS)
 
     def execute_with_script(
         self,

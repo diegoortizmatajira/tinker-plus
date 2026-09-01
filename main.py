@@ -17,7 +17,7 @@ from handlers.install_handler import InstallHandler
 from handlers.list_actions_handler import ListActionsHandler
 from handlers.list_games_handler import ListGamesHandler
 from handlers.run_handler import RunHandler
-from handlers.validate_games_config import ValidateGamesConfig
+from handlers.validate_games_config import ValidateGamesConfigHandler
 
 
 def main():
@@ -49,7 +49,7 @@ def main():
     _ = ListActionsHandler(subparsers, command_handlers)
     _ = ExecuteActionHandler(subparsers, command_handlers)
     _ = ListGamesHandler(subparsers, command_handlers)
-    _ = ValidateGamesConfig(subparsers, command_handlers)
+    _ = ValidateGamesConfigHandler(subparsers, command_handlers)
 
     if len(sys.argv) == 1:
         parser.print_help()

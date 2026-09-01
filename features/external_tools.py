@@ -49,7 +49,7 @@ MANGOHUD_ENABLED_PROPERTY = ConfigurationProperty(
     "Enables MangoHUD when set to 'True'.",
     default=False,
 )
-MANGOHUG_CONFIG_PROPERTY = ConfigurationProperty(
+MANGOHUD_CONFIG_PROPERTY = ConfigurationProperty(
     str,
     "MANGOHUD_CONFIG",
     "MangoHUD Configuration",
@@ -76,7 +76,7 @@ class ExternalTools(FeatureProvider):
                 GAMESCOPE_ENABLED_PROPERTY,
                 GAMESCOPE_ARGS_PROPERTY,
                 MANGOHUD_ENABLED_PROPERTY,
-                MANGOHUG_CONFIG_PROPERTY,
+                MANGOHUD_CONFIG_PROPERTY,
                 EXTERNAL_TERMINAL_COMMAND_TEMPLATE_PROPERTY,
             ],
             "Additional Tools",

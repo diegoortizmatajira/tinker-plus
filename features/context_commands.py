@@ -11,14 +11,14 @@ from model import RuntimeConfiguration, ConfigurationDictionary, ConfigurationPr
 CONTEXT_COMMAND_BEFORE_STARTUP_PROPERTY = ConfigurationProperty(
     str,
     "CONTEXT_COMMAND_BEFORE_STARTUP",
-    "Comand to run before starting the game",
+    "Command to run before starting the game",
     "Command that will be executed before starting the game.",
 )
 
 CONTEXT_COMMAND_AFTER_EXIT_PROPERTY = ConfigurationProperty(
     str,
     "CONTEXT_COMMAND_AFTER_EXIT",
-    "Comand to run after exiting the game",
+    "Command to run after exiting the game",
     "Command that will be executed after exiting the game.",
 )
 
@@ -71,14 +71,9 @@ class ContextCommands(FeatureProvider):
             dry_run=_runtime_configuration.dry_run,
         )
         if before_process:
-            with before_process:
-                self.logger.info(
-                    "Launched 'before startup process' with PID: %s", before_process.pid
-                )
-                result = before_process.wait()
-                self.logger.info(
-                    "'Before startup process' exited with return code: %s", result
-                )
+            ProcessRunner.wait_and_log(
+                before_process, self.logger, "before startup process"
+            )
 
     @override
     def after_execution(
@@ -98,11 +93,4 @@ class ContextCommands(FeatureProvider):
             dry_run=_runtime_configuration.dry_run,
         )
         if after_process:
-            with after_process:
-                self.logger.info(
-                    "Launched 'after exit process' with PID: %s", after_process.pid
-                )
-                result = after_process.wait()
-                self.logger.info(
-                    "'After exit process' exited with return code: %s", result
-                )
+            ProcessRunner.wait_and_log(after_process, self.logger, "after exit process")
