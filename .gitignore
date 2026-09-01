@@ -14,3 +14,7 @@ redist/
 CLAUDE.md
 
 .idea/
+
+# Generated at `tplus install` time - contains a machine-specific absolute path,
+# should never be committed (see handlers/install_handler.py).
+/tinker-plus.sh
