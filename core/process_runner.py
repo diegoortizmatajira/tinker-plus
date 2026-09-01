@@ -506,7 +506,8 @@ class ProcessRunner:
                 command_category=exe_command.category,
                 logger=logger,
             )
-        os.makedirs(cwd, exist_ok=True)
+        if not runtime_configuration.dry_run:
+            os.makedirs(cwd, exist_ok=True)
         return cls.run_chain_command(
             command.get_chain_command(),
             logger,

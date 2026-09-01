@@ -203,7 +203,7 @@ class CompatToolInfoRepository:
             logger (logging.Logger): The logger instance used for logging messages.
             dry_run (bool): If True, the updated cache is not saved to disk.
         """
-        cache = cls.get_cache(logger)
+        cache = cls.get_cache(logger, dry_run)
         cache[item.name] = item
         cls.save_cache(cache, logger, dry_run)
         logger.info("Compatibility tool info for '%s' added to cache.", item.name)

@@ -114,7 +114,7 @@ class WineConfig(FeatureProvider):
         arguments inside the current Wine prefix, raising on failure."""
         try:
             succeed = ProcessRunner.run_in_wine_prefix(
-                Command(app, args),
+                Command.from_parts(app, args),
                 runtime_configuration,
                 self.logger,
             )

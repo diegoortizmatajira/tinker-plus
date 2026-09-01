@@ -50,7 +50,7 @@ class Wine:
                          or None if it cannot be determined.
         """
         succeed, output = ProcessRunner.run_in_wine_prefix(
-            Command("winecfg", "/v"), runtime_configuration, logger, True
+            Command.from_parts("winecfg", "/v"), runtime_configuration, logger, True
         )
         if succeed and output:
             for line in output.splitlines():
@@ -87,7 +87,7 @@ class Wine:
             logger.error("Unsupported Windows version: %s", version)
             raise ValueError(f"Unsupported Windows version: {version}")
         succeed = ProcessRunner.run_in_wine_prefix(
-            Command("winecfg", f"/v {version}"),
+            Command.from_parts("winecfg", f"/v {version}"),
             runtime_configuration,
             logger,
         )

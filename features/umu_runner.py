@@ -62,7 +62,7 @@ class UmuRunner(FeatureProvider):
         if UMU_RUN_ENABLED_PROPERTY.get(configuration) and umu_binary:
             self.logger.info("Enabling Umu Runner.")
             runtime_configuration.add_pipeline_wrapper(
-                CommandWrapper(
+                CommandWrapper.from_command_str(
                     f"{umu_binary} --",
                     applies_for=[
                         CommandCategory.GAME,
