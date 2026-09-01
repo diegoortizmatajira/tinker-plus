@@ -232,7 +232,7 @@ class ProtonSelection(FeatureProvider):
         if custom_proton_version:
             # Get compatibility tool info from cache to verify it exists
             compat_tool_info = CompatToolInfoRepository.from_cache(
-                custom_proton_version, self.logger
+                custom_proton_version, self.logger, runtime_configuration.dry_run
             )
             if compat_tool_info:
                 self.logger.info(

@@ -3,6 +3,7 @@
 from tkinter import Event, Widget
 import tkinter.font as tkfont
 from typing import final
+from urllib.parse import quote_plus
 import webbrowser
 from pathlib import Path
 
@@ -213,8 +214,8 @@ class MainForm:
         else:
             self.logger.warning("There is no header image")
 
-        game_name_for_search = (
-            self.runtime_provider.runtime_configuration.game_info.name.replace(" ", "+")
+        game_name_for_search = quote_plus(
+            self.runtime_provider.runtime_configuration.game_info.name
         )
         game_id = self.runtime_provider.runtime_configuration.get_game_identifier()
         self.__display_property(
@@ -222,18 +223,30 @@ class MainForm:
             "Game Id",
             game_id,
         )
-        relative_exe_path = Path(
+        exe_path = Path(
             self.runtime_provider.runtime_configuration.game_executable_command
             and self.runtime_provider.runtime_configuration.game_executable_command.command
             or ""
-        ).relative_to(
-            self.runtime_provider.runtime_configuration.steam_environment_data.steam_compat_install_path
-            or "/"
         )
+        try:
+            displayed_exe_path = exe_path.relative_to(
+                self.runtime_provider.runtime_configuration.steam_environment_data.steam_compat_install_path
+                or "/"
+            ).as_posix()
+        except ValueError:
+            # The executable isn't under the compat install path (custom exe
+            # location, symlink resolution mismatch, etc.) - fall back to
+            # showing the full path instead of crashing the GUI.
+            self.logger.debug(
+                "Game executable '%s' is not relative to the compat install path; "
+                "showing full path instead.",
+                exe_path,
+            )
+            displayed_exe_path = exe_path.as_posix()
         self.__display_property(
             main_tab,
             "Game Executable",
-            relative_exe_path.as_posix(),
+            displayed_exe_path,
         )
         self.__display_property(
             main_tab,
@@ -312,6 +325,7 @@ class MainForm:
             self.runtime_provider.configuration,
             self.runtime_provider.runtime_configuration.get_game_identifier(),
             self.runtime_provider.runtime_configuration.loaded_global_configuration,
+            self.runtime_provider.runtime_configuration.dry_run,
         )
 
     def __play(self, with_trainers: bool):

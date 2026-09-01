@@ -87,7 +87,9 @@ class ConfigStorage:
         with open(game_configuration_file, "r", encoding="utf-8") as f:
             return cast(ConfigurationDictionary, json.load(f))
 
-    def save_global_config(self, config: ConfigurationDictionary):
+    def save_global_config(
+        self, config: ConfigurationDictionary, dry_run: bool = False
+    ):
         """
         Save the global configuration.
 
@@ -97,11 +99,13 @@ class ConfigStorage:
 
         Args:
             config (dict): The global configuration data to be saved, represented as a dictionary.
-
-        Note:
-            Writes the file unconditionally; there is currently no `dry_run` gate
-            on this method.
+            dry_run (bool): If True, logs the intended write instead of performing it.
         """
+        if dry_run:
+            self.logger.info(
+                "Dry run: would save global configuration to: %s", GLOBAL_CONFIG_FILE
+            )
+            return
         if not os.path.exists(GLOBAL_CONFIG_FILE):
             self.logger.warning(
                 "Creating global configuration file at: %s", GLOBAL_CONFIG_FILE
@@ -119,6 +123,7 @@ class ConfigStorage:
         config: ConfigurationDictionary,
         game_id: str | None,
         global_config: ConfigurationDictionary | None,
+        dry_run: bool = False,
     ):
         """
         Save the game-specific configuration for a given game ID.
@@ -132,14 +137,17 @@ class ConfigStorage:
             game_id (str): The unique identifier of the game whose configuration is to be saved.
             global_config (dict | None): The currently loaded global configuration,
             if any. When provided, only the keys that differ from it are persisted.
-
-        Note:
-            Writes the file unconditionally; there is currently no `dry_run` gate
-            on this method.
+            dry_run (bool): If True, logs the intended write instead of performing it.
         """
         game_configuration_file = str.format(
             GAME_CONFIG_FILE_TEMPLATE, game_id or "unknown"
         )
+        if dry_run:
+            self.logger.info(
+                "Dry run: would save game-specific configuration to: %s",
+                game_configuration_file,
+            )
+            return
         if not os.path.exists(game_configuration_file):
             self.logger.warning(
                 "Creating game-specific configuration file at: %s",
@@ -188,6 +196,7 @@ class ConfigStorage:
         self,
         sourced_configuration: ConfigurationDictionary,
         clone_configuration: bool = False,
+        dry_run: bool = False,
     ) -> ConfigurationDictionary:
         """
         Build the global configuration.
@@ -203,6 +212,7 @@ class ConfigStorage:
               configuration.
             - clone_configuration (bool): Whether to clone the sourced configuration before
               updating.
+            - dry_run (bool): If True, the merged configuration is not persisted to disk.
 
         Returns:
             dict: The finalized global configuration after merging and persisting the changes.
@@ -214,7 +224,7 @@ class ConfigStorage:
         target_configuration.update(global_config)
         # Persist the global configuration back to storage
         # Applies any new defaults that were not present before
-        self.save_global_config(target_configuration)
+        self.save_global_config(target_configuration, dry_run)
         return target_configuration
 
     def build_game_configuration(
@@ -223,6 +233,7 @@ class ConfigStorage:
         sourced_configuration: ConfigurationDictionary,
         global_configuration_snapshot: ConfigurationDictionary,
         clone_configuration: bool = False,
+        dry_run: bool = False,
     ) -> ConfigurationDictionary:
         """
         Build the game-specific configuration.
@@ -242,6 +253,7 @@ class ConfigStorage:
             global_configuration_snapshot (dict): A snapshot of the global configuration,
                                                   used to calculate configuration differences.
             clone_configuration (bool): Whether to clone the sourced configuration before merging.
+            dry_run (bool): If True, a newly created game configuration is not persisted to disk.
 
         Returns:
             dict: The finalized game-specific configuration after merging and saving the changes.
@@ -261,11 +273,15 @@ class ConfigStorage:
                 target_configuration,
                 game_info.game_id,
                 global_configuration_snapshot,
+                dry_run,
             )
         return target_configuration
 
     def validate_config(
-        self, game: GameInfo, features: Sequence[FeatureProvider]
+        self,
+        game: GameInfo,
+        features: Sequence[FeatureProvider],
+        dry_run: bool = False,
     ) -> list[str]:
         """
         Validate the configuration for the provided game and features.
@@ -277,6 +293,7 @@ class ConfigStorage:
             game (GameInfo): The game information object for which the configuration is validated.
             features (list[FeatureProvider]): A list of feature providers whose properties
                                               determine the expected configuration keys.
+            dry_run (bool): If True, no configuration file is written as part of validation.
 
         Returns:
             list[str]: A list of error messages indicating unexpected configuration keys.
@@ -288,12 +305,13 @@ class ConfigStorage:
             )
         errors: list[str] = []
 
-        global_config = self.build_global_configuration({})
+        global_config = self.build_global_configuration({}, dry_run=dry_run)
         game_specific_config = self.build_game_configuration(
             game,
             global_config,
             global_config,
             True,
+            dry_run=dry_run,
         )
         for k, _ in game_specific_config.items():
             if k not in expected_config_keys:
@@ -306,5 +324,5 @@ class ConfigStorage:
                 errors.append(f"Unexpected config key: {k}")
 
         # Save an updated config file
-        self.save_game_config(game_specific_config, game.game_id, global_config)
+        self.save_game_config(game_specific_config, game.game_id, global_config, dry_run)
         return errors

@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, patch
 
 from model import CompatToolInfo, RuntimeConfiguration, ConfigurationDictionary
 from features.proton_selection import ProtonSelection, get_proton_versions_list
+from repositories import CompatToolInfoRepository
 
 
 @final
@@ -36,8 +37,10 @@ class TestProtonSelection(unittest.TestCase):
         logger = logging.getLogger("test_logger")
         runtime_configuration = RuntimeConfiguration.empty()
         runtime_configuration.steam_compatibility_tool = "DEFAULT_PROTON"
-        CompatToolInfo("PROTON7-21", "/mock/path_to_proton7-21").put_in_cache(
-            logger, dry_run=True
+        CompatToolInfoRepository.put_in_cache(
+            CompatToolInfo("PROTON7-21", "/mock/path_to_proton7-21"),
+            logger,
+            dry_run=True,
         )
 
         # Apply configuration
@@ -87,7 +90,7 @@ class TestProtonSelection(unittest.TestCase):
             updated_runtime_config.steam_compatibility_tool, "DEFAULT_PROTON"
         )
 
-    @patch("features.proton_selection.CompatToolInfo.get_cache")
+    @patch("features.proton_selection.CompatToolInfoRepository.get_cache")
     def test_get_proton_versions_list(self, mock_get_cache: MagicMock):
         """
         Test that get_proton_versions_list correctly retrieves a list of proton

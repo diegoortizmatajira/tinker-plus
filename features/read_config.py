@@ -40,7 +40,7 @@ class ReadConfig(FeatureProvider):
         )
         # At this point, sourced_configuration contains all default configurations
         sourced_configuration = self.config_storage.build_global_configuration(
-            sourced_configuration
+            sourced_configuration, dry_run=runtime_configuration.dry_run
         )
         # Update the runtime configuration with a copy of the loaded global configuration
         runtime_configuration.loaded_global_configuration = sourced_configuration.copy()
@@ -50,6 +50,7 @@ class ReadConfig(FeatureProvider):
             runtime_configuration.game_info,
             sourced_configuration,
             runtime_configuration.loaded_global_configuration,
+            dry_run=runtime_configuration.dry_run,
         )
         self.logger.info("Game-specific configuration loaded and applied.")
         return sourced_configuration

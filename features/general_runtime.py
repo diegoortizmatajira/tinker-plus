@@ -72,16 +72,20 @@ class GeneralRuntime(FeatureProvider):
         # Handle Steam Compatibility Tool caching
         if data.cmd_steam_compatibility_tool:
             compat_tool_info = CompatToolInfoRepository.from_cache(
-                data.cmd_steam_compatibility_tool, self.logger
+                data.cmd_steam_compatibility_tool,
+                self.logger,
+                runtime_configuration.dry_run,
             )
             if not compat_tool_info:
                 compat_tool_info = CompatToolInfo(
                     name=data.cmd_steam_compatibility_tool,
                     dir=data.cmd_steam_compatibility_tools_path or "",
                 )
-                CompatToolInfoRepository.put_in_cache(compat_tool_info, self.logger)
+                CompatToolInfoRepository.put_in_cache(
+                    compat_tool_info, self.logger, runtime_configuration.dry_run
+                )
         _ = CompatToolInfoRepository.scan_and_populate_cache(
-            self.logger, runtime_configuration
+            self.logger, runtime_configuration, runtime_configuration.dry_run
         )
         # Sets the default prefix path if Steam compatibility data path is available
         if data.steam_compat_data_path:

@@ -102,7 +102,9 @@ class CompatToolInfoRepository:
         logger.info("Compatibility tool info cache saved successfully.")
 
     @classmethod
-    def from_cache(cls, name: str, logger: logging.Logger) -> CompatToolInfo | None:
+    def from_cache(
+        cls, name: str, logger: logging.Logger, dry_run: bool = False
+    ) -> CompatToolInfo | None:
         """
         Retrieve a CompatToolInfo object from the cache by its name.
 
@@ -112,12 +114,14 @@ class CompatToolInfoRepository:
         Args:
             name (str): The name of the compatibility tool to retrieve.
             logger (logging.Logger): The logger instance used for logging messages.
+            dry_run (bool): If True, an empty cache is not persisted to disk when
+                the cache file doesn't exist yet.
 
         Returns:
             CompatToolInfo | None: The CompatToolInfo object corresponding to the
             given name if it exists in the cache, otherwise None.
         """
-        cache = cls.get_cache(logger)
+        cache = cls.get_cache(logger, dry_run)
         return cache.get(name)
 
     @classmethod

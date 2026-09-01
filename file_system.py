@@ -15,7 +15,6 @@ from defaults import (
     LOG_DRY_RUN,
     LOG_EXECUTING,
 )
-from model import GameInfo
 
 
 class FileSystem:
@@ -149,23 +148,26 @@ class FileSystem:
             ) from e
 
     @staticmethod
-    def remove_tplus_game_files(game_id: str, logger: logging.Logger):
+    def remove_tplus_game_files(
+        game_id: str, logger: logging.Logger, game_name: str | None = None
+    ):
         """
         Removes specific TPlus files associated with a game.
 
         Args:
             game_id (str): The identifier for the game.
             logger (logging.Logger): The logger instance for logging progress and errors.
+            game_name (str | None): The game's display name, used to also remove its
+                human-readable links folder. Look this up via
+                `repositories.GameInfoRepository.from_cache` before calling, since this
+                module can't import that repository without a circular import.
         """
         delete_queue = [
             GAME_CONFIG_FILE_TEMPLATE.format(game_id),
             GAME_LOGS_DIR_TEMPLATE.format(game_id),
         ]
-        game_info = GameInfo.from_cache(game_id, logger)
-        if game_info:
-            delete_queue.append(
-                HUMAN_READABLE_LINKS_DIR_TEMPLATE.format(game_info.name)
-            )
+        if game_name:
+            delete_queue.append(HUMAN_READABLE_LINKS_DIR_TEMPLATE.format(game_name))
 
         for item_path in delete_queue:
             try:

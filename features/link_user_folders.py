@@ -123,6 +123,7 @@ class LinkUserFolders(FeatureProvider):
                     public_user_folder,
                     prefix_public_user_folder,
                     self.logger,
+                    should_backup=should_backup,
                 )
         custom_source = LINK_CUSTOM_SOURCE_PROPERTY.get(configuration)
         custom_destination = LINK_CUSTOM_DESTINATION_PROPERTY.get(configuration)
@@ -144,4 +145,5 @@ class LinkUserFolders(FeatureProvider):
                     custom_source,
                     prefix_custom_destination,
                     self.logger,
+                    should_backup=should_backup,
                 )

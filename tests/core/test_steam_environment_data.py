@@ -1,5 +1,7 @@
+import logging
 import unittest
 
+from core.steam.steam_parser import SteamParser
 from model import SteamEnvironmentData
 
 
@@ -22,6 +24,8 @@ EXAMPLE_COMMAND = {
     PART_GAME_ARGS: "-arg1",
 }
 
+TEST_LOGGER = logging.getLogger("test")
+
 
 class TestParseCommand(unittest.TestCase):
     def build_command(self, parts: dict[str, str]) -> list[str]:
@@ -39,7 +43,7 @@ class TestParseCommand(unittest.TestCase):
         command_dict = EXAMPLE_COMMAND
         command = self.build_command(command_dict)
         env_data = SteamEnvironmentData()
-        env_data.parse_steam_command(" ".join(command))
+        SteamParser.parse_steam_command(" ".join(command), env_data, TEST_LOGGER)
         self.assertEqual(
             command_dict.get(PART_WRAPPER),
             env_data.cmd_steam_wrapper,
@@ -95,13 +99,17 @@ class TestParseCommand(unittest.TestCase):
                 command_dict[PART_GAME_EXE] = executable
                 command = self.build_command(command_dict)
                 env_data = SteamEnvironmentData()
-                env_data.parse_steam_command(" ".join(command))
+                SteamParser.parse_steam_command(
+                    " ".join(command), env_data, TEST_LOGGER
+                )
                 self.assertEqual(
                     executable,
                     env_data.cmd_steam_game_exe,
                 )
 
     def test_parse_invalid_executables(self):
+        # As of the current parser, an unparseable executable pattern logs a
+        # warning and leaves the game exe/args fields unset rather than raising.
         test_executables = [
             "/home/steamuser/.local/share/Steam/steamapps/common/Invalid/Invalid#1.exe",
             "/home/steamuser/.local/share/Steam/steamapps/common/Invalid/Invalid$1.exe",
@@ -113,8 +121,11 @@ class TestParseCommand(unittest.TestCase):
                 command_dict[PART_GAME_EXE] = executable
                 command = self.build_command(command_dict)
                 env_data = SteamEnvironmentData()
-                with self.assertRaises(RuntimeError):
-                    env_data.parse_steam_command(" ".join(command))
+                SteamParser.parse_steam_command(
+                    " ".join(command), env_data, TEST_LOGGER
+                )
+                self.assertIsNone(env_data.cmd_steam_game_exe)
+                self.assertIsNone(env_data.cmd_steam_game_args)
 
     def test_parse_compatibility_tools(self):
         # pylint: disable=line-too-long
@@ -128,7 +139,9 @@ class TestParseCommand(unittest.TestCase):
                 command_dict[PART_COMPATIBILITY_COMMAND] = compat_tool
                 command = self.build_command(command_dict)
                 env_data = SteamEnvironmentData()
-                env_data.parse_steam_command(" ".join(command))
+                SteamParser.parse_steam_command(
+                    " ".join(command), env_data, TEST_LOGGER
+                )
                 self.assertEqual(
                     compat_tool,
                     env_data.cmd_steam_compatibility_command,

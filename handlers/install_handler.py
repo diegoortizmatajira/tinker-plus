@@ -32,14 +32,17 @@ class InstallHandler(BaseHandler):
         handlers: dict[str, BaseHandler],
     ) -> None:
         handlers[INSTALL_COMMAND] = self
-        subparser.add_parser(  # pyright: ignore[reportAny]
+        install_parser = subparser.add_parser(  # pyright: ignore[reportAny]
             INSTALL_COMMAND, help="Install as Steam compatibility tool"
+        )
+        install_parser.add_argument(  # pyright: ignore[reportAny]
+            "--dry", action="store_true", help="Run in DRY mode (no filesystem changes)"
         )
 
     @override
     def handle(
         self,
-        _args: object,
+        args: object,
         logger: logging.Logger,
     ) -> None:
         """
@@ -49,20 +52,43 @@ class InstallHandler(BaseHandler):
         the compatibility tool directory, and copies/symlinks the manifest and
         launcher files into it so Steam can discover and launch it.
         """
-        logger.info(
-            "Creating symbolic link for Tinker-Plus (tplus) in '%s'", TPLUS_BIN_LOCATION
-        )
+        dry_run = getattr(args, "dry", False)
         tinker_plus_sh_path = os.path.join(ACTUAL_TPLUS_LOCATION, "tinker-plus.sh")
 
-        FileSystem.create_symbolic_link(tinker_plus_sh_path, TPLUS_BIN_LOCATION, logger)
+        if dry_run:
+            logger.info(
+                "Dry run: would create symbolic link for Tinker-Plus (tplus) in '%s'",
+                TPLUS_BIN_LOCATION,
+            )
+        else:
+            logger.info(
+                "Creating symbolic link for Tinker-Plus (tplus) in '%s'",
+                TPLUS_BIN_LOCATION,
+            )
+            FileSystem.create_symbolic_link(
+                tinker_plus_sh_path, TPLUS_BIN_LOCATION, logger
+            )
+
         # Check if the compatibility tool directory exists, and remove it if it does.
         compat_path = Path(TPLUS_COMPATIBILITY_TOOL_DIR)
         if compat_path.exists() and compat_path.is_dir():
+            if dry_run:
+                logger.info(
+                    "Dry run: would remove existing compatibility tool directory at '%s'",
+                    TPLUS_COMPATIBILITY_TOOL_DIR,
+                )
+            else:
+                logger.info(
+                    "Removing existing compatibility tool directory at '%s'",
+                    TPLUS_COMPATIBILITY_TOOL_DIR,
+                )
+                shutil.rmtree(compat_path)
+
+        if dry_run:
             logger.info(
-                "Removing existing compatibility tool directory at '%s'",
-                TPLUS_COMPATIBILITY_TOOL_DIR,
+                "Dry run: would install as Steam compatibility tool at '%s'", compat_path
             )
-            shutil.rmtree(compat_path)
+            return
 
         logger.info(
             "Installing as Steam compatibility tool at '%s'",

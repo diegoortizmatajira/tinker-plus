@@ -34,7 +34,9 @@ class ValidateGamesConfig(BaseHandler):
         runtime_provider = self.get_runtime_provider([], True)
         print("Game Config Status:\n")
         for game in games:
-            issues = config_storage.validate_config(game, runtime_provider.features)
+            issues = config_storage.validate_config(
+                game, runtime_provider.features, dry_run=True
+            )
             ok = len(issues) == 0
             print(f"  {'[OK]' if ok else '[INVALID]':<12} {game.name}")
             if not ok:

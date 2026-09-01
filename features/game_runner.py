@@ -259,6 +259,11 @@ class GameRunner(FeatureProvider):
             ).get_full_command()
             for command in sequence
         ]
+        if not script_commands:
+            self.logger.error(
+                "No commands to execute (no game or trainer commands were configured)."
+            )
+            raise RuntimeError("No commands available to build the execution script.")
         if len(script_commands) > 1:
             script_path: str
             with tempfile.NamedTemporaryFile(delete=False, suffix=".sh") as tmp:

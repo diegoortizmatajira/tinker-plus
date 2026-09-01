@@ -48,7 +48,9 @@ LOG_SEARCHING = "🔍 {}"
 LOG_USER_ACTION = "👤 {}"
 LOG_TIMER_ACTION = "⏱️ {}"
 
-# Create directories if they do not exist
-os.makedirs(GAME_CONFIG_DIR, exist_ok=True)
-os.makedirs(LOGS_DIR, exist_ok=True)
-os.makedirs(HUMAN_READABLE_LINKS_DIR, exist_ok=True)
+# Note: these directories are intentionally *not* created here anymore.
+# Import-time filesystem writes broke `dry_run` (importing this module ran them
+# unconditionally). Every consumer already creates its own directory with
+# `exist_ok=True` right before it writes into it (see ConfigStorage.save_game_config,
+# LogFactory.prepare_logs_folder, HumanReadableLinks.before_execution), and reads
+# (ConfigStorage.get_game_configuration_files) tolerate a missing directory.

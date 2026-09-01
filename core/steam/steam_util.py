@@ -105,7 +105,9 @@ class SteamUtil:
 
         game_id = runtime_configuration.get_game_identifier()
         logger.debug("Getting game info for Game ID: %s", game_id)
-        game_info = GameInfoRepository.from_cache(game_id, logger)
+        game_info = GameInfoRepository.from_cache(
+            game_id, logger, runtime_configuration.dry_run
+        )
         if game_info:
             logger.debug("Found game info in cache: %s", game_info)
             return game_info
@@ -137,7 +139,9 @@ class SteamUtil:
                 )
         else:
             logger.warning("Steam manifest file does not exist at: %s", manifest_path)
-        GameInfoRepository.put_in_cache(game_info, logger)
+        GameInfoRepository.put_in_cache(
+            game_info, logger, runtime_configuration.dry_run
+        )
         # Fallback to using the executable name if manifest reading fails
         return game_info
 

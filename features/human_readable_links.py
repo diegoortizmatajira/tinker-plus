@@ -11,6 +11,7 @@ from defaults import (
     GAME_LOGS_DIR_TEMPLATE,
     HUMAN_READABLE_LINKS_DIR_TEMPLATE,
     LAST_RUN_LOG_FILE,
+    LOG_DRY_RUN,
 )
 from file_system import FileSystem
 from model import ConfigurationDictionary, RuntimeConfiguration
@@ -39,11 +40,17 @@ class HumanReadableLinks(FeatureProvider):
             or not runtime_configuration.game_executable_command.command
         ):
             return
+        game_links_dir = HUMAN_READABLE_LINKS_DIR_TEMPLATE.format(
+            runtime_configuration.game_info.name
+        )
+        if runtime_configuration.dry_run:
+            self.logger.info(
+                LOG_DRY_RUN.format("Would create human-readable links under: %s"),
+                game_links_dir,
+            )
+            return
         try:
             self.logger.info("Current game info: %s", runtime_configuration.game_info)
-            game_links_dir = HUMAN_READABLE_LINKS_DIR_TEMPLATE.format(
-                runtime_configuration.game_info.name
-            )
             os.makedirs(game_links_dir, exist_ok=True)
             # Create symbolic link to the game configuration file
             config_file = GAME_CONFIG_FILE_TEMPLATE.format(
@@ -93,5 +100,5 @@ class HumanReadableLinks(FeatureProvider):
                 last_run_log, LAST_RUN_LOG_FILE, self.logger
             )
 
-        except RuntimeError as e:
+        except (RuntimeError, OSError) as e:
             self.logger.warning("Could not create some human-readable links: %s", e)

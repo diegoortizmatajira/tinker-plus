@@ -148,9 +148,6 @@ class SteamParser:
         exe_match = re.search(REGEXP_EXE, full_command)
         if not exe_match:
             logger.warning("Failed to parse game executable from command line.")
-            # raise RuntimeError(
-            #     "Game executable pattern did not match the command line."
-            # )
         data.cmd_steam_game_exe = exe_match and exe_match.group("gameexe")
         data.cmd_steam_game_args = exe_match and exe_match.group("gameargs")
 
