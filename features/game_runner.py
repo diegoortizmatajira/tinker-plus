@@ -93,6 +93,9 @@ class GameRunner(FeatureProvider):
         configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ) -> RuntimeConfiguration:
+        """Builds the game executable command from configuration overrides
+        (custom executable, arguments, working directory) and records whether
+        commands should run via a temporary script."""
         runtime_configuration.execute_forks_only = GAME_RUN_FORKS_ONLY_PROPERTY.get(
             configuration, False
         )
@@ -169,6 +172,14 @@ class GameRunner(FeatureProvider):
         runtime_configuration: RuntimeConfiguration,
         command: Command,
     ):
+        """Launches the main game command through the pipeline and stores its
+        process handle, raising RuntimeError if the launch fails.
+
+        Args:
+            runtime_configuration (RuntimeConfiguration): The runtime configuration
+            used to build and launch the command.
+            command (Command): The game command to launch.
+        """
         self.game_process = ProcessRunner.run_with_pipeline(
             command,
             runtime_configuration,
@@ -185,7 +196,14 @@ class GameRunner(FeatureProvider):
         runtime_configuration: RuntimeConfiguration,
         command: Command,
     ):
+        """Launches a forked trainer command through the pipeline and appends
+        its process handle to `trainer_process_list`.
 
+        Args:
+            runtime_configuration (RuntimeConfiguration): The runtime configuration
+            used to build and launch the command.
+            command (Command): The trainer command to launch.
+        """
         sleep(5)
         # Small delay to ensure trainers launch after the game process has started
         self.logger.info(

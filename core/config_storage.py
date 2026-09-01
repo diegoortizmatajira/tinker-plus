@@ -97,6 +97,10 @@ class ConfigStorage:
 
         Args:
             config (dict): The global configuration data to be saved, represented as a dictionary.
+
+        Note:
+            Writes the file unconditionally; there is currently no `dry_run` gate
+            on this method.
         """
         if not os.path.exists(GLOBAL_CONFIG_FILE):
             self.logger.warning(
@@ -126,6 +130,12 @@ class ConfigStorage:
             config (dict): The game-specific configuration data to be saved,
             represented as a dictionary.
             game_id (str): The unique identifier of the game whose configuration is to be saved.
+            global_config (dict | None): The currently loaded global configuration,
+            if any. When provided, only the keys that differ from it are persisted.
+
+        Note:
+            Writes the file unconditionally; there is currently no `dry_run` gate
+            on this method.
         """
         game_configuration_file = str.format(
             GAME_CONFIG_FILE_TEMPLATE, game_id or "unknown"

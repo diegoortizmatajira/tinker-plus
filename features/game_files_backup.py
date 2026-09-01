@@ -102,6 +102,12 @@ class GameFilesBackup(FeatureProvider):
         configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ):
+        """Builds the backup archive path from the configured location and
+        name template, filling in the game name and Steam game ID.
+
+        Returns:
+            Path: The resolved backup archive path.
+        """
         backup_location = BACKUP_LOCATION_PROPERTY.get_or_fail(configuration)
         backup_name_template = BACKUP_ARCHIVE_NAME_TEMPLATE_PROPERTY.get_or_fail(
             configuration
@@ -236,6 +242,8 @@ class GameFilesBackup(FeatureProvider):
         configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ):
+        """Restores game files from the backup archive if the game executable
+        is missing and `BACKUP_RESTORE_IF_NOT_INSTALLED` is enabled."""
         if (
             not runtime_configuration.game_executable_command
             or not runtime_configuration.game_executable_command.command

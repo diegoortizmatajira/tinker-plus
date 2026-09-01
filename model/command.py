@@ -134,13 +134,10 @@ class Command:
 
     def replace_command(self, new_command_str: str):
         """
-        Replaces the command string with a new command string.
+        Replaces the command string in place with a new command string.
 
         Args:
             new_command_str (str): The new command string to replace the existing command.
-
-        Returns:
-            Command: A new Command instance with the updated command string.
         """
         if not self.internal_representation:
             raise ValueError("Cannot replace command in an empty Command instance.")
@@ -154,13 +151,10 @@ class Command:
 
     def replace_args(self, new_args_str: str):
         """
-        Replaces the arguments of the command with new arguments.
+        Replaces the arguments of the command in place with new arguments.
 
         Args:
             new_args_str (str): The new arguments string to replace the existing arguments.
-
-        Returns:
-            Command: A new Command instance with the updated arguments.
         """
         if not self.internal_representation:
             raise ValueError("Cannot replace arguments in an empty Command instance.")

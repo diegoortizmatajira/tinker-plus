@@ -28,9 +28,12 @@ class SteamUtil:
         Constructs the file path for the Steam header image of a given game.
 
         Args:
-            game_id (str): The unique identifier for the Steam game.
+            runtime_configuration (RuntimeConfiguration): The runtime configuration
+            providing the Steam base folder and game identifier.
+
         Returns:
-            str: The file path to the Steam header image.
+            str | None: The file path to the Steam header image, or None if the
+            cache directory or a matching header image cannot be found.
         """
 
         cache_dir = Path(
@@ -53,8 +56,13 @@ class SteamUtil:
         """
         Retrieves the Wine executable path from the runtime configuration.
 
+        Args:
+            runtime_configuration (RuntimeConfiguration): The runtime configuration
+            providing the selected compatibility tool path and name.
+            logger (logging.Logger): The logger instance for logging messages.
+
         Returns:
-            str: The Wine executable path.
+            str: The Wine executable path, or an empty string if it could not be found.
         """
 
         compat_tool_path = os.path.join(
@@ -86,10 +94,11 @@ class SteamUtil:
         Args:
             runtime_configuration (RuntimeConfiguration): The runtime configuration providing the
             Steam base folder and game ID.
+            logger (logging.Logger): The logger instance for logging messages.
 
         Returns:
-            str: The name of the game as extracted from the Steam manifest file,
-            or the executable name as a fallback.
+            GameInfo: The game information, with its name extracted from the Steam
+            manifest file, or the executable name as a fallback.
         """
         if not SteamParser.has_valid_data(runtime_configuration.steam_environment_data):
             return GameInfo.empty()

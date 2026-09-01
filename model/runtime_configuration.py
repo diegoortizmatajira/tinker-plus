@@ -17,15 +17,30 @@ from .steam_environment_data import SteamEnvironmentData
 class RuntimeConfiguration:
     """
     Represents the runtime configuration for the application, allowing customization
-    of runtime behavior such as the use of Proton, forked commands, winetricks,
-    and the prefix path.
+    of runtime behavior such as the compatibility tool (Proton) in use, forked/trainer
+    commands, pipeline wrappers, and the Wine prefix path.
 
     Attributes:
-        use_proton (str): Specifies whether Proton is used. Defaults to an empty string.
-        fork_commands (list[ExecutableCommand] | None): A list of forked commands to execute.
-        command (str): The primary command to execute. Defaults to an empty string.
-        winetricks (list[str] | None): A list of winetricks to apply. Defaults to None.
-        prefix_path (str): The path to the runtime prefix. Defaults to an empty string.
+        original_command (Sequence[str]): The original command line as received from Steam.
+        game_info (GameInfo): Information about the game being launched.
+        steam_environment_data (SteamEnvironmentData): Parsed Steam environment data.
+        dry_run (bool): If True, no side effects are performed; actions are only logged.
+        steam_compatibility_tool (str | None): Name of the selected compatibility tool (Proton).
+        steam_compatibility_tools_path (str | None): Path to the compatibility tools directory.
+        game_executable_command (Command | None): The main game executable command.
+        wine (str | None): Path to the Wine executable for the selected compatibility tool.
+        fork_commands (list[Command] | None): Additional commands (e.g. trainers) to fork.
+        prefix_path (str | None): The path to the Wine prefix.
+        execute_trainers (bool): Whether forked trainer commands should be executed.
+        execute_forks_only (bool): If True, only forked commands run, skipping the main game.
+        environment_variables (dict[str, str] | None): Environment variables to apply.
+        pipeline_wrappers (list[CommandWrapper[Self]] | None): Wrappers applied to build
+            the final command pipeline (e.g. GameMode, Proton, Steam runtime).
+        log_executable_commands (bool): Whether each executed command is logged to its own file.
+        loaded_global_configuration (ConfigurationDictionary | None): Snapshot of the
+            merged global configuration, used to compute per-game config diffs.
+        external_terminal_command_template (list[str] | None): Template used to launch
+            commands in an external terminal.
     """
 
     original_command: Sequence[str]

@@ -31,6 +31,9 @@ class HumanReadableLinks(FeatureProvider):
         _configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ):
+        """Creates human-readable symbolic links (named after the game) to the
+        game's config, environment, logs, game files, compat data, and last-run
+        log, so they are easy to find without knowing the Steam game ID."""
         if (
             not runtime_configuration.game_executable_command
             or not runtime_configuration.game_executable_command.command

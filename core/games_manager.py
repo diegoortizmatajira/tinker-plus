@@ -16,6 +16,14 @@ class GamesManager:
     """
 
     def __init__(self, config_storage: ConfigStorage):
+        """
+        Initializes the manager with the given config storage and immediately
+        loads the currently configured games.
+
+        Args:
+            config_storage (ConfigStorage): Storage used to enumerate and load
+                game configuration files.
+        """
         self.__logger = LogFactory.singleton().get_logger(self.__class__.__name__)
         self.__games: list[GameInfo] = []
         self.__config_storage = config_storage

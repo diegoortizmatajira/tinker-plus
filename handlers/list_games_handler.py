@@ -1,3 +1,5 @@
+"""Module for handling the 'list-games' command."""
+
 import logging
 from typing import Any, override
 from core import ConfigStorage, GamesManager
@@ -12,9 +14,6 @@ class ListGamesHandler(BaseHandler):
 
     This class integrates with the command-line parser and provides the necessary
     functionality to handle and display configured games using the GamesManager.
-
-    Methods:
-        handle: Lists and prints available games to the logger and console.
     """
 
     def __init__(
@@ -29,6 +28,7 @@ class ListGamesHandler(BaseHandler):
 
     @override
     def handle(self, _args: object, logger: logging.Logger):
+        """Prints the game ID and name of every configured game."""
         logger.info("Listing configured games...")
         manager = GamesManager(ConfigStorage())
         logger.info("Available Games: %s", [game.name for game in manager.get_games()])

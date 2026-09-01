@@ -79,6 +79,8 @@ class LinkUserFolders(FeatureProvider):
         configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ):
+        """Links the configured Steam user, public user, and custom folders into
+        the Wine prefix, optionally backing up any existing folder being replaced."""
         if not runtime_configuration.prefix_path:
             self.logger.warning(
                 "No prefix path set in runtime configuration, skipping user folder linking."

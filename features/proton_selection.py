@@ -213,9 +213,10 @@ class ProtonSelection(FeatureProvider):
         """
         Applies the given configuration to the runtime configuration.
 
-        This method sets the 'use_proton' attribute in the runtime configuration
-        based on the 'USE_PROTON' value provided in the configuration dictionary.
-        If 'USE_PROTON' is not specified, an empty string is assigned.
+        Resolves the selected Proton version (or falls back to whatever is
+        already set) into `steam_compatibility_tool`/`steam_compatibility_tools_path`,
+        resolves the corresponding Wine executable, and adds pipeline wrappers
+        that run the game/trainer/compatibility-tool commands through Proton.
 
         Args:
             configuration (dict): The configuration dictionary containing keys

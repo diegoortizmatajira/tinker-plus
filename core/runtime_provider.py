@@ -92,6 +92,10 @@ class RuntimeProvider:
             self.__apply_feature_configurations()
 
     def __apply_feature_configurations(self):
+        """
+        Applies the current configuration to every feature, skipping the work
+        if the configuration is identical to the one last applied.
+        """
         # Compare with last applied configuration to avoid re-applying
         if json.dumps(self.last_applied_configuration, sort_keys=True) == json.dumps(
             self.configuration, sort_keys=True
@@ -136,7 +140,7 @@ class RuntimeProvider:
         self.logger.info(LOG_STAGE_STARTED.format("Wait for completion Stage."))
         for feature in self.features:
             feature.wait_for_completion(self.configuration, self.runtime_configuration)
-            
+
         self.logger.info(LOG_STAGE_STARTED.format("After Execution Stage."))
         for feature in self.features:
             feature.after_execution(self.configuration, self.runtime_configuration)

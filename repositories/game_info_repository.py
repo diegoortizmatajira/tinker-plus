@@ -28,13 +28,15 @@ class GameInfoRepository:
         Retrieves the game information cache, loading it from the cache file if
         it is not already in memory.
 
-        Args: logger (logging.Logger): The logger instance used for logging
-        messages during the cache retrieval process.
+        Args:
+            logger (logging.Logger): The logger instance used for logging
+                messages during the cache retrieval process.
 
-        Returns: dict[str, GameInfo]: The game information cache as a
-        dictionary with game IDs as keys and GameInfo objects as values. If the
-        cache file does not exist or fails to load, an empty dictionary is
-        returned.
+        Returns:
+            dict[str, GameInfo]: The game information cache as a dictionary
+            with game IDs as keys and GameInfo objects as values. If the cache
+            file does not exist or fails to load, an empty dictionary is
+            returned.
         """
         if cls._cache is not None:
             return cls._cache
@@ -67,8 +69,9 @@ class GameInfoRepository:
                                          and values are GameInfo objects.
             logger (logging.Logger): The logger instance to log messages related to saving cache.
 
-        Raises:
-            Exception: If there's an error during the saving process, a warning is logged.
+        Note:
+            Does not accept a `dry_run` flag, unlike `CompatToolInfoRepository.save_cache` —
+            this method always writes the cache file to disk.
         """
         cls._cache = cache
         try:
@@ -86,9 +89,10 @@ class GameInfoRepository:
 
         Args:
             game_id (str): The unique identifier for the game.
+            logger (logging.Logger): The logger instance used for logging messages.
 
         Returns:
-            Optional[GameInfo]: The GameInfo object if found in the cache, otherwise None.
+            GameInfo | None: The GameInfo object if found in the cache, otherwise None.
         """
         cache = cls.get_cache(logger)
         return cache.get(game_id)
@@ -99,6 +103,7 @@ class GameInfoRepository:
         Adds the current GameInfo object to the cache and saves the updated cache.
 
         Args:
+            item (GameInfo): The game info object to add to the cache.
             logger (logging.Logger): The logger instance used for logging messages
                                      during the cache update process.
         """

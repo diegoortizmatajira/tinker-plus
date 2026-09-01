@@ -88,6 +88,12 @@ class SteamParser:
     def has_valid_data(data: SteamEnvironmentData) -> bool:
         """
         Checks if the Steam environment data contains valid identifiers.
+
+        Args:
+            data (SteamEnvironmentData): The Steam environment data to check.
+
+        Returns:
+            bool: True if either the Steam app ID or Steam game ID is set.
         """
         return data.steam_app_id is not None or data.steam_game_id is not None
 
@@ -103,6 +109,11 @@ class SteamParser:
         Tool, and Game Executable. If the parsed components match the expected pattern,
         they are logged and assigned to the runtime configuration attributes. If the
         parsing fails, a warning is logged.
+
+        Args:
+            full_command (str): The full original launch command line to parse.
+            data (SteamEnvironmentData): The object to populate with the parsed values.
+            logger (logging.Logger): Logger instance for logging parse results/warnings.
 
         Logs:
             - Logs the identified components or warnings if the pattern does not match.

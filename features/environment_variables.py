@@ -1,3 +1,5 @@
+"""Module providing the custom environment variables feature."""
+
 from typing import override
 
 from core import FeatureProvider
@@ -12,11 +14,11 @@ ENVIRONMENT_VARIABLES = ConfigurationProperty(
 
 
 class EnvironmentVariables(FeatureProvider):
-    """Feature provider for backing up and restoring game files.
+    """Feature provider for setting additional, user-defined environment variables.
 
-    This class facilitates the process of backing up game files to a specified location
-    and restoring them from that location. It defines actions for both backup and
-    restoration, leveraging provided runtime configurations and commands.
+    This class reads the `ENVIRONMENT_VARIABLES` configuration property (a list of
+    'KEY=VALUE' entries) and applies each one to the runtime configuration before
+    the game process is launched.
     """
 
     def __init__(self):
@@ -34,6 +36,8 @@ class EnvironmentVariables(FeatureProvider):
         configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ) -> RuntimeConfiguration:
+        """Parses `ENVIRONMENT_VARIABLES` entries and applies each 'KEY=VALUE'
+        pair to the runtime configuration's environment variables."""
         env_vars: list[str] = ENVIRONMENT_VARIABLES.get(configuration, [])
         for var in env_vars:
             key_value = var.split("=", 1)
@@ -49,5 +53,6 @@ class EnvironmentVariables(FeatureProvider):
         _configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ):
+        """Logs the environment variables currently set on the runtime configuration."""
         for k, v in (runtime_configuration.environment_variables or {}).items():
             self.logger.info("Using environment:  %s=%s", k, v)

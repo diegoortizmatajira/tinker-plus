@@ -50,8 +50,15 @@ class LogFactory:
         """
         Generates the full path for a log file if the logs folder is configured.
 
-        :param file_name: Name of the log file.
-        :return: Full path of the log file, or None if logs folder is not set.
+        Args:
+            file_name (str): Name of the log file.
+
+        Returns:
+            str: Full path of the log file.
+
+        Raises:
+            ValueError: If the logs folder has not been configured (no file_level
+            was provided when this LogFactory was initialized).
         """
         if self.logs_folder:
             return os.path.join(self.logs_folder, file_name)
@@ -59,10 +66,14 @@ class LogFactory:
 
     def get_log_folder(self) -> str:
         """
-        Generates the full path for a log file if the logs folder is configured.
+        Returns the configured logs folder path.
 
-        :param file_name: Name of the log file.
-        :return: Full path of the log file, or None if logs folder is not set.
+        Returns:
+            str: The path to the logs folder.
+
+        Raises:
+            ValueError: If the logs folder has not been configured (no file_level
+            was provided when this LogFactory was initialized).
         """
         if self.logs_folder:
             return self.logs_folder
@@ -72,9 +83,11 @@ class LogFactory:
         """
         Returns a logger configured with file and console handlers.
 
-        :param name: Name of the logger.
-        :param level: Logging level.
-        :return: Configured logger instance.
+        Args:
+            name (str): Name of the logger.
+
+        Returns:
+            logging.Logger: Configured logger instance.
         """
         logger = logging.getLogger(name)
         if self.console_handler:
@@ -93,8 +106,15 @@ class LogFactory:
         """
         Initializes and returns a singleton instance of LogFactory.
 
-        :param level: Logging level.
-        :return: Singleton LogFactory instance.
+        Args:
+            game_id (str): Identifier used to namespace the per-game logs folder.
+            console_level (int | None): Minimum level logged to the console, or
+            None to disable console logging.
+            file_level (int | None): Minimum level logged to file, or None to
+            disable file logging.
+
+        Returns:
+            LogFactory: Singleton LogFactory instance.
         """
         cls._instance = LogFactory(
             game_id,
@@ -109,7 +129,8 @@ class LogFactory:
         Returns the singleton instance of LogFactory.
         If it hasn't been initialized yet, it initializes it with default parameters for testing.
 
-        :return: Singleton LogFactory instance.
+        Returns:
+            LogFactory: Singleton LogFactory instance.
         """
         return cls._instance or cls.initialize("test")
 
@@ -119,7 +140,11 @@ class LogFactory:
         Prepares the logging directory for a game, ensuring the appropriate
         structure and file management for new and existing logs.
 
-        :param game_id: Unique identifier for the game.
+        Args:
+            game_id (str): Unique identifier for the game.
+
+        Returns:
+            str: The path to the prepared logs folder.
         """
         log_folder = Path(GAME_LOGS_DIR_TEMPLATE.format(game_id))
         log_folder.mkdir(parents=True, exist_ok=True)

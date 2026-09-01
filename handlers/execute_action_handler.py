@@ -33,6 +33,8 @@ class ExecuteActionHandler(BaseHandler):
 
     @override
     def handle(self, args: object, logger: logging.Logger):
+        """Looks up the action by alias and runs it via the runtime pipeline,
+        logging an error if no action with that alias is found."""
         selected_action = getattr(args, "action_alias", "")
         dry_run = getattr(args, "dry", False)
         runtime_provider = self.get_runtime_provider([], dry_run)

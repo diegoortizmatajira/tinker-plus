@@ -89,6 +89,9 @@ class SteamTools(FeatureProvider):
         configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ) -> RuntimeConfiguration:
+        """Restores default Steam wrapper/sniper/reaper commands when missing,
+        then adds the enabled Steam pipeline wrappers (wrapper, reaper, sniper)
+        in that order (wrapper innermost, sniper outermost)."""
         steam_base_folder = (
             runtime_configuration.steam_environment_data.steam_base_folder
         )

@@ -152,6 +152,9 @@ class TrainerLaunchSettings(FeatureProvider):
         Configures the trainer to run as a debugger if specified.
 
         Args:
+            runtime_configuration (RuntimeConfiguration): The runtime configuration
+            to update with the trainer command.
+            command (Command): The trainer command to configure.
             as_debugger (bool): Whether to run the trainer as a debugger.
         """
         self.logger.info("Configuring trainer: %s", command.get_full_command())
@@ -169,6 +172,9 @@ class TrainerLaunchSettings(FeatureProvider):
         configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ) -> RuntimeConfiguration:
+        """Configures whichever trainer sources are enabled (custom executable,
+        WeMod, Cheat Engine) as forked or debugger commands on the runtime
+        configuration."""
         as_debugger = TRAINER_AS_DEBUGGER_PROPERTY.get_or_fail(configuration)
 
         # Check for custom trainer configuration

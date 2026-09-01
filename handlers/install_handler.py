@@ -43,11 +43,11 @@ class InstallHandler(BaseHandler):
         logger: logging.Logger,
     ) -> None:
         """
-        Prepares the application to be installed as a Steam compatibility tool.
+        Installs Tinker-Plus as a Steam compatibility tool.
 
-        Note:
-            This is a placeholder for future implementation and currently does not
-            contain any logic.
+        Symlinks the `tplus` launcher into the configured bin location, recreates
+        the compatibility tool directory, and copies/symlinks the manifest and
+        launcher files into it so Steam can discover and launch it.
         """
         logger.info(
             "Creating symbolic link for Tinker-Plus (tplus) in '%s'", TPLUS_BIN_LOCATION

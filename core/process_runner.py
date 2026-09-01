@@ -229,7 +229,10 @@ class ProcessRunner:
         Executes a given command using a compatibility tool defined in the runtime configuration.
 
         Args:
-            command (str): The command to execute.
+            exe_command (Command): The command to execute.
+            runtime_configuration (RuntimeConfiguration): The runtime configuration
+                providing the pipeline wrappers and environment variables to apply.
+            logger (logging.Logger): Logger instance for logging execution details.
         """
 
         environment_variables = os.environ.copy()

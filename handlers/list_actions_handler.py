@@ -27,6 +27,8 @@ class ListActionsHandler(BaseHandler):
 
     @override
     def handle(self, _args: object, logger: logging.Logger):
+        """Prints the alias, name, and description of every action registered
+        by the enabled features."""
         logger.info("Listing available actions...")
         runtime_provider = self.get_runtime_provider([], True)
         actions = runtime_provider.get_available_actions()

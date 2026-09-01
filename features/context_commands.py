@@ -58,6 +58,8 @@ class ContextCommands(FeatureProvider):
         configuration: ConfigurationDictionary,
         _runtime_configuration: RuntimeConfiguration,
     ):
+        """Runs the configured before-startup command, if any, and waits for it
+        to exit before continuing."""
         before_command = CONTEXT_COMMAND_BEFORE_STARTUP_PROPERTY.get(configuration)
         if not before_command:
             self.logger.info("No before startup command configured.")
@@ -84,6 +86,8 @@ class ContextCommands(FeatureProvider):
         _configuration: ConfigurationDictionary,
         _runtime_configuration: RuntimeConfiguration,
     ):
+        """Runs the configured after-exit command, if any, and waits for it to
+        exit before continuing."""
         after_command = CONTEXT_COMMAND_AFTER_EXIT_PROPERTY.get(_configuration)
         if not after_command:
             self.logger.info("No after exit command configured.")

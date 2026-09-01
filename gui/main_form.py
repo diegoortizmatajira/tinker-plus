@@ -45,16 +45,6 @@ class MainForm:
         play_with_trainer_button (tk.Button): A button to initiate "Play with Trainer" mode.
         just_play_button (tk.Button): A button to initiate "Just Play" mode.
         runtime_provider (RuntimeProvider): Provides runtime configuration for the application.
-
-    Methods:
-        __init__(runtime_provider: RuntimeProvider):
-            Initializes the MainForm, validates the runtime configuration, and sets up the GUI.
-        on_play_with_trainer_click():
-            Handles the "Play with Trainer" button click event, invoking the runtime with trainers.
-        on_just_play_click():
-            Handles the "Just Play" button click event, invoking the runtime without trainers.
-        show():
-            Displays the main application window and starts the Tkinter main event loop.
     """
 
     def __init__(
@@ -63,6 +53,21 @@ class MainForm:
         countdown_in_seconds: int = 3,
         close_after_run: bool = True,
     ):
+        """
+        Initializes the MainForm, validates the runtime configuration, and builds
+        the window, tabs, and buttons.
+
+        Args:
+            runtime_provider (RuntimeProvider): Provides the runtime configuration
+                and features to render.
+            countdown_in_seconds (int): Seconds to auto-play after showing the form.
+                Set to 0 to disable the auto-play countdown.
+            close_after_run (bool): Whether to close the window immediately once
+                a play button is clicked.
+
+        Raises:
+            ValueError: If the runtime provider has no runtime configuration.
+        """
         self.logger = LogFactory.singleton().get_logger(self.__class__.__name__)
         if not runtime_provider.runtime_configuration:
             self.logger.error("Runtime configuration is required")
@@ -142,6 +147,8 @@ class MainForm:
         property_value: str | None,
         link_text: str | None = None,
     ):
+        """Renders a labeled property row, optionally styled as a clickable
+        hyperlink that opens `property_value` in a browser when `link_text` is set."""
         frame = ttk.Frame(root)
         frame.pack(fill="x", pady=2, padx=5)
         bold_font = self.default_font.copy()
@@ -177,6 +184,8 @@ class MainForm:
             )
 
     def __generate_main_tab(self):
+        """Builds the main tab: title, header image, game ID/executable info,
+        and quick-reference links (SteamDB, ProtonDB, PCGamingWiki, FlingTrainer)."""
         # Create the first tab
         main_tab = ttk.Frame(self.notebook)
         self.notebook.add(main_tab, text="Main Tab")
@@ -251,7 +260,7 @@ class MainForm:
             link_text="Search on Fling Trainer",
         )
 
-    def on_user_interaction(self, _event: Event) -> object:
+    def on_user_interaction(self, _event: Event) -> None:
         """
         Handles user interaction events such as mouse clicks or key presses.
 
@@ -306,6 +315,12 @@ class MainForm:
         )
 
     def __play(self, with_trainers: bool):
+        """Recovers GUI values into the configuration, optionally closes the
+        window, and starts the runtime pipeline.
+
+        Args:
+            with_trainers (bool): Whether trainer/forked commands should run.
+        """
         self.logger.info("Starting play mode, with_trainers=%s", with_trainers)
         self.generator.recover_values(self.runtime_provider.configuration)
         if self.close_after_run:

@@ -1,6 +1,6 @@
 """Module for generating GUI components based on runtime features."""
 
-from typing import Any, cast, final
+from typing import Any, ClassVar, cast, final
 
 import ttkbootstrap as ttk
 from ttkbootstrap.style import DANGER, INFO, PRIMARY, SUCCESS
@@ -27,13 +27,19 @@ class PropertyWrapper[T_co: AcceptedPropertyTypes]:
         property (ConfigurationProperty): The configuration property to be wrapped.
     """
 
-    map: dict[AcceptedPropertyTypes | None, str] = {
+    map: ClassVar[dict[AcceptedPropertyTypes | None, str]] = {
         True: "1",
         False: "0",
         None: "",
     }
 
     def __init__(self, config_property: ConfigurationProperty[T_co]):
+        """
+        Initializes the wrapper with the configuration property it binds to a Tk variable.
+
+        Args:
+            config_property (ConfigurationProperty[T_co]): The configuration property to wrap.
+        """
         self.config_property = config_property
         self.variable: ttk.StringVar = ttk.StringVar()
 
@@ -74,19 +80,19 @@ class Generator:
     Attributes:
         runtime_provider (RuntimeProvider): Provides the runtime configuration
         and features for categorization.
-
-    Methods:
-        __get_categorized_properties() -> dict[str, dict[str, list[ConfigurationProperty]]]:
-            Categorizes properties based on their features and returns a nested dictionary.
-
-        generate_tabs(notebook: Notebook):
-            Creates tabs within a notebook widget based on categorized properties.
-
-        generate_tab_content(tab: ttk.Frame, categories: dict[str, list[ConfigurationProperty]]):
-            Populates a given tab with categorized properties and the corresponding GUI components.
     """
 
     def __init__(self, runtime_provider: RuntimeProvider):
+        """
+        Initializes the generator for the given runtime provider.
+
+        Args:
+            runtime_provider (RuntimeProvider): Provider supplying runtime features
+                and configuration to build GUI tabs from.
+
+        Raises:
+            ValueError: If the runtime provider has no runtime configuration.
+        """
         if not runtime_provider.runtime_configuration:
             raise ValueError("Runtime configuration is required")
         self.runtime_provider = runtime_provider
@@ -94,6 +100,8 @@ class Generator:
         self.logger = LogFactory.singleton().get_logger(self.__class__.__name__)
 
     def __add_wrapper(self, config_property: AnyConfigurationProperty) -> ttk.Variable:
+        """Creates and registers a PropertyWrapper for the property, returning
+        its bound Tk variable."""
         wrapper = PropertyWrapper(config_property)
         self.property_wrappers.append(wrapper)
         return wrapper.variable
@@ -101,6 +109,7 @@ class Generator:
     def __get_categorized_properties(
         self,
     ) -> dict[str, dict[str, list[AnyConfigurationProperty]]]:
+        """Groups configuration properties by feature category and feature name."""
         categorized_properties: dict[
             str, dict[str, list[AnyConfigurationProperty]]
         ] = {}
@@ -116,8 +125,9 @@ class Generator:
         return categorized_properties
 
     def __create_action(self, action: FeatureAction):
-        # Creates a closure for a feature action to collect the current
-        # selected configuration and execute the action.
+        """Builds a closure that recovers GUI values into the configuration
+        before invoking the given feature action."""
+
         def new_action():
             self.recover_values(self.runtime_provider.configuration)
             action.action(

@@ -99,6 +99,8 @@ class WinetricksInstall(FeatureProvider):
         configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ):
+        """Installs the configured Winetricks packages automatically, unless
+        `WINETRICKS_RUN` is disabled."""
         should_run_winetricks = WINETRICKS_RUN_PROPERTY.get(configuration)
         if not should_run_winetricks:
             self.logger.info(

@@ -28,6 +28,13 @@ class ReadConfig(FeatureProvider):
         sourced_configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ) -> ConfigurationDictionary:
+        """Layers stored global and game-specific configuration on top of the
+        defaults contributed by every other feature.
+
+        This must run after every other feature has added its defaults via
+        `build_configuration`, since it persists whatever configuration it is
+        given as the new global/game-specific configuration on disk.
+        """
         sourced_configuration = super().build_configuration(
             sourced_configuration, runtime_configuration
         )

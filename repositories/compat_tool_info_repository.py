@@ -92,6 +92,7 @@ class CompatToolInfoRepository:
             tool information to be saved, where keys are tool names and values are
             CompatToolInfo objects.
             logger (logging.Logger): The logger instance used for logging messages.
+            dry_run (bool): If True, skips writing the cache file to disk.
         """
         cls._cache = cache
         raw_cache = {name: asdict(info) for name, info in cache.items()}
@@ -135,8 +136,11 @@ class CompatToolInfoRepository:
 
         Args:
             logger (logging.Logger): The logger instance used for logging messages.
+            configuration (RuntimeConfiguration): Runtime configuration providing the
+                Steam base folder and selected compatibility tools path to scan.
+            dry_run (bool): If True, the refreshed cache is not saved to disk.
         Returns:
-            list[CompatToolInfo]: A list of CompatToolInfo objects for each found tool.
+            dict[str, CompatToolInfo]: The refreshed cache, keyed by tool name.
         """
         compat_dirs = [
             DEFAULT_STEAM_COMMON_FOLDER.format(
@@ -191,7 +195,9 @@ class CompatToolInfoRepository:
         file. A log message is generated to indicate the addition.
 
         Args:
+            item (CompatToolInfo): The compatibility tool info to add to the cache.
             logger (logging.Logger): The logger instance used for logging messages.
+            dry_run (bool): If True, the updated cache is not saved to disk.
         """
         cache = cls.get_cache(logger)
         cache[item.name] = item

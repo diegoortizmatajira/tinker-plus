@@ -18,8 +18,6 @@ class GenerateDocumentationHandler(BaseHandler):
     This handler processes configuration properties from all registered features
     and generates a markdown documentation file using a Jinja2 template.
 
-    Attributes:
-        Inherits all attributes from BaseHandler.
     """
 
     def __init__(
@@ -41,13 +39,14 @@ class GenerateDocumentationHandler(BaseHandler):
         logger: logging.Logger,
     ) -> None:
         """
-        Generates documentation for the Tinker-Plus application.
+        Generates the configuration reference documentation for the Tinker-Plus
+        application.
 
-        Note:
-            This is a placeholder for future implementation and currently does not
-            contain any logic.
+        Collects every registered feature's configuration properties, renders
+        them through the `configuration_reference_template.md` Jinja2 template,
+        and writes the result to `configuration_reference.md`.
         """
-        logger.info("Generating documentation... (not yet implemented)")
+        logger.info("Generating documentation...")
         runtime = self.get_runtime_provider([], True)
         properties: list[dict[str, AcceptedPropertyTypes | None]] = []
         for feature in runtime.features:

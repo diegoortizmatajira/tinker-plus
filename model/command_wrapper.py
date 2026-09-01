@@ -92,10 +92,20 @@ class CommandWrapper[T]:
         assembled command.
 
         Args:
-            pipeline_assembled_command (str): The assembled command to be wrapped.
+            pipeline_assembled_command (Command): The assembled command to be wrapped.
+            parameter (T): Context object forwarded to the wrapper callable (e.g.
+                the runtime configuration).
+            command_category (CommandCategory | None): Category of the command
+                being wrapped; the wrapper is skipped unless this is in
+                `applies_for` (defaulting to `[CommandCategory.GAME]`).
+            logger (logging.Logger): Logger used to log the wrapped command.
+            is_script (bool): Whether the pipeline is being assembled for a
+                script context; the wrapper is skipped unless `use_in_script`
+                is True.
 
         Returns:
-            str: The wrapped command.
+            Command: The wrapped command, or the original command unchanged if
+            the wrapper doesn't apply for this category/context.
         """
         # If no specific command category is provided, default to applying for GAME category only.
         applies_for_with_default = self.applies_for or [CommandCategory.GAME]

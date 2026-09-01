@@ -57,7 +57,10 @@ class CompatDataFolders(FeatureProvider):
 
         Args:
             _configuration (dict): The configuration dictionary for the operation.
-            runtime_configuration (RuntimeConfiguration): The runtime
-            configuration for the operation.
+            _runtime_configuration (RuntimeConfiguration): The runtime
+            configuration for the operation (currently unused).
+
+        Raises:
+            NotImplementedError: This action is not implemented yet.
         """
         raise NotImplementedError("Recreate compat data folder is not implemented yet.")

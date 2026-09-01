@@ -110,8 +110,9 @@ class WineConfig(FeatureProvider):
         _configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ):
+        """Runs the given Wine app (e.g. 'winetricks', 'winecfg') with optional
+        arguments inside the current Wine prefix, raising on failure."""
         try:
-            # Install required Winetricks packages
             succeed = ProcessRunner.run_in_wine_prefix(
                 Command(app, args),
                 runtime_configuration,

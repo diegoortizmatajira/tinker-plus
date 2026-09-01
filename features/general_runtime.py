@@ -51,6 +51,9 @@ class GeneralRuntime(FeatureProvider):
         sourced_configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ) -> ConfigurationDictionary:
+        """Parses the Steam environment/command line, populates the runtime
+        configuration's Steam environment data, game info, and game executable
+        command, and refreshes the compatibility tool cache."""
         result = super().build_configuration(
             sourced_configuration, runtime_configuration
         )
@@ -101,6 +104,8 @@ class GeneralRuntime(FeatureProvider):
         _configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ) -> RuntimeConfiguration:
+        """Applies the `GENERAL_LOG_INDIVIDUAL_EXE` setting to the runtime
+        configuration's `log_executable_commands` flag."""
         runtime_configuration.log_executable_commands = (
             GENERAL_LOG_INDIVIDUAL_EXE_PROPERTY.get(_configuration, False)
         )

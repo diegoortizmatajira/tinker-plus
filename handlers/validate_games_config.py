@@ -1,3 +1,5 @@
+"""Module for handling the 'validate-games' command."""
+
 import logging
 from typing import Any, override
 from core import ConfigStorage, GamesManager
@@ -7,6 +9,12 @@ VALIDATE_GAMES_COMMAND = "validate-games"
 
 
 class ValidateGamesConfig(BaseHandler):
+    """
+    Handles the "validate-games" command, which checks every configured game's
+    stored configuration for unexpected keys against the currently registered
+    feature providers.
+    """
+
     def __init__(
         self,
         subparser: Any,  # pyright: ignore[reportExplicitAny, reportAny]
@@ -17,6 +25,8 @@ class ValidateGamesConfig(BaseHandler):
 
     @override
     def handle(self, _args: object, logger: logging.Logger):
+        """Validates every configured game's stored configuration and prints
+        an OK/INVALID status line (with issue details) for each one."""
         logger.info("Listing configured games...")
         config_storage = ConfigStorage()
         manager = GamesManager(config_storage)

@@ -55,6 +55,9 @@ class GuiOptions(FeatureProvider):
         configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ) -> RuntimeConfiguration:
+        """Reads the GUI configuration properties and caches them on this
+        instance (`use_ui`, `close_after_running_game`, `autorun_timeout`) so
+        the CLI's `run` handler can decide whether to show the GUI."""
         self.use_ui = GUI_SHOW_UI_PROPERTY.get_or_fail(configuration)
         self.close_after_running_game = (
             GUI_CLOSE_AFTER_RUNNING_GAME_PROPERTY.get_or_fail(configuration)

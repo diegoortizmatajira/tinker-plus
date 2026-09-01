@@ -105,7 +105,7 @@ class ConfigurationProperty[T_co: AcceptedPropertyTypes]:
         value = configuration.get(self.name, self.default)
         # Validate if value is of type T or None
         if value is None:
-            return value or default
+            return default
         if self.__advanced_type_check(value):
             return cast(T_co, value)
         raise TypeError(
@@ -119,7 +119,7 @@ class ConfigurationProperty[T_co: AcceptedPropertyTypes]:
         Args:
             configuration (dict): A dictionary representing the configuration.
         Returns:
-            str: The value of the property from the configuration.
+            T_co: The value of the property from the configuration.
         Raises:
             KeyError: If the property is not found in the configuration and has no default.
         """

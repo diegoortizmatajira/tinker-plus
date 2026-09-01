@@ -56,7 +56,8 @@ class UmuRunner(FeatureProvider):
         configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ) -> RuntimeConfiguration:
-        # Apply the Sniper (After Reaper)
+        """Adds the Umu launcher as a pipeline wrapper for the game and
+        compatibility tool commands, if enabled."""
         umu_binary = UMU_RUN_BINARY_PROPERTY.get(configuration)
         if UMU_RUN_ENABLED_PROPERTY.get(configuration) and umu_binary:
             self.logger.info("Enabling Umu Runner.")

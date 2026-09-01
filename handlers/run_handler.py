@@ -42,7 +42,7 @@ class RunHandler(BaseHandler):
         _ = run_parser.add_argument(
             "--nogui",
             action="store_true",
-            help="Run in GUI mode",
+            help="Run without the GUI, overriding the configured default",
         )
         _ = run_parser.add_argument(
             "--dry", action="store_true", help="Run in DRY mode (no game launch)"
@@ -65,6 +65,10 @@ class RunHandler(BaseHandler):
         args: object,
         logger: logging.Logger,
     ) -> None:
+        """
+        Parses run-mode flags and either shows the GUI (`MainForm`) or runs the
+        configured pipeline directly, based on --gui/--nogui/CURRENT_GUI_OPTIONS.
+        """
         dry_run = getattr(args, "dry", False)
         execute_trainer = getattr(args, "trainer", True)
         game_command = getattr(args, "game_command", [])

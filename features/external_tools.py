@@ -88,6 +88,8 @@ class ExternalTools(FeatureProvider):
         configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ) -> RuntimeConfiguration:
+        """Adds pipeline wrappers for the enabled external tools (GameModeRun,
+        Gamescope, MangoHUD) and records the external terminal command template."""
         if GAMEMODERUN_ENABLED_PROPERTY.get(configuration):
             self.logger.info("Enabling GameModeRun wrapper.")
             runtime_configuration.add_pipeline_wrapper(

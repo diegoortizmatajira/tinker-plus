@@ -42,6 +42,8 @@ class PrefixSelection(FeatureProvider):
         configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ) -> RuntimeConfiguration:
+        """Applies the custom prefix path if configured, otherwise validates
+        that a default prefix path is already set on the runtime configuration."""
         custom_prefix = PREFIX_CUSTOM_PATH_PROPERTY.get(configuration)
         if custom_prefix:
             runtime_configuration.prefix_path = custom_prefix
@@ -65,6 +67,8 @@ class PrefixSelection(FeatureProvider):
         _configuration: ConfigurationDictionary,
         runtime_configuration: RuntimeConfiguration,
     ):
+        """Runs a no-op command through the compatibility tool to force prefix
+        creation if the prefix directory does not already exist."""
         custom_prefix_path = Path(runtime_configuration.prefix_path or ".")
         if not custom_prefix_path.exists():
             self.logger.info("Executing mock command, to force prefix creation.")
