@@ -126,6 +126,9 @@ class InstallHandler(BaseHandler):
             logger.info(
                 "Dry run: would install as Steam compatibility tool at '%s'", compat_path
             )
+            print(
+                f"Dry run complete: Tinker-Plus would be installed at '{compat_path}'."
+            )
             return
 
         logger.info(
@@ -149,3 +152,7 @@ class InstallHandler(BaseHandler):
             link_path = compat_path.joinpath(link_name)
             FileSystem.create_symbolic_link(target, str(link_path), logger)
         logger.info("Installation as Steam compatibility tool completed.")
+        print("Tinker-Plus installed successfully:")
+        print(f"  Steam compatibility tool: {compat_path}")
+        print(f"  CLI command:              {TPLUS_BIN_LOCATION}")
+        print("Restart Steam to select 'Tinker Plus' as a compatibility tool.")

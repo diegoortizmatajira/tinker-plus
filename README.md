@@ -36,16 +36,27 @@ experience for Steam gaming.
 
 ## Installation
 
+Requirements: Python 3.13+ and [uv](https://docs.astral.sh/uv/).
+
 1. Clone the repository or download the binaries.
-2. Run the installation script:
+2. From the repository folder, install the dependencies and run the installer:
 
 ```bash
-# For Linux:
-chmod +x ./tinker-plus.sh
-./tinker-plus.sh install
+uv sync
+uv run main.py install
 ```
 
+The installer generates the `tinker-plus.sh` launcher for this checkout,
+links it as `~/.local/bin/tplus`, and registers Tinker-Plus as a Steam
+compatibility tool in `~/.local/share/Steam/compatibilitytools.d/Tinker-Plus`.
+Restart Steam afterwards so it picks up the new tool.
+
 Once installed, the `tplus` command is available globally for your user.
+
+> [!NOTE]
+> The launcher points to the folder where you ran the installer. If you move
+> the repository, or the generated `tinker-plus.sh` gets deleted (for example
+> by `git clean`), run `uv run main.py install` again.
 
 ## Usage
 
